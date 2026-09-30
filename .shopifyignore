@@ -1,6 +1,5 @@
 node_modules/*
 frontend/*
-wishlist-proxy/*
 assets/.vite/*
 vite.config.js
 package.json

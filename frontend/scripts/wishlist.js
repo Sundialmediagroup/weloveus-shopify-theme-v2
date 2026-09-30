@@ -3,7 +3,7 @@
 // State lives in the `custom.wishlist` customer metafield. The theme can read
 // it but not write it, so writes go to the app proxy at /apps/wishlist, which
 // Shopify signs with the logged-in customer's ID before forwarding to the
-// function in wishlist-proxy/. The proxy answers with the full saved list,
+// function in ../wishlist-proxy/ (separate project). The proxy answers with the full saved list,
 // and that list is treated as the truth.
 //
 // Logged out: the product ID is parked in sessionStorage and the account modal

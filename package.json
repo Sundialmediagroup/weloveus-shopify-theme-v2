@@ -8,7 +8,7 @@
     "theme:dev": "shopify theme dev",
     "start": "concurrently -n vite,shopify -c cyan,magenta \"vite build --watch\" \"shopify theme dev\"",
     "build": "vite build",
-    "theme:push": "npm run build && shopify theme push",
+    "theme:push": "./scripts/theme-push.sh",
     "theme:check": "shopify theme check"
   },
   "devDependencies": {
