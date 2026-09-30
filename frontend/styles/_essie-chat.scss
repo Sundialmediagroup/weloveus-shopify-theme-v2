@@ -1,0 +1,646 @@
+@use 'abstracts/mixins' as *;
+
+// Ask Essie — snippets/essie-chat.liquid.
+//
+// One translucent shell, fixed to the bottom-centre: the panel (header and
+// messages) on top, the search bar below. The bar never moves or swaps out.
+//
+// Opening: the shell widens, then the panel grows from 0 to its full height.
+// Its content is pinned to the bottom, so it rises out of the bar instead of
+// unrolling from the header down. Closing runs the same two steps
+// backwards. The shell is only as wide as its content, so clicks beside it
+// reach the page.
+
+.essie {
+  --essie-bg:        rgb(20 20 20 / 0.55);
+  --essie-fg:        var(--color-neutral-0);
+  --essie-fg-muted:  rgb(255 255 255 / 0.65);
+  --essie-line:      rgb(255 255 255 / 0.16);
+  --essie-surface:   rgb(255 255 255 / 0.12);
+  --essie-radius:    22px;
+  --essie-bar:       3.5rem;  // 56px search bar
+  --essie-tile:      2.5rem;  // 40px monogram and send button
+  --essie-width:     min(22rem, 100vw - var(--space-6));
+  --essie-height:    calc(min(70dvh, 44rem) - var(--essie-bar)); // open panel, above the bar
+  --essie-duration:  var(--duration-slow);
+  --essie-widen:     var(--essie-duration); // width step; 0s where width doesn't change
+
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: var(--space-6);
+  z-index: var(--z-popover);
+  display: flex;
+  flex-direction: column;
+  width: var(--essie-width);
+  margin-inline: auto;
+  border-radius: var(--essie-radius);
+  background-color: var(--essie-bg);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow-2xl);
+  color: var(--essie-fg);
+  font-family: var(--font-body);
+
+  // Closing: slide down, then narrow.
+  --essie-panel-transition: height var(--essie-duration) var(--ease-in-out);
+
+  transition: width var(--essie-widen) var(--ease-in-out) var(--essie-duration);
+
+  // Opening: widen, then slide up.
+  &[data-open] {
+    --essie-width: min(420px, 100vw - var(--space-6));
+    --essie-panel-transition: height var(--essie-duration) var(--ease-in-out) var(--essie-widen);
+
+    transition: width var(--essie-widen) var(--ease-in-out);
+  }
+
+  // Global focus ring is dark; flip it for the dark shell.
+  :focus-visible {
+    outline-color: var(--essie-fg);
+  }
+
+  // Full width in both states, so there's no widen step to wait for.
+  @include respond-below('sm') {
+    &,
+    &[data-open] {
+      --essie-width: calc(100vw - var(--space-6)); // 12px each side
+      --essie-height: calc(100dvh - var(--space-12) - var(--essie-bar));
+      --essie-widen: 0s;
+    }
+  }
+}
+
+// ─── Search bar ────────────────────────────────────────────────────────────────
+
+.essie__bar {
+  position: relative;
+}
+
+.essie__composer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: var(--essie-bar);
+  padding-inline: var(--space-2);
+  border-radius: var(--essie-radius);
+  transition: box-shadow var(--transition-fast);
+
+  // The whole bar is the field, so it carries the keyboard focus ring.
+  &:has(.essie__input:focus-visible) {
+    box-shadow: inset 0 0 0 1px var(--essie-fg-muted);
+  }
+}
+
+.essie__monogram {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: var(--essie-tile);
+  height: var(--essie-tile);
+  border-radius: var(--radius-full);
+  background-color: #F4CFDC; // soft blush behind the Essie mark
+  color: var(--color-neutral-950);
+
+  svg {
+    width: auto;
+    height: 1.125rem;
+  }
+}
+
+.essie__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--essie-fg);
+  font: inherit;
+  font-size: max(var(--text-sm), 16px); // 16px+ stops iOS zooming on focus
+  text-overflow: ellipsis;
+
+  &::placeholder {
+    color: var(--essie-fg-muted);
+    opacity: 1;
+  }
+
+  &:focus-visible {
+    outline: none; // shown on the bar instead
+  }
+}
+
+// Tucked away while closed — its negative margin gives the space back to the
+// input — and grown in alongside the widen step.
+.essie__send {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: var(--essie-tile);
+  height: var(--essie-tile);
+  border-radius: var(--radius-full);
+  background-color: var(--color-neutral-0);
+  color: var(--color-neutral-950);
+  transition:
+    opacity var(--essie-duration) var(--ease-in-out),
+    transform var(--essie-duration) var(--ease-in-out),
+    margin var(--essie-duration) var(--ease-in-out);
+
+  .essie:not([data-open]) & {
+    margin-inline-start: calc((var(--essie-tile) + var(--space-3)) * -1);
+    opacity: 0;
+    transform: scale(0.6);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  svg {
+    width: var(--space-5);
+    height: var(--space-5);
+  }
+}
+
+// Covers the bar while closed, so the placeholder reads as one big button.
+.essie__pill {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--essie-radius);
+  transition: background-color var(--transition-base);
+
+  &:hover {
+    background-color: rgb(255 255 255 / 0.06);
+  }
+
+  .essie[data-open] & {
+    visibility: hidden;
+  }
+}
+
+// ─── Product prompts ───────────────────────────────────────────────────────────
+
+// Suggestions that extend up out of the closed bar on product pages. The tray
+// grows from 0 to its measured height (--essie-prompts-height, set by the
+// script) with its content pinned to the bottom, so the chips stay attached
+// to the bar and are uncovered upwards, like the panel. Opening Essie folds
+// it away while the shell widens.
+.essie__prompts {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  transition:
+    height var(--essie-duration) var(--ease-in-out),
+    visibility 0s linear var(--essie-duration);
+
+  .essie[data-prompts] & {
+    height: var(--essie-prompts-height, auto);
+    visibility: visible;
+    transition:
+      height var(--essie-duration) var(--ease-in-out),
+      visibility 0s;
+  }
+}
+
+.essie__prompts-inner {
+  flex-shrink: 0;
+}
+
+.essie__prompts-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--essie-line);
+  opacity: 0;
+  transition: opacity var(--essie-duration) var(--ease-out);
+
+  .essie[data-prompts] & {
+    opacity: 1;
+  }
+}
+
+.essie__prompts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.essie__prompts-title {
+  color: var(--essie-fg-muted);
+  font-size: var(--text-xs);
+  letter-spacing: 0.02em;
+}
+
+.essie__prompts-dismiss {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-inline-end: calc(var(--space-1) * -1);
+  border-radius: var(--radius-full);
+  color: var(--essie-fg-muted);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+
+  svg {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+
+  &:hover {
+    background-color: var(--essie-surface);
+    color: var(--essie-fg);
+  }
+}
+
+// ─── Panel ─────────────────────────────────────────────────────────────────────
+
+// Content sits at the bottom of the row, so as the row grows it is revealed
+// from the search bar upward. Hidden once collapsed, which takes it out of the
+// tab order and the accessibility tree.
+.essie__panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 0;
+  overflow: hidden;
+  transition: var(--essie-panel-transition), visibility 0s linear 0s;
+
+  .essie[data-open] & {
+    height: var(--essie-height);
+  }
+
+  .essie:not([data-open]) & {
+    visibility: hidden;
+    transition: var(--essie-panel-transition), visibility 0s linear var(--essie-duration);
+  }
+}
+
+.essie__panel-inner {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  height: var(--essie-height);
+  border-bottom: 1px solid var(--essie-line);
+}
+
+.essie__header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--essie-line);
+}
+
+.essie__title {
+  flex: 1;
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+}
+
+.essie__new {
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--essie-line);
+  border-radius: var(--radius-full);
+  color: var(--essie-fg-muted);
+  font-size: var(--text-xs);
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+
+  &:hover:not(:disabled) {
+    color: var(--essie-fg);
+    border-color: var(--essie-fg-muted);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.essie__close {
+  display: grid;
+  place-items: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-full);
+  color: var(--essie-fg);
+  transition: background-color var(--transition-fast);
+
+  &:hover {
+    background-color: var(--essie-surface);
+  }
+
+  svg {
+    width: var(--space-4);
+    height: var(--space-4);
+  }
+}
+
+// ─── Messages ──────────────────────────────────────────────────────────────────
+
+.essie__messages {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 0;
+  padding: var(--space-4);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.essie__msg {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+
+.essie__msg--user {
+  align-items: flex-end;
+}
+
+.essie__bubble {
+  max-width: 85%;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-2xl);
+  background-color: var(--essie-surface);
+  overflow-wrap: anywhere;
+
+  .essie__msg--user & {
+    background-color: var(--color-neutral-0);
+    color: var(--color-neutral-950);
+  }
+}
+
+// A brand Essie mentions, linked to its page. Inherits colour and weight so
+// it reads as part of the sentence; the underline is the only cue.
+.essie__brand-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+  text-underline-offset: 0.2em;
+  transition: text-decoration-color var(--transition-fast);
+
+  &:hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+// Waiting on Essie: three dots rising in turn, in a bubble like her replies.
+// While a tool runs, a label with a slow sheen sits beside them.
+.essie__thinking {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: var(--space-2);
+  min-height: 2.25rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-2xl);
+  background-color: var(--essie-surface);
+  animation: essie-appear 240ms var(--ease-out) both;
+}
+
+.essie__dots {
+  display: inline-flex;
+  gap: 0.3rem;
+
+  i {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    background-color: var(--essie-fg);
+    animation: essie-dot 1.4s var(--ease-in-out) infinite;
+
+    &:nth-child(2) { animation-delay: 0.16s; }
+    &:nth-child(3) { animation-delay: 0.32s; }
+  }
+}
+
+.essie__thinking-label {
+  font-size: var(--text-xs);
+  letter-spacing: 0.02em;
+  color: transparent;
+  background: linear-gradient(
+    100deg,
+    var(--essie-fg-muted) 40%,
+    var(--essie-fg) 50%,
+    var(--essie-fg-muted) 60%
+  ) 0 0 / 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: essie-sheen 2.4s linear infinite;
+
+  &:empty { display: none; }
+}
+
+// An assistant message is created before its first part arrives; until
+// then it shouldn't add a gap above the dots.
+.essie__msg:empty {
+  display: none;
+}
+
+@keyframes essie-appear {
+  from { opacity: 0; transform: translateY(4px) scale(0.96); }
+}
+
+@keyframes essie-dot {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30%           { opacity: 1;   transform: translateY(-3px); }
+}
+
+@keyframes essie-sheen {
+  from { background-position: 100% 0; }
+  to   { background-position: -50% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .essie__thinking { animation: none; }
+  .essie__dots i { animation-name: essie-dot-fade; }
+  .essie__thinking-label { animation: none; color: var(--essie-fg-muted); background: none; }
+}
+
+@keyframes essie-dot-fade {
+  0%, 60%, 100% { opacity: 0.3; }
+  30%           { opacity: 1; }
+}
+
+.essie__error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--essie-fg-muted);
+}
+
+// ─── Tool results ──────────────────────────────────────────────────────────────
+
+.essie__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.essie__chip {
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--essie-fg-muted);
+  border-radius: var(--radius-full);
+  color: var(--essie-fg);
+  font-size: var(--text-xs);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+
+  &:hover:not(:disabled) {
+    background-color: var(--essie-fg);
+    color: var(--color-neutral-950);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.essie__checkout {
+  display: block;
+  align-self: stretch;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-full);
+  background-color: var(--color-neutral-0);
+  color: var(--color-neutral-950);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wider);
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: background-color var(--transition-fast);
+
+  &:hover {
+    background-color: var(--color-neutral-200);
+  }
+}
+
+.essie__status {
+  font-size: var(--text-xs);
+  color: var(--essie-fg-muted);
+}
+
+.essie__status--success {
+  color: #4ade80; // green that holds contrast on the dark shell
+}
+
+// Horizontal product row — bleeds to the message list's edges.
+.essie__cards {
+  display: flex;
+  align-self: stretch;
+  gap: var(--space-2);
+  margin-inline: calc(var(--space-4) * -1);
+  padding-inline: var(--space-4);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--space-4);
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.essie__card {
+  position: relative;
+  display: flex;
+  flex: 0 0 9.5rem;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background-color: var(--color-neutral-0);
+  color: var(--color-neutral-950);
+  text-decoration: none;
+  scroll-snap-align: start;
+
+  img {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    background-color: var(--color-neutral-100);
+  }
+}
+
+.essie__card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-px);
+  padding: var(--space-2);
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+}
+
+.essie__card-vendor {
+  color: var(--color-fg-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  font-size: var(--text-2xs);
+}
+
+.essie__card-title {
+  @include line-clamp(2);
+
+  font-weight: var(--weight-medium);
+}
+
+.essie__badge {
+  position: absolute;
+  inset-block-start: var(--space-2);
+  inset-inline-start: var(--space-2);
+  padding: var(--space-px) var(--space-2);
+  border-radius: var(--radius-full);
+  background-color: var(--color-neutral-950);
+  color: var(--color-neutral-0);
+  font-size: var(--text-2xs);
+}
+
+.essie__cart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-self: stretch;
+  padding: var(--space-3);
+  border-radius: var(--radius-xl);
+  background-color: var(--essie-surface);
+}
+
+.essie__cart-line {
+  display: grid;
+  grid-template-columns: var(--space-10) 1fr auto;
+  gap: var(--space-3);
+  align-items: center;
+  font-size: var(--text-xs);
+
+  img {
+    width: var(--space-10);
+    height: var(--space-10);
+    border-radius: var(--radius-md);
+    object-fit: cover;
+    background-color: var(--color-neutral-0);
+  }
+}
+
+.essie__cart-meta {
+  color: var(--essie-fg-muted);
+}
+
+.essie__cart-total {
+  display: flex;
+  justify-content: space-between;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--essie-line);
+  font-weight: var(--weight-medium);
+}

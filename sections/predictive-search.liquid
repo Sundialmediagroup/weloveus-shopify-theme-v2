@@ -1,0 +1,110 @@
+{%- comment -%}
+  Suggestions panel for the header search bar.
+
+  Never placed in a template. Shopify renders it on its own for requests to
+  /search/suggest?...&section_id=predictive-search, and search.js drops the
+  result into the panel under the header — the `predictive_search` object below
+  only exists on that request, so the section is blank anywhere else.
+
+  Products *and* collections come back, because brands are collections in this
+  store and a brand name is one of the most likely things to be typed.
+{%- endcomment -%}
+
+{%- liquid
+  assign products = predictive_search.resources.products
+  assign brands = predictive_search.resources.collections
+  assign results_count = products.size | plus: brands.size
+
+  # The term arrives HTML-escaped, which is what the page wants but not what a
+  # query string does: url_encode would send the entity itself, turning a
+  # search for L'Jai into one for `l&#39;jai`. Entities are unpicked first, and
+  # `&amp;` last so it cannot resurrect one of the others.
+  # Kept on one line: inside a liquid block a newline ends the statement, so a
+  # wrapped filter chain drops everything after the first line.
+  assign terms = predictive_search.terms
+  assign raw_terms = terms | replace: '&#39;', "'" | replace: '&quot;', '"' | replace: '&lt;', '<' | replace: '&gt;', '>' | replace: '&amp;', '&'
+  assign encoded_terms = raw_terms | url_encode
+  assign all_results_url = routes.search_url | append: '?q=' | append: encoded_terms | append: '&type=product&options[prefix]=last'
+-%}
+
+{%- if predictive_search.performed -%}
+  <div class="predictive-search">
+
+    {%- comment -%}
+      Read out of here by search.js and copied into the live region in the
+      header — the count is the useful part to announce, the list is not.
+    {%- endcomment -%}
+    <p class="visually-hidden" data-predictive-count>
+      {{- 'general.search.results_count' | t: count: results_count -}}
+    </p>
+
+    {%- if results_count == 0 -%}
+      <p class="predictive-search__empty">
+        {{- 'general.search.no_results' | t: terms: terms -}}
+      </p>
+    {%- else -%}
+
+      {%- if brands.size > 0 -%}
+        <div class="predictive-search__group">
+          <p class="predictive-search__group-title">{{ 'general.search.brands' | t }}</p>
+          <ul class="predictive-search__brands">
+            {%- for brand in brands -%}
+              <li>
+                <a class="predictive-search__brand" href="{{ brand.url }}">{{ brand.title }}</a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+
+      {%- if products.size > 0 -%}
+        <div class="predictive-search__group">
+          <p class="predictive-search__group-title">{{ 'general.search.products' | t }}</p>
+          <ul class="predictive-search__products">
+            {%- for product in products -%}
+              <li>
+                <a class="predictive-search__product" href="{{ product.url }}">
+                  <span class="predictive-search__thumb">
+                    {%- if product.featured_image != blank -%}
+                      {{
+                        product.featured_image
+                        | image_url: width: 160
+                        | image_tag:
+                          class: 'predictive-search__thumb-img',
+                          alt: '',
+                          loading: 'lazy',
+                          widths: '80, 160',
+                          sizes: '80px',
+                          width: product.featured_image.width,
+                          height: product.featured_image.height
+                      }}
+                    {%- endif -%}
+                  </span>
+                  <span class="predictive-search__meta">
+                    {%- if product.vendor != blank -%}
+                      <span class="predictive-search__vendor">{{ product.vendor }}</span>
+                    {%- endif -%}
+                    <span class="predictive-search__title">{{ product.title }}</span>
+                    <span class="predictive-search__price">{{ product.price | money }}</span>
+                  </span>
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+
+      <a class="predictive-search__all" href="{{ all_results_url }}">
+        {{- 'general.search.view_all' | t: terms: terms -}}
+      </a>
+
+    {%- endif -%}
+
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Predictive search"
+}
+{% endschema %}

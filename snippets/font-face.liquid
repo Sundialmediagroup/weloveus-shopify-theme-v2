@@ -1,0 +1,10 @@
+{%- comment -%}
+  Shopify font picker injects @font-face declarations here.
+  Typography settings are wired up in css-variables.liquid.
+{%- endcomment -%}
+{%- if settings.font_heading.system == false -%}
+  {{ settings.font_heading | font_face: font_display: 'swap' }}
+{%- endif -%}
+{%- if settings.font_body.system == false -%}
+  {{ settings.font_body | font_face: font_display: 'swap' }}
+{%- endif -%}

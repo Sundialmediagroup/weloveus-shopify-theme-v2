@@ -1,0 +1,736 @@
+{%- comment -%}
+  Product detail page.
+
+  Mobile-first: media slider, buy block, then details. At `lg` the same markup
+  becomes three columns — details, centred media, buy — with the two outer
+  columns sticky until the media runs out. DOM order stays media-first so the
+  mobile stack and the reading order both put the product before the copy;
+  the details column is placed into column 1 by the grid, not by the markup.
+
+  Variant state resolves server-side via `selected_or_first_available_variant`,
+  so `?variant=<id>` deep links render correctly before any JS runs. The
+  <noscript> form keeps multi-variant products purchasable if JS never arrives.
+{%- endcomment -%}
+
+{%- liquid
+  assign form_id = 'pdp-form-' | append: section.id
+  assign variant = product.selected_or_first_available_variant
+  assign low_stock_at = section.settings.low_stock_threshold
+
+  assign has_options = true
+  if product.has_only_default_variant
+    assign has_options = false
+  endif
+
+  # Sold-out values are not rendered, so a product with nothing left in stock has
+  # no choice to offer at all — the disabled Sold out button is the whole story.
+  unless product.available
+    assign has_options = false
+  endunless
+
+  # One pass over the variants collects the values that can actually be bought,
+  # as `~<position>:<value>~`. Cheaper than re-scanning every variant once per
+  # value, and the delimiters stop `S` matching inside `XS`.
+  assign in_stock_values = ''
+  for v in product.variants
+    if v.available
+      for opt in v.options
+        assign in_stock_values = in_stock_values | append: '~' | append: forloop.index | append: ':' | append: opt | append: '~'
+      endfor
+    endif
+  endfor
+
+  # Brands are modelled as collections in this theme, so prefer the curated
+  # collection over Shopify's unstyled legacy vendor listing.
+  #
+  # The product's own brand collection (custom.type = Brand) comes first: a
+  # vendor name does not always handleize to its collection's handle —
+  # "Abeille Creations (ABL)" is the `abeille-creations` collection. Matching
+  # the vendor's handle is the fallback for products not yet in one.
+  assign vendor_url = ''
+  assign vendor_collection = nil
+  for c in product.collections
+    if c.metafields.custom.type.value == 'Brand'
+      assign vendor_collection = c
+      break
+    endif
+  endfor
+  if product.vendor != blank
+    if vendor_collection == nil
+      assign vendor_handle = product.vendor | handleize
+      assign vendor_collection = collections[vendor_handle]
+    endif
+    if vendor_collection.products_count > 0
+      assign vendor_url = vendor_collection.url
+    else
+      assign vendor_url = product.vendor | url_for_vendor
+    endif
+  endif
+
+  assign on_sale = false
+  if variant.compare_at_price > variant.price
+    assign on_sale = true
+    assign saving_pct = variant.compare_at_price | minus: variant.price | times: 100 | divided_by: variant.compare_at_price
+  endif
+
+  # Stock level for the server-rendered variant — mirrors the values product.js
+  # writes back, so the initial paint is styled the same as a switched variant.
+  assign initial_stock = 'out'
+  if variant.available
+    assign initial_stock = 'in'
+    if variant.inventory_management != blank and variant.inventory_policy == 'deny' and variant.inventory_quantity > 0 and variant.inventory_quantity <= low_stock_at
+      assign initial_stock = 'low'
+    endif
+  endif
+-%}
+
+{%- capture variant_data -%}
+[
+  {%- for v in product.variants -%}
+    {%- liquid
+      assign stock_level = 'out'
+      assign stock_note = ''
+
+      if v.available
+        assign stock_level = 'in'
+        if v.inventory_management != blank and v.inventory_policy == 'deny' and v.inventory_quantity > 0 and v.inventory_quantity <= low_stock_at
+          assign stock_level = 'low'
+          assign stock_note = 'products.product.stock_low' | t: count: v.inventory_quantity
+        endif
+      else
+        assign stock_note = 'products.product.stock_out' | t
+      endif
+
+      assign v_saving = ''
+      if v.compare_at_price > v.price
+        assign v_pct = v.compare_at_price | minus: v.price | times: 100 | divided_by: v.compare_at_price
+        assign v_saving = 'products.product.saving' | t: percent: v_pct
+      endif
+    -%}
+    {
+      "id": {{ v.id }},
+      "options": {{ v.options | json }},
+      "available": {{ v.available }},
+      "price": {{ v.price | money | json }},
+      "compare_at": {{ v.compare_at_price | money | json }},
+      "saving": {{ v_saving | json }},
+      "sku": {{ v.sku | json }},
+      "media_id": {% if v.featured_media %}{{ v.featured_media.id }}{% else %}null{% endif %},
+      "stock_level": {{ stock_level | json }},
+      "stock_note": {{ stock_note | json }}
+    }{% unless forloop.last %},{% endunless %}
+  {%- endfor -%}
+]
+{%- endcapture -%}
+
+<product-page
+  class="pdp"
+  data-product-url="{{ product.url }}"
+  data-text-add="{{ 'products.product.add_to_cart' | t }}"
+  data-text-adding="{{ 'products.product.adding' | t }}"
+  data-text-added="{{ 'products.product.added' | t }}"
+  data-text-sold-out="{{ 'products.product.sold_out' | t }}"
+  data-text-unavailable="{{ 'products.product.unavailable' | t }}"
+  data-text-error="{{ 'products.product.add_error' | t }}"
+>
+
+  <script type="application/json" data-pdp-variants>
+    {{- variant_data -}}
+  </script>
+
+  <div class="pdp__grid">
+
+    {%- comment -%} ── Media ─────────────────────────────────────────────── {%- endcomment -%}
+
+    <div class="pdp__media">
+      {%- if product.media.size > 0 -%}
+        <div
+          class="pdp__media-track"
+          data-pdp-track
+          role="group"
+          aria-label="{{ 'products.product.media_label' | t: title: product.title }}"
+        >
+          {%- for media in product.media -%}
+            {%- liquid
+              if forloop.first
+                assign media_loading = 'eager'
+                assign media_priority = 'high'
+              else
+                assign media_loading = 'lazy'
+                assign media_priority = 'auto'
+              endif
+
+              assign media_alt = media.alt | default: product.title | escape
+            -%}
+            <div class="pdp__media-item" data-pdp-media="{{ media.id }}">
+              {%- if media.media_type == 'image' -%}
+                <button
+                  class="pdp__media-zoom-trigger"
+                  type="button"
+                  data-pdp-zoom="{{ media.id }}"
+                  aria-label="{{ 'products.product.zoom' | t }}"
+                >
+                  {{
+                    media.preview_image
+                    | image_url: width: 1600
+                    | image_tag:
+                      class: 'pdp__media-image',
+                      alt: media_alt,
+                      loading: media_loading,
+                      fetchpriority: media_priority,
+                      sizes: '(min-width: 990px) 40vw, 100vw',
+                      widths: '400, 600, 800, 1000, 1200, 1600',
+                      width: media.preview_image.width,
+                      height: media.preview_image.height
+                  }}
+                </button>
+              {%- else -%}
+                <div class="pdp__media-embed">
+                  {{ media | media_tag: image_size: '1200x' }}
+                </div>
+              {%- endif -%}
+            </div>
+          {%- endfor -%}
+        </div>
+
+        {%- if product.media.size > 1 -%}
+          <div class="pdp__media-nav">
+            <p class="pdp__media-counter" aria-hidden="true">
+              <span data-pdp-media-current>1</span>&nbsp;/&nbsp;{{ product.media.size }}
+            </p>
+            <div class="pdp__media-dots" data-pdp-dots>
+              {%- for media in product.media -%}
+                <button
+                  class="pdp__media-dot{% if forloop.first %} is-active{% endif %}"
+                  type="button"
+                  data-pdp-dot="{{ media.id }}"
+                  aria-label="{{ 'products.product.media_go_to' | t: index: forloop.index }}"
+                ></button>
+              {%- endfor -%}
+            </div>
+          </div>
+        {%- endif -%}
+      {%- else -%}
+        <div class="pdp__media-track">
+          <div class="pdp__media-item pdp__media-item--empty">
+            {{ 'product-1' | placeholder_svg_tag: 'pdp__media-placeholder' }}
+          </div>
+        </div>
+      {%- endif -%}
+    </div>
+
+    {%- comment -%} ── Heading ───────────────────────────────────────────── {%- endcomment -%}
+
+    {%- comment -%}
+      Its own grid item rather than part of either column: at `lg` it takes the
+      top of the details column, above the description, while on the mobile
+      stack it stays where it has to be — straight after the media and before
+      the price, which is why it sits here in the markup and not in the aside.
+    {%- endcomment -%}
+    <div class="pdp__heading">
+      {%- if vendor_url != blank -%}
+        <a class="pdp__vendor" href="{{ vendor_url }}">{{ product.vendor }}</a>
+      {%- endif -%}
+
+      <h1 class="pdp__title">{{ product.title }}</h1>
+    </div>
+
+    {%- comment -%} ── Buy column ────────────────────────────────────────── {%- endcomment -%}
+
+    <div class="pdp__info">
+      <div class="pdp__info-inner">
+
+        <header class="pdp__header">
+          <div class="pdp__price">
+            <span class="pdp__price-current" data-pdp-price>{{ variant.price | money }}</span>
+            <s class="pdp__price-compare" data-pdp-compare {% unless on_sale %}hidden{% endunless %}>
+              {{- variant.compare_at_price | money -}}
+            </s>
+            <span class="pdp__price-saving" data-pdp-saving {% unless on_sale %}hidden{% endunless %}>
+              {%- if on_sale -%}
+                {{- 'products.product.saving' | t: percent: saving_pct -}}
+              {%- endif -%}
+            </span>
+          </div>
+
+          <p class="pdp__tax-note">
+            {%- if section.settings.shipping_note != blank -%}
+              {{ section.settings.shipping_note }}
+            {%- else -%}
+              {{ 'products.product.tax_note' | t }}
+            {%- endif -%}
+          </p>
+        </header>
+
+        {%- comment -%}
+          Real POST to /cart/add so the primary action is not JS-dependent.
+          product.js intercepts submit and upgrades it to AJAX.
+        {%- endcomment -%}
+        <form
+          class="pdp__form"
+          id="{{ form_id }}"
+          action="{{ routes.cart_add_url }}"
+          method="post"
+          enctype="multipart/form-data"
+          data-pdp-form
+        >
+          <input type="hidden" name="form_type" value="product">
+          <input type="hidden" name="utf8" value="✓">
+          <input type="hidden" name="id" value="{{ variant.id }}" data-pdp-variant-id>
+
+          {%- if has_options -%}
+            <div class="pdp__options">
+              {%- for option in product.options_with_values -%}
+                {%- assign select_id = form_id | append: '-opt' | append: option.position -%}
+                <div class="pdp__option" data-pdp-option-position="{{ option.position }}">
+                  <label class="pdp__option-name" for="{{ select_id }}">{{ option.name }}</label>
+
+                  <div class="select">
+                    <select
+                      class="input select__input"
+                      id="{{ select_id }}"
+                      name="pdp-option-{{ option.position }}"
+                      data-pdp-option-select
+                    >
+                      {%- for value in option.values -%}
+                        {%- comment -%}
+                          Values with nothing in stock anywhere in the product never
+                          reach the page. The script disables the rest as choices at
+                          earlier positions rule them out.
+                        {%- endcomment -%}
+                        {%- assign in_stock_key = '~' | append: option.position | append: ':' | append: value | append: '~' -%}
+                        {%- if in_stock_values contains in_stock_key -%}
+                          <option
+                            value="{{ value | escape }}"
+                            {% if option.selected_value == value %}selected{% endif %}
+                          >{{ value }}</option>
+                        {%- endif -%}
+                      {%- endfor -%}
+                    </select>
+                    <span class="select__icon" aria-hidden="true">{%- render 'icon', name: 'chevron' -%}</span>
+                  </div>
+                </div>
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+
+          <div class="pdp__buy">
+            <div class="pdp__qty">
+              <label class="visually-hidden" for="{{ form_id }}-qty">
+                {{- 'products.product.quantity' | t -}}
+              </label>
+              <button
+                class="pdp__qty-btn"
+                type="button"
+                data-pdp-qty="dec"
+                aria-label="{{ 'products.product.quantity_decrease' | t }}"
+              >&minus;</button>
+              <input
+                class="pdp__qty-input"
+                id="{{ form_id }}-qty"
+                type="number"
+                name="quantity"
+                value="1"
+                min="1"
+                step="1"
+                inputmode="numeric"
+                data-pdp-qty-input
+              >
+              <button
+                class="pdp__qty-btn"
+                type="button"
+                data-pdp-qty="inc"
+                aria-label="{{ 'products.product.quantity_increase' | t }}"
+              >+</button>
+            </div>
+
+            <button
+              class="btn btn--primary btn--lg pdp__submit"
+              type="submit"
+              name="add"
+              data-pdp-submit
+              {% unless variant.available %}disabled{% endunless %}
+            >
+              <span data-pdp-submit-text>
+                {%- if variant.available -%}
+                  {{ 'products.product.add_to_cart' | t }}
+                {%- else -%}
+                  {{ 'products.product.sold_out' | t }}
+                {%- endif -%}
+              </span>
+            </button>
+
+            {%- render 'wishlist-button', product: product, context: 'pdp' -%}
+          </div>
+
+          <p class="pdp__stock" data-pdp-stock data-level="{{ initial_stock }}" role="status">
+            {%- case initial_stock -%}
+              {%- when 'low' -%}
+                {{ 'products.product.stock_low' | t: count: variant.inventory_quantity }}
+              {%- when 'out' -%}
+                {{ 'products.product.stock_out' | t }}
+            {%- endcase -%}
+          </p>
+        </form>
+
+        {%- if has_options -%}
+          {%- comment -%}
+            No-JS purchase path. A separate form, so there is never a second
+            `id` field competing with the one above when JS is running.
+          {%- endcomment -%}
+          <noscript>
+            <form
+              class="pdp__fallback"
+              action="{{ routes.cart_add_url }}"
+              method="post"
+              enctype="multipart/form-data"
+            >
+              <input type="hidden" name="form_type" value="product">
+              <input type="hidden" name="utf8" value="✓">
+              <label class="pdp__option-name" for="{{ form_id }}-fallback">
+                {{- 'products.product.choose_variant' | t -}}
+              </label>
+              <select class="input" id="{{ form_id }}-fallback" name="id">
+                {%- for v in product.variants -%}
+                  <option
+                    value="{{ v.id }}"
+                    {% if v.id == variant.id %}selected{% endif %}
+                    {% unless v.available %}disabled{% endunless %}
+                  >
+                    {{ v.title }} &middot;
+                    {%- if v.available -%}
+                      {{ v.price | money }}
+                    {%- else -%}
+                      {{ 'products.product.sold_out' | t }}
+                    {%- endif -%}
+                  </option>
+                {%- endfor -%}
+              </select>
+              <button class="btn btn--primary btn--lg" type="submit" name="add">
+                {{- 'products.product.add_to_cart' | t -}}
+              </button>
+            </form>
+          </noscript>
+        {%- endif -%}
+
+        {%- comment -%}
+          Delivery and returns surfaced before checkout rather than after.
+          Merchant-editable so it can be updated when SUN-241 settles the
+          shipping model without a theme change.
+        {%- endcomment -%}
+        {%- assign assurance_count = 0 -%}
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'assurance' and block.settings.text != blank -%}
+            {%- assign assurance_count = assurance_count | plus: 1 -%}
+          {%- endif -%}
+        {%- endfor -%}
+
+        {%- comment -%}
+          The brand's own return policy, when it has one, runs straight on from
+          the assurances in the same ruled style. Brands are collections here, so
+          it is the brand collection's `custom.brand_return_policy` metafield (rich or
+          multi-line text) — per brand, not per product or per section.
+        {%- endcomment -%}
+        {%- liquid
+          assign return_policy = blank
+          if vendor_collection.products_count > 0
+            assign return_policy = vendor_collection.metafields.custom.brand_return_policy
+          endif
+        -%}
+
+        {%- if assurance_count > 0 or return_policy != blank -%}
+        <div class="pdp__service">
+        {%- if assurance_count > 0 -%}
+          <ul class="pdp__assurances">
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'assurance' and block.settings.text != blank -%}
+                <li class="pdp__assurance" {{ block.shopify_attributes }}>
+                  <span class="pdp__assurance-icon" aria-hidden="true">
+                    {%- render 'icon', name: block.settings.icon -%}
+                  </span>
+                  <span class="pdp__assurance-text">{{ block.settings.text }}</span>
+                </li>
+              {%- endif -%}
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+
+        {%- if return_policy != blank -%}
+          <details class="pdp__detail pdp__policy">
+            <summary class="pdp__detail-summary">
+              <span>{{ 'products.product.return_policy' | t: brand: vendor_collection.title }}</span>
+              <span class="pdp__detail-marker" aria-hidden="true"></span>
+            </summary>
+            <div class="pdp__detail-body rte">
+              {%- if return_policy.type == 'rich_text_field' -%}
+                {{ return_policy | metafield_tag }}
+              {%- else -%}
+                {{ return_policy.value | escape | newline_to_br }}
+              {%- endif -%}
+            </div>
+          </details>
+        {%- endif -%}
+        </div>
+        {%- endif -%}
+
+      </div>
+    </div>
+
+    {%- comment -%} ── Details column ──────────────────────── {%- endcomment -%}
+
+    <div class="pdp__aside">
+      <div class="pdp__aside-inner">
+        {%- comment -%}
+          Native <details> — keyboard operable and expandable with no JS.
+          The description starts open so the copy is present on first paint.
+        {%- endcomment -%}
+        <div class="pdp__details">
+          {%- if product.description != blank -%}
+            <details class="pdp__detail" open>
+              <summary class="pdp__detail-summary">
+                <span>{{ 'products.product.description' | t }}</span>
+                <span class="pdp__detail-marker" aria-hidden="true"></span>
+              </summary>
+              {%- comment -%}
+                Clamped on the server so long copy never paints full height and
+                then jumps. The script removes the modifier again on the
+                descriptions that turn out to be short enough not to need it.
+              {%- endcomment -%}
+              <div
+                class="pdp__detail-body pdp__detail-body--collapsible rte"
+                data-pdp-description
+              >{{ product.description }}</div>
+              <button
+                class="pdp__detail-more"
+                type="button"
+                data-pdp-description-toggle
+                data-text-less="{{ 'products.product.read_less' | t | escape }}"
+                aria-expanded="false"
+                hidden
+              >{{ 'products.product.read_more' | t }}</button>
+            </details>
+          {%- endif -%}
+
+          {%- comment -%}
+            The brand's story, from its collection's description, straight
+            after the product's own.
+          {%- endcomment -%}
+          {%- if vendor_collection.products_count > 0 and vendor_collection.description != blank -%}
+            <details class="pdp__detail">
+              <summary class="pdp__detail-summary">
+                <span>{{ 'products.product.about_brand' | t: brand: vendor_collection.title }}</span>
+                <span class="pdp__detail-marker" aria-hidden="true"></span>
+              </summary>
+              <div class="pdp__detail-body rte">{{ vendor_collection.description }}</div>
+            </details>
+          {%- endif -%}
+
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'accordion' and block.settings.content != blank -%}
+              {%- liquid
+                assign accordion_heading = block.settings.heading
+                if accordion_heading == blank
+                  assign accordion_heading = 'products.product.more_info' | t
+                endif
+              -%}
+              <details class="pdp__detail" {{ block.shopify_attributes }}>
+                <summary class="pdp__detail-summary">
+                  <span>{{ accordion_heading }}</span>
+                  <span class="pdp__detail-marker" aria-hidden="true"></span>
+                </summary>
+                <div class="pdp__detail-body rte">{{ block.settings.content }}</div>
+              </details>
+            {%- endif -%}
+          {%- endfor -%}
+
+          <details class="pdp__detail">
+            <summary class="pdp__detail-summary">
+              <span>{{ 'products.product.product_details' | t }}</span>
+              <span class="pdp__detail-marker" aria-hidden="true"></span>
+            </summary>
+            <div class="pdp__detail-body">
+              <dl class="pdp__spec">
+                {%- if product.vendor != blank -%}
+                  <div class="pdp__spec-row">
+                    <dt>{{ 'products.product.brand' | t }}</dt>
+                    <dd>{{ product.vendor }}</dd>
+                  </div>
+                {%- endif -%}
+                {%- if product.type != blank -%}
+                  <div class="pdp__spec-row">
+                    <dt>{{ 'products.product.type' | t }}</dt>
+                    <dd>{{ product.type }}</dd>
+                  </div>
+                {%- endif -%}
+                <div class="pdp__spec-row" data-pdp-sku-row {% if variant.sku == blank %}hidden{% endif %}>
+                  <dt>{{ 'products.product.sku' | t }}</dt>
+                  <dd data-pdp-sku>{{ variant.sku }}</dd>
+                </div>
+              </dl>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  {%- comment -%}
+    Sticky buy bar, revealed once the in-page add-to-cart scrolls out of view.
+    Mobile is 65% of sessions and 70% of revenue, so the primary action should
+    never be more than a tap away.
+  {%- endcomment -%}
+  <div class="pdp__sticky" data-pdp-sticky hidden>
+    <div class="pdp__sticky-info">
+      <p class="pdp__sticky-title">{{ product.title }}</p>
+      <p class="pdp__sticky-price" data-pdp-sticky-price>{{ variant.price | money }}</p>
+    </div>
+    <button
+      class="btn btn--primary pdp__sticky-btn"
+      type="submit"
+      form="{{ form_id }}"
+      name="add"
+      data-pdp-sticky-submit
+      {% unless variant.available %}disabled{% endunless %}
+    >
+      {%- if variant.available -%}
+        {{ 'products.product.add_to_cart' | t }}
+      {%- else -%}
+        {{ 'products.product.sold_out' | t }}
+      {%- endif -%}
+    </button>
+  </div>
+
+  {%- if product.media.size > 0 -%}
+    <dialog class="pdp-zoom" data-pdp-zoom-dialog aria-label="{{ 'products.product.zoom' | t }}">
+      <button
+        class="pdp-zoom__close"
+        type="button"
+        data-pdp-zoom-close
+        aria-label="{{ 'products.product.zoom_close' | t }}"
+      >&times;</button>
+      <div class="pdp-zoom__track" data-pdp-zoom-track>
+        {%- for media in product.media -%}
+          {%- if media.media_type == 'image' -%}
+            {%- assign zoom_alt = media.alt | default: product.title | escape -%}
+            <div class="pdp-zoom__item" data-pdp-zoom-item="{{ media.id }}">
+              {{
+                media.preview_image
+                | image_url: width: 2400
+                | image_tag:
+                  class: 'pdp-zoom__image',
+                  alt: zoom_alt,
+                  loading: 'lazy',
+                  sizes: '100vw',
+                  widths: '800, 1200, 1600, 2000, 2400',
+                  width: media.preview_image.width,
+                  height: media.preview_image.height
+              }}
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </dialog>
+  {%- endif -%}
+
+</product-page>
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": {{ product.title | json }},
+    "url": {{ shop.url | append: product.url | json }},
+    "description": {{ product.description | strip_html | truncate: 500 | json }},
+    {%- if product.featured_media -%}
+      "image": {{ product.featured_media.preview_image | image_url: width: 1200 | prepend: 'https:' | json }},
+    {%- endif -%}
+    {%- if product.vendor != blank -%}
+      "brand": {
+        "@type": "Brand",
+        "name": {{ product.vendor | json }}
+      },
+    {%- endif -%}
+    "offers": [
+      {%- for v in product.variants -%}
+        {
+          "@type": "Offer",
+          "sku": {{ v.sku | json }},
+          "url": {{ shop.url | append: v.url | json }},
+          "price": {{ v.price | divided_by: 100.0 | json }},
+          "priceCurrency": {{ cart.currency.iso_code | json }},
+          "availability": "https://schema.org/{% if v.available %}InStock{% else %}OutOfStock{% endif %}"
+        }{% unless forloop.last %},{% endunless %}
+      {%- endfor -%}
+    ]
+  }
+</script>
+
+{% schema %}
+{
+  "name": "Product",
+  "settings": [
+    {
+      "type": "range",
+      "id": "low_stock_threshold",
+      "min": 0,
+      "max": 25,
+      "step": 1,
+      "default": 5,
+      "label": "Low stock threshold",
+      "info": "Show an \"only N left\" message at or below this quantity. Set to 0 to never show it."
+    },
+    {
+      "type": "text",
+      "id": "shipping_note",
+      "label": "Note under the price",
+      "info": "Shown directly below the price. Leave blank for the default tax and shipping note."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "assurance",
+      "name": "Assurance",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Free returns within 30 days"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "default": "truck",
+          "options": [
+            { "value": "truck", "label": "Delivery" },
+            { "value": "return", "label": "Returns" },
+            { "value": "lock", "label": "Secure" },
+            { "value": "check", "label": "Check" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "accordion",
+      "name": "Accordion",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Delivery and returns"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Content"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

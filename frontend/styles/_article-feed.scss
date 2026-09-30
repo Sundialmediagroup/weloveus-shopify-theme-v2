@@ -1,0 +1,25 @@
+@use 'abstracts/mixins' as *;
+
+// Article feed — sections/article-feed.liquid. A list of article cards; one
+// column below `lg`, --article-feed-cols from it. Outer spacing is the global
+// bottom-only section rule.
+
+.article-feed {
+  --stack-gap: var(--space-6);
+}
+
+.article-feed__list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: var(--grid-gap);
+  // Closing rule under the last row, so the feed is bracketed like the entries.
+  border-block-end: 1px solid var(--color-border);
+
+  @include respond-to('lg') {
+    grid-template-columns: repeat(var(--article-feed-cols, 3), minmax(0, 1fr));
+  }
+}
+
+.article-feed__view-all {
+  align-self: center;
+}

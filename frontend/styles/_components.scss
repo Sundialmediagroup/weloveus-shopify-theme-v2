@@ -1,0 +1,150 @@
+// Base component primitives.
+// Sections ship their own scoped styles via <style> blocks.
+
+// ─── Button ────────────────────────────────────────────────────────────────────
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-8);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition:
+    background-color var(--transition-base),
+    color var(--transition-base),
+    border-color var(--transition-base),
+    box-shadow var(--transition-base),
+    opacity var(--transition-base);
+
+  &:disabled,
+  &[aria-disabled='true'] {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+.btn--primary {
+  background-color: var(--color-accent);
+  color: var(--color-accent-fg);
+  border-color: var(--color-accent);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+  }
+}
+
+.btn--secondary {
+  background-color: transparent;
+  color: var(--color-fg);
+  border-color: var(--color-border-strong);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-bg-subtle);
+  }
+}
+
+.btn--ghost {
+  background-color: transparent;
+  color: var(--color-fg);
+  border-color: transparent;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-bg-subtle);
+  }
+}
+
+.btn--sm {
+  padding: var(--space-2) var(--space-5);
+  font-size: var(--text-xs);
+}
+
+.btn--lg {
+  padding: var(--space-4) var(--space-10);
+  font-size: var(--text-base);
+}
+
+// ─── Form inputs ───────────────────────────────────────────────────────────────
+
+.input {
+  display: block;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--color-fg);
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  appearance: none;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+
+  &::placeholder {
+    color: var(--color-fg-subtle);
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: var(--color-fg);
+    box-shadow: 0 0 0 3px rgb(0 0 0 / 0.08);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: var(--color-bg-raised);
+  }
+}
+
+// ─── Select ────────────────────────────────────────────────────────────────────
+
+// A native <select> on the .input styling, with a chevron drawn over it —
+// `appearance: none` on .input removes the browser's own arrow. The native
+// control is kept for its keyboard and mobile pickers.
+//
+// Usage: <div class="select"><select class="input select__input">…</select>
+//        <span class="select__icon" aria-hidden="true">{% render 'icon', name: 'chevron' %}</span></div>
+.select {
+  position: relative;
+}
+
+.select__input {
+  padding-inline-end: var(--space-10);
+  cursor: pointer;
+}
+
+.select__icon {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: var(--space-4);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+// ─── Badge ─────────────────────────────────────────────────────────────────────
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  border-radius: var(--radius-full);
+  background-color: var(--color-bg-raised);
+  color: var(--color-fg-muted);
+}

@@ -1,0 +1,60 @@
+@use 'abstracts/mixins' as *;
+
+// Sitewide A–Z brand index, rendered by layout/theme.liquid between <main> and
+// the footer. It sits outside `#main-content`, so none of the section spacing
+// in _layout.scss reaches it — the vertical rhythm has to be set here.
+.brand-directory {
+  padding-block: var(--space-10) var(--space-12);
+  border-top: 1px solid var(--color-border);
+
+  @include respond-to('lg') {
+    padding-block: var(--space-12) var(--space-16);
+  }
+}
+
+.brand-directory__title {
+  padding-bottom: var(--space-4);
+}
+
+.brand-directory__grid {
+  columns: 2;
+  column-gap: var(--space-8);
+
+  @include respond-to('md') {
+    columns: 3;
+  }
+
+  @include respond-to('lg') {
+    columns: var(--dir-columns, 5);
+  }
+}
+
+.brand-directory__group {
+  break-inside: avoid;
+  margin-bottom: var(--space-6);
+}
+
+.brand-directory__letter {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wider);
+  color: var(--color-fg-muted);
+  margin-bottom: var(--space-2);
+}
+
+.brand-directory__list {
+  list-style: none;
+}
+
+.brand-directory__link {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--color-fg);
+  line-height: var(--leading-relaxed);
+  transition: opacity var(--transition-fast);
+
+  &:hover {
+    opacity: 0.5;
+    color: var(--color-fg);
+  }
+}

@@ -1,0 +1,23 @@
+# Config for the private wishlist app. After changing it, run
+# `shopify app deploy` from this folder to push the scopes and app proxy.
+
+client_id = "13755a944c0952d984cbd3780bfbcc0e"
+name = "WeLoveUs Wishlist"
+application_url = "https://weloveus-wishlist.vercel.app"
+embedded = false
+
+[access_scopes]
+scopes = "read_customers,write_customers,read_products"
+
+[auth]
+redirect_urls = ["https://weloveus-wishlist.vercel.app/auth/callback"]
+
+# Storefront URL: https://<store>/apps/wishlist → the function below
+[app_proxy]
+url = "https://weloveus-wishlist.vercel.app/api/wishlist"
+prefix = "apps"
+subpath = "wishlist"
+
+# Required by the CLI; the app subscribes to nothing.
+[webhooks]
+api_version = "2026-07"

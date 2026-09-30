@@ -1,0 +1,119 @@
+@use 'abstracts/mixins' as *;
+
+// The search bar itself. One block for both placements — the header and the
+// search page — with the size differences passed in as local custom properties
+// rather than written as a second set of selectors.
+
+.search-form {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding-inline: var(--search-gutter, var(--space-4));
+  color: var(--color-fg);
+  background-color: var(--search-bg, transparent);
+  border: 1px solid var(--search-border, var(--color-border-strong));
+  border-radius: var(--radius-full);
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+
+  &:hover {
+    border-color: var(--search-border-hover, var(--color-fg));
+  }
+
+  // The ring sits on the pill, not the bare input, so the whole control reads
+  // as focused. `:focus-visible` inside `:has` keeps it off mouse clicks.
+  &:has(.search-form__input:focus-visible) {
+    border-color: var(--color-fg);
+    box-shadow: 0 0 0 3px rgb(0 0 0 / 0.08);
+  }
+}
+
+.search-form__input {
+  flex: 1;
+  min-width: 0;
+  padding-block: var(--search-pad, var(--space-2));
+  font-family: inherit;
+  font-size: var(--search-text, var(--text-sm));
+  letter-spacing: var(--tracking-wide);
+  color: inherit;
+  background: none;
+  border: 0;
+  appearance: none;
+
+  &::placeholder {
+    color: currentcolor;
+    opacity: 0.55;
+  }
+
+  // Focus is expressed on the wrapper above.
+  &:focus {
+    outline: none;
+  }
+
+  // WebKit's own clear button is a grey glyph that ignores the surrounding
+  // colour — conspicuous on the gold header bar.
+  &::-webkit-search-cancel-button {
+    appearance: none;
+  }
+}
+
+.search-form__submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: var(--space-1);
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+
+  &:hover {
+    opacity: 0.6;
+  }
+}
+
+// ─── Header bar ────────────────────────────────────────────────────────────────
+
+// Tinted rather than outlined: a hard border against the gold nav competes with
+// the logo, a wash of the page background reads as an inset field.
+.search-form--header {
+  --search-bg: color-mix(in srgb, var(--color-bg) 35%, transparent);
+  --search-border: color-mix(in srgb, var(--color-fg) 15%, transparent);
+  --search-border-hover: color-mix(in srgb, var(--color-fg) 35%, transparent);
+}
+
+// ─── Search page ───────────────────────────────────────────────────────────────
+
+.search-form--page {
+  --search-gutter: var(--space-5);
+  --search-pad: var(--space-3);
+  --search-text: var(--text-base);
+
+  max-width: 34rem;
+}
+
+// ─── Homepage prompt ───────────────────────────────────────────────────────────
+
+// The semantic-search section. Large enough to read as an invitation to type a
+// whole sentence, not a keyword.
+.search-form--hero {
+  --search-bg: var(--color-bg);
+  --search-gutter: var(--space-6);
+  --search-pad: var(--space-4);
+  --search-text: var(--text-base);
+
+  @include respond-to('lg') {
+    --search-gutter: var(--space-8);
+    --search-pad: var(--space-5);
+    --search-text: var(--text-xl);
+  }
+
+  .search-form__submit .icon {
+    width: var(--space-6);
+    height: var(--space-6);
+  }
+}

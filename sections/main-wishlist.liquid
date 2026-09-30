@@ -1,0 +1,124 @@
+{%- comment -%}
+  "Your wishlist" — the logged-in customer's saved products, laid out as a
+  collection grid.
+
+  Rendered from the `custom.wishlist` customer metafield on the server, so the
+  page needs no JS to show its contents. The proxy stores newest first, so the
+  most recently saved product leads.
+
+  Logged-out visitors get a sign-in prompt that opens the account modal, so
+  they stay on the page. Its href — the Shopify login with a return_url back
+  here — is the no-JS path.
+{%- endcomment -%}
+
+{%- liquid
+  assign columns = section.settings.columns_desktop | default: 4
+  assign desktop_vw = 100 | divided_by: columns
+  assign card_sizes = '(min-width: 990px) ' | append: desktop_vw | append: 'vw, (min-width: 640px) 33vw, 50vw'
+
+  # `[name]` in the heading setting becomes the customer's first name. Customers
+  # without one on file, and logged-out visitors on their way to the login,
+  # get the generic title rather than "'s wishlist".
+  assign heading = section.settings.heading
+  if heading contains '[name]'
+    if customer.first_name != blank
+      assign heading = heading | replace: '[name]', customer.first_name
+    else
+      assign heading = ''
+    endif
+  endif
+  if heading == blank
+    assign heading = 'wishlist.title' | t
+  endif
+
+  # routes.account_login_url already carries a query string under new customer
+  # accounts, so the separator cannot be assumed.
+  assign login_url = routes.account_login_url
+  if login_url contains '?'
+    assign login_url = login_url | append: '&return_url='
+  else
+    assign login_url = login_url | append: '?return_url='
+  endif
+  assign login_url = login_url | append: request.path
+-%}
+
+<div class="main-wishlist" data-wishlist-page>
+
+  <header class="collection-header">
+    <h1>{{ heading }}</h1>
+  </header>
+
+  {%- if customer == blank -%}
+    <div class="main-wishlist__empty stack">
+      <p>{{ 'wishlist.login_prompt' | t }}</p>
+      <a
+        class="btn btn--primary"
+        href="{{ login_url }}"
+        data-account-open
+        aria-haspopup="dialog"
+        aria-controls="account-modal"
+      >{{ 'wishlist.login' | t }}</a>
+    </div>
+  {%- else -%}
+    {%- assign saved_products = customer.metafields.custom.wishlist.value -%}
+
+    {%- comment -%}
+      Rendered but hidden when there are products, so wishlist.js can reveal it
+      when the last one is removed without a reload.
+    {%- endcomment -%}
+    <div class="main-wishlist__empty stack" data-wishlist-empty {% if saved_products.size > 0 %}hidden{% endif %}>
+      <p>{{ 'wishlist.empty' | t }}</p>
+      <a class="btn btn--primary" href="{{ routes.all_products_collection_url }}">{{ 'wishlist.browse' | t }}</a>
+    </div>
+
+    {%- if saved_products.size > 0 -%}
+      <div
+        class="collection-products"
+        style="--columns-desktop: {{ columns }};"
+      >
+        {%- for product in saved_products -%}
+          {%- liquid
+            assign lazy_card = false
+            if forloop.index > 8
+              assign lazy_card = true
+            endif
+          -%}
+          <div class="main-wishlist__item" data-wishlist-item="{{ product.id }}">
+            {%- render 'product-card', product: product, lazy: lazy_card, sizes: card_sizes -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  {%- endif -%}
+
+</div>
+
+{% schema %}
+{
+  "name": "Wishlist",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Use [name] for the customer's first name, e.g. \"[name]'s wishlist\". Falls back to \"Your wishlist\" when there is no name.",
+      "default": "[name]'s wishlist"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 5,
+      "label": "Columns (desktop)"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Wishlist"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,79 @@
+{%- liquid
+  assign collection = collections[section.settings.collection]
+  if collection == blank or collection.products_count == 0
+    assign products_to_show = collections.all.products
+  else
+    assign products_to_show = collection.products
+  endif
+-%}
+
+<section class="product-grid">
+  {%- if section.settings.heading != blank -%}
+    <h2 class="product-grid__heading">{{ section.settings.heading }}</h2>
+  {%- endif -%}
+  <div class="product-grid__grid" style="--columns-desktop: {{ section.settings.columns_desktop }};">
+    {%- for product in products_to_show limit: section.settings.products_to_show -%}
+      {%- liquid
+        # `render` takes values, not expressions, so the comparison has to
+        # resolve to a variable before it is passed down.
+        assign lazy_card = false
+        if forloop.index > 4
+          assign lazy_card = true
+        endif
+      -%}
+      {%- render 'product-card', product: product, lazy: lazy_card -%}
+    {%- else -%}
+      {%- for i in (1..section.settings.products_to_show) -%}
+        <div class="product-card">
+          <div class="product-card__media"></div>
+          <div class="product-card__info">
+            <p class="product-card__vendor">{{ 'onboarding.product_vendor' | t }}</p>
+            <h3 class="product-card__title">{{ 'onboarding.product_title' | t }}</h3>
+          </div>
+        </div>
+      {%- endfor -%}
+    {%- endfor -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product Grid",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 4,
+      "max": 48,
+      "step": 4,
+      "label": "Products to show",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "label": "Columns (desktop)",
+      "default": 4
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Grid"
+    }
+  ]
+}
+{% endschema %}

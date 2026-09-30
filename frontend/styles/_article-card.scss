@@ -1,0 +1,107 @@
+@use 'abstracts/mixins' as *;
+
+// Article card — snippets/article-card.liquid.
+// A feed entry: date column at the inline start, title run into the excerpt,
+// image below. The rule on top separates entries; the feed draws the last one.
+
+.article-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--article-card-date-width, 5.5rem) minmax(0, 1fr); // 88px
+  gap: var(--space-4);
+  padding-block: var(--space-6);
+  border-block-start: 1px solid var(--color-border);
+  color: var(--color-fg);
+
+  @include respond-to('lg') {
+    gap: var(--space-6);
+  }
+}
+
+.article-card__date {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wider);
+  line-height: var(--leading-snug);
+  text-transform: uppercase;
+  color: var(--color-fg-muted);
+}
+
+.article-card__body {
+  --stack-gap: var(--space-6);
+}
+
+.article-card__text {
+  font-size: var(--text-base);
+  line-height: var(--leading-snug);
+  max-width: none; // typography.scss caps `p` at 68ch — the column already does
+
+  @include respond-to('lg') {
+    font-size: var(--text-lg);
+  }
+}
+
+.article-card__title {
+  font-weight: var(--weight-bold);
+}
+
+.article-card__link {
+  color: inherit;
+  text-decoration: none;
+
+  // Stretched over the whole card: one tab stop, one accessible name.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-raised);
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    &::after {
+      outline: 2px solid currentColor;
+      outline-offset: -2px;
+    }
+  }
+}
+
+.article-card__media {
+  overflow: hidden;
+  background-color: var(--color-bg-subtle);
+  aspect-ratio: var(--article-card-ratio, 3 / 4);
+}
+
+.article-card__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--duration-slow) var(--ease-out);
+}
+
+.article-card__placeholder {
+  fill: var(--color-fg-subtle);
+}
+
+.article-card--natural {
+  .article-card__media {
+    aspect-ratio: auto;
+  }
+
+  .article-card__image {
+    height: auto;
+  }
+}
+
+.article-card:has(.article-card__link):hover {
+  .article-card__title {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+
+  .article-card__image {
+    transform: scale(1.03);
+  }
+}

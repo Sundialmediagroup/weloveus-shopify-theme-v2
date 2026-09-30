@@ -1,0 +1,59 @@
+@use 'abstracts/mixins' as *;
+
+// Word map — sections/word-map.liquid.
+// One run of display type across the full width; images sit in the flow at
+// cap height, tilted, overlapping the words either side. Section spacing is
+// the global bottom-only padding (_layout.scss).
+
+.word-map__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 0.25em; // a word space at whatever size the type resolves to
+  font-family: var(--font-heading);
+  font-size: clamp(var(--text-5xl), 10vw, var(--text-9xl));
+  font-weight: var(--weight-regular);
+  letter-spacing: var(--tracking-tighter);
+  line-height: var(--leading-none);
+}
+
+.word-map__item {
+  display: flex;
+  align-items: center;
+}
+
+.word-map__word {
+  position: relative;
+  z-index: var(--z-raised); // type over the images, as in the flow it breaks
+  color: var(--color-fg);
+  text-decoration: none;
+  transition: color var(--transition-base);
+
+  // Hovering one word quiets the rest.
+  .word-map__list:hover &:not(:hover),
+  .word-map__list:focus-within &:not(:focus-visible) {
+    color: var(--color-fg-subtle);
+  }
+
+  &[aria-current='page'] {
+    font-style: italic;
+  }
+}
+
+.word-map__image {
+  flex-shrink: 0;
+  inline-size: 1em;
+  block-size: 1em;
+  margin-inline: -0.1em; // tucks under the neighbouring words
+  object-fit: cover;
+  rotate: var(--word-map-tilt, 0deg);
+  transition:
+    rotate var(--transition-slow),
+    scale var(--transition-slow);
+
+  .word-map__item:hover &,
+  .word-map__item:focus-within & {
+    rotate: 0deg;
+    scale: 1.15;
+  }
+}

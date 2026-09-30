@@ -1,0 +1,16 @@
+{%- comment -%}
+  Loads the compiled theme bundle.
+
+  Hand-written and deliberately static, rather than rendering the generated
+  snippets/vite-tag.liquid. vite-plugin-shopify rewrites that file to point at
+  http://localhost:5173 whenever the Vite dev server is running, and because
+  `shopify theme dev` syncs it straight to the store, every HTTPS context — the
+  theme editor, any preview link — blocked those URLs as mixed content and
+  rendered the page with no CSS at all.
+
+  Nothing here is generated, so nothing here can go stale or point at localhost.
+  Filenames are unhashed by design; see the note in vite.config.js.
+{%- endcomment -%}
+
+{{ 'theme.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'theme.js' | asset_url }}" type="module" crossorigin="anonymous"></script>

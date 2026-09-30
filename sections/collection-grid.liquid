@@ -1,0 +1,69 @@
+{%- if section.blocks.size > 0 -%}
+  <div
+    class="collection-grid"
+    style="--col-count: {{ section.settings.columns }};"
+  >
+    {%- for block in section.blocks -%}
+      {%- assign coll = collections[block.settings.collection] -%}
+      {%- assign label = block.settings.label | default: coll.title -%}
+      <a
+        class="collection-grid__item"
+        href="{{ coll.url | default: routes.collections_url }}"
+        {{ block.shopify_attributes }}
+      >
+        <span class="collection-grid__label">{{ label }}</span>
+      </a>
+    {%- endfor -%}
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Collection Grid",
+  "tag": "section",
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "Collection",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Custom label",
+          "info": "Leave blank to use collection title"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 12,
+  "settings": [
+    {
+      "type": "range",
+      "id": "columns",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3,
+      "label": "Columns (desktop)"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection Grid",
+      "blocks": [
+        { "type": "collection" },
+        { "type": "collection" },
+        { "type": "collection" },
+        { "type": "collection" },
+        { "type": "collection" },
+        { "type": "collection" }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,60 @@
+{%- comment -%}
+  A–Z directory of every brand, rendered above the footer on every page.
+
+  Deliberately a snippet rather than a section: the layout renders it directly,
+  so it cannot be moved, re-ordered, duplicated or edited in the theme editor.
+  The title lives in locales, the column count in _brand-directory.scss.
+
+  Brands are collections carrying `custom.type == 'Brand'`, which is what
+  separates them from the category collections the sidebar navigates.
+{%- endcomment -%}
+
+{%- assign alphabet = 'A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z' | split: ',' -%}
+
+{%- capture directory_groups -%}
+  {%- for letter in alphabet -%}
+
+    {%- capture letter_items -%}
+      {%- for collection in collections -%}
+        {%- if collection.metafields.custom.type.value == 'Brand' -%}
+          {%- assign first_char = collection.title | upcase | slice: 0 -%}
+          {%- if first_char == letter -%}
+            <li>
+              <a class="brand-directory__link" href="{{ collection.url }}">
+                {{- collection.title -}}
+              </a>
+            </li>
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endcapture -%}
+
+    {%- if letter_items != blank -%}
+      <div class="brand-directory__group">
+        <p class="brand-directory__letter">{{ letter }}</p>
+        <ul class="brand-directory__list">
+          {{ letter_items }}
+        </ul>
+      </div>
+    {%- endif -%}
+
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- comment -%}
+  A store with no brand-tagged collections would otherwise render a bare
+  heading over nothing on every page.
+{%- endcomment -%}
+{%- if directory_groups != blank -%}
+  <aside class="brand-directory" aria-labelledby="brand-directory-heading">
+
+    <h2 class="brand-directory__title" id="brand-directory-heading">
+      {{- 'sections.brand_directory.title' | t -}}
+    </h2>
+
+    <div class="brand-directory__grid">
+      {{ directory_groups }}
+    </div>
+
+  </aside>
+{%- endif -%}

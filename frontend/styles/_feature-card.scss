@@ -1,0 +1,115 @@
+@use 'abstracts/mixins' as *;
+
+// Feature card — snippets/feature-card.liquid.
+// Image left, text panel right, arrow at the inline end. Square corners and a
+// flat panel colour, like the product card.
+
+.feature-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  // Sized from the card's own width, not the viewport: a query container, so
+  // its children can read that width in `cqi`. Height is width ÷ 3.2 (16 / 5)
+  // with a 9rem floor, which is what keeps narrow cards from getting squat —
+  // and, unlike a breakpoint, a single wide card on a tablet stays in shape.
+  //
+  // Not aspect-ratio + min-height: a min-height on an aspect-ratio box is
+  // turned into a minimum *width*, which pushed the card out of its slide.
+  container-type: inline-size;
+  color: var(--color-fg);
+}
+
+.feature-card__media,
+.feature-card__body {
+  // A minimum, so a long title can still grow the card.
+  min-block-size: max(9rem, 100cqi / var(--feature-card-ratio, 3.2));
+}
+
+.feature-card__media {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-bg-subtle);
+}
+
+.feature-card__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--duration-slow) var(--ease-out);
+}
+
+.feature-card__placeholder {
+  fill: var(--color-fg-subtle);
+}
+
+.feature-card__body {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background-color: var(--feature-card-bg, var(--color-bg-feature));
+
+  @include respond-to('lg') {
+    padding: var(--space-6);
+  }
+}
+
+.feature-card__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.feature-card__title {
+  // Display size that scales with the viewport, not the h3 element scale — the
+  // panel is a fraction of the page wide.
+  font-size: clamp(var(--text-base), 1.5vw, var(--text-l));
+  overflow-wrap: anywhere; // one long brand word must not widen the panel
+}
+
+.feature-card__link {
+  color: inherit;
+  text-decoration: none;
+
+  // Stretched over the whole card: one tab stop, one accessible name.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-raised);
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    &::after {
+      outline: 2px solid currentColor;
+      outline-offset: -2px;
+    }
+  }
+}
+
+.feature-card__arrow {
+  display: flex;
+  flex-shrink: 0;
+  transition: transform var(--transition-base);
+
+  [dir='rtl'] & {
+    scale: -1 1;
+  }
+}
+
+.feature-card--link:hover {
+  .feature-card__image {
+    transform: scale(1.03);
+  }
+
+  .feature-card__arrow {
+    transform: translateX(var(--space-1));
+  }
+}
+
+[dir='rtl'] .feature-card--link:hover .feature-card__arrow {
+  transform: translateX(calc(var(--space-1) * -1));
+}

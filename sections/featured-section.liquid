@@ -1,0 +1,88 @@
+<div
+  class="featured-section"
+  style="--featured-bg: {{ section.settings.background_color }}; --featured-color: {{ section.settings.text_color }};"
+>
+  <div class="featured-section__inner">
+
+    {%- comment -%}
+      With a label, it takes a narrow column at the inline start and the heading
+      and body sit beside it; without one, the text has the full width.
+    {%- endcomment -%}
+    <div class="featured-section__content{% if section.settings.eyebrow != blank %} featured-section__content--split{% endif %}">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="featured-section__eyebrow">{{ section.settings.eyebrow }}</p>
+      {%- endif -%}
+
+      <div class="featured-section__text">
+        {%- if section.settings.heading != blank -%}
+          <h2 class="featured-section__heading">{{ section.settings.heading }}</h2>
+        {%- endif -%}
+
+        {%- if section.settings.body != blank -%}
+          <p class="featured-section__body">{{ section.settings.body }}</p>
+        {%- endif -%}
+      </div>
+    </div>
+
+    {%- if section.settings.image != blank -%}
+      {%- assign img_alt = section.settings.heading | escape -%}
+      <div class="featured-section__media">
+        {{ section.settings.image | image_url: width: 1200 | image_tag:
+          class: 'featured-section__img',
+          alt: img_alt,
+          loading: 'lazy',
+          widths: '600, 800, 1000, 1200'
+        }}
+      </div>
+    {%- endif -%}
+
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Featured Section",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background colour",
+      "default": "#8b2a2a"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text colour",
+      "default": "#ffffff"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Label",
+      "default": "Featured"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Shop Our Collection"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body text"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Featured Section"
+    }
+  ]
+}
+{% endschema %}

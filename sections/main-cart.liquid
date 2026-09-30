@@ -1,0 +1,95 @@
+{%- if cart.item_count > 0 -%}
+<div class="cart">
+
+  <div class="cart__header">
+    <h1 class="cart__title">Cart</h1>
+    <span class="cart__count">{{ cart.item_count }} {{ cart.item_count | pluralize: 'item', 'items' }}</span>
+  </div>
+
+  <div class="cart__layout">
+
+    <div class="cart__items">
+      {%- for item in cart.items -%}
+        {%- assign item_img_alt = item.image.alt | default: item.product.title | escape -%}
+        <div class="cart-item" data-cart-item>
+
+          <div class="cart-item__media">
+            {%- if item.image != blank -%}
+              {{ item.image | image_url: width: 300 | image_tag:
+                class: 'cart-item__img',
+                alt: item_img_alt,
+                loading: 'lazy',
+                widths: '150, 200, 300'
+              }}
+            {%- endif -%}
+          </div>
+
+          <div class="cart-item__details">
+            {%- if item.product.vendor != blank -%}
+              <p class="cart-item__vendor">{{ item.product.vendor }}</p>
+            {%- endif -%}
+            <p class="cart-item__title">
+              <a href="{{ item.url }}">{{ item.product.title }}</a>
+            </p>
+            {%- unless item.variant.title == 'Default Title' -%}
+              <p class="cart-item__variant">{{ item.variant.title }}</p>
+            {%- endunless -%}
+            <button
+              class="cart-item__remove"
+              data-remove-item="{{ item.key }}"
+              type="button"
+              aria-label="Remove {{ item.product.title | escape }}"
+            >
+              Remove
+            </button>
+          </div>
+
+          <div class="cart-item__qty-wrap">
+            <button class="cart-item__qty-btn" data-qty-btn="dec" type="button" aria-label="Decrease quantity">−</button>
+            <input
+              class="cart-item__qty-input"
+              type="number"
+              value="{{ item.quantity }}"
+              min="0"
+              data-qty-input
+              data-key="{{ item.key }}"
+              aria-label="Quantity for {{ item.product.title | escape }}"
+            >
+            <button class="cart-item__qty-btn" data-qty-btn="inc" type="button" aria-label="Increase quantity">+</button>
+          </div>
+
+          <div class="cart-item__price">{{ item.line_price | money }}</div>
+
+        </div>
+      {%- endfor -%}
+    </div>
+
+    <div class="cart__summary">
+      <div class="cart__summary-row">
+        <span class="cart__summary-label">Subtotal</span>
+        <span class="cart__summary-price">{{ cart.total_price | money }}</span>
+      </div>
+      <p class="cart__tax-note">Taxes and shipping calculated at checkout</p>
+      <a href="/checkout" class="btn btn--primary cart__checkout">Checkout</a>
+      <a href="{{ routes.all_products_collection_url }}" class="cart__continue">Continue Shopping</a>
+    </div>
+
+  </div>
+
+</div>
+
+{%- else -%}
+
+  <div class="cart--empty">
+    <p class="cart__empty-title">Your cart is empty</p>
+    <p class="cart__empty-text">Looks like you haven't added anything yet.</p>
+    <a href="{{ routes.all_products_collection_url }}" class="btn btn--primary">Continue Shopping</a>
+  </div>
+
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Cart"
+}
+{% endschema %}

@@ -1,0 +1,23 @@
+@use 'abstracts/mixins' as *;
+
+.product-grid {
+  // padding-block: var(--space-3);
+}
+
+.product-grid__heading {
+  margin-bottom: var(--space-3);
+}
+
+.product-grid__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--grid-gap);
+
+  @include respond-to('sm') {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @include respond-to('lg') {
+    grid-template-columns: repeat(var(--columns-desktop, 4), 1fr);
+  }
+}

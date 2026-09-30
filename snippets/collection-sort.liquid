@@ -1,0 +1,49 @@
+{%- comment -%}
+  Renders the collection sort menu, below the category tree in the sidebar.
+
+  Plain links carrying `?sort_by=` — Shopify sorts server-side, so this works
+  with no JavaScript. The active option is marked `aria-current="true"` (not
+  "page": it is the same page, reordered).
+
+  Accepts: nothing.
+{%- endcomment -%}
+
+{%- liquid
+  assign current_sort = collection.sort_by | default: collection.default_sort_by
+  assign sort_values = 'created-descending,best-selling,price-ascending,price-descending' | split: ','
+-%}
+
+<nav class="collection-sort" aria-labelledby="collection-sort-heading">
+
+  <h2 class="collection-sort__heading" id="collection-sort-heading">
+    {{- 'sections.collection.sort_label' | t -}}
+  </h2>
+
+  <ul class="collection-sort__list">
+    {%- for value in sort_values -%}
+      {%- liquid
+        case value
+          when 'created-descending'
+            assign label = 'sections.collection.sort.latest' | t
+          when 'best-selling'
+            assign label = 'sections.collection.sort.trending' | t
+          when 'price-ascending'
+            assign label = 'sections.collection.sort.price_low' | t
+          when 'price-descending'
+            assign label = 'sections.collection.sort.price_high' | t
+        endcase
+
+        assign sort_url = collection.url | append: '?sort_by=' | append: value
+      -%}
+      <li class="collection-sort__item">
+        <a
+          class="collection-sort__link"
+          href="{{ sort_url }}"
+          {% if value == current_sort %}aria-current="true"{% endif %}
+        >
+          {{- label -}}
+        </a>
+      </li>
+    {%- endfor -%}
+  </ul>
+</nav>

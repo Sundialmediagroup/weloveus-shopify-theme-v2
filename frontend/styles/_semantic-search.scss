@@ -1,0 +1,152 @@
+@use 'abstracts/mixins' as *;
+
+// Homepage search prompt — sections/semantic-search.liquid.
+// Layout is the .container / .stack / .cluster primitives and the chips are
+// .btn--secondary.btn--sm; this partial only centres them and sets widths.
+// Section spacing is the global bottom-only rule; the padding on __inner is the
+// coloured panel's own breathing room, on the .section rhythm.
+
+// Brand green with inverted text unless the section's colour settings say
+// otherwise.
+.semantic-search {
+  color: var(--semantic-search-color, var(--color-fg-inverted));
+  background-color: var(--semantic-search-bg, var(--color-bg-highlight));
+  text-align: center;
+}
+
+.semantic-search__inner {
+  --stack-gap: var(--space-6);
+
+  align-items: center;
+  padding-block: var(--space-16);
+
+  @include respond-to('lg') {
+    --stack-gap: var(--space-8);
+
+    padding-block: var(--space-24);
+  }
+}
+
+.semantic-search__header {
+  --stack-gap: var(--space-4);
+
+  align-items: center;
+}
+
+// Size, weight and tracking are the h2's own (_typography.scss). Only the
+// measure is set, so the line breaks evenly instead of leaving one word over.
+.semantic-search__heading {
+  max-width: 20ch;
+  text-wrap: balance;
+}
+
+// Colour only — same size and weight as the rest of the line.
+.semantic-search__name {
+  color: var(--color-fg-highlight);
+}
+
+// Inherits the section colour: --color-fg-muted is a grey that disappears on
+// the green.
+.semantic-search__text {
+  color: inherit;
+}
+
+.semantic-search__form {
+  width: 100%;
+  max-width: var(--semantic-search-width, 48rem); // 768px
+}
+
+// ─── Rolling placeholder ───────────────────────────────────────────────────────
+// semantic-search.js wraps the input in __field and lays a two-slot reel over
+// it. The native placeholder goes transparent (it still names the field for
+// assistive tech); the reel is aria-hidden.
+//
+// A roll is two keyframe animations run together while --rolling is on: the
+// phrase on show moves up and fades out as the next one moves up from below
+// and fades in. Only transform and opacity animate, so the browser can run it
+// on the compositor rather than repainting the text every frame.
+
+.semantic-search__field {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+
+  .search-form__input {
+    width: 100%;
+
+    &::placeholder {
+      color: transparent;
+    }
+  }
+}
+
+.semantic-search__reel {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  font-size: var(--search-text, var(--text-sm));
+  letter-spacing: var(--tracking-wide);
+  text-align: start;
+  opacity: 0.55; // matches the native placeholder in _search-form.scss
+
+  // Typing replaces the reel, exactly as it would a placeholder.
+  .search-form__input:not(:placeholder-shown) + & {
+    visibility: hidden;
+  }
+}
+
+.semantic-search__reel-item {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  will-change: transform, opacity;
+}
+
+.semantic-search__reel-item--next {
+  opacity: 0;
+  transform: translateY(100%);
+}
+
+.semantic-search__reel-text {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.semantic-search__reel--rolling {
+  .semantic-search__reel-item {
+    animation: semantic-search-roll-out var(--duration-slower) var(--ease-in-out) forwards;
+  }
+
+  .semantic-search__reel-item--next {
+    animation-name: semantic-search-roll-in;
+  }
+}
+
+@keyframes semantic-search-roll-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes semantic-search-roll-in {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

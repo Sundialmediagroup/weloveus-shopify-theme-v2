@@ -1,0 +1,92 @@
+{%- liquid
+  assign bg    = section.settings.background_color
+  assign color = section.settings.text_color
+
+  comment
+    Extract video ID from a full Dailymotion URL or accept a bare ID.
+    Handles: https://www.dailymotion.com/video/x9abc12
+             https://dai.ly/x9abc12
+             x9abc12
+  endcomment
+
+  assign video_id = section.settings.video_url
+  if video_id contains '/video/'
+    assign video_id = video_id | split: '/video/' | last
+  elsif video_id contains 'dai.ly/'
+    assign video_id = video_id | split: 'dai.ly/' | last
+  endif
+  assign video_id = video_id | split: '?' | first | strip
+  assign autoplay = section.settings.autoplay | default: false
+  if autoplay
+    assign dm_params = 'autoplay=1&mute=1&queue-enable=0'
+  else
+    assign dm_params = 'autoplay=0&queue-enable=0'
+  endif
+-%}
+
+{%- if video_id != blank -%}
+  <div
+    class="video-section"
+    style="--video-bg: {{ bg }}; --video-color: {{ color }};"
+  >
+
+    <div class="video-section__inner">
+      <div class="video-section__embed">
+        <script
+          src="https://geo.dailymotion.com/player/x1krmq.js"
+          data-video="{{ video_id }}"
+          data-params="{{ dm_params }}"
+        ></script>
+      </div>
+
+    {%- if section.settings.title != blank -%}
+      <p class="video-section__title">{{ section.settings.title }}</p>
+    {%- endif -%}
+    </div>
+
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Video",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "video_url",
+      "label": "Video ID",
+      "info": "Paste the full Dailymotion URL or just the video ID (e.g. x9abc12)"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay",
+      "default": false,
+      "info": "Autoplay requires the video to be muted"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background colour",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text colour",
+      "default": "#ffffff"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Video"
+    }
+  ]
+}
+{% endschema %}

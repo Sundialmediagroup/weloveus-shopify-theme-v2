@@ -1,0 +1,315 @@
+@use 'abstracts/mixins' as *;
+
+// Sticky must live on the Shopify section wrapper, not .site-header.
+// {% section 'header' %} renders <div id="shopify-section-header"> which is
+// exactly as tall as the header — sticky on a child of that has nowhere to scroll.
+//
+// The header runs full-bleed: negative margins pull it out past the body's
+// --site-frame padding on the top and both sides, so it sits flush with the
+// viewport edges and sticks at the very top.
+#shopify-section-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  margin-block-start: calc(var(--site-frame) * -1);
+  margin-inline: calc(var(--site-frame) * -1);
+}
+
+.site-header {
+  position: relative;
+  // Inline padding is the frame, so content lines up with the framed page below.
+  padding: var(--space-3) var(--site-frame);
+  background-color: var(--color-bg-header);
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  // Wraps so the search bar can drop to a row of its own below `lg`. The row
+  // gap is the smaller of the two — it only ever applies to that second row.
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-6);
+  max-width: var(--page-width);
+  margin-inline: auto;
+  padding-inline: var(--page-gutter);
+
+  // Two equal outer columns put the logo in the exact centre, however long the
+  // nav or the actions are.
+  @include respond-to('lg') {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  }
+}
+
+.site-header__logo {
+  @include respond-to('lg') {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+// Below `lg` its children take part in the inner flex row directly, so the
+// search keeps its own full-width row.
+.site-header__end {
+  display: contents;
+
+  @include respond-to('lg') {
+    grid-column: 3;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-6);
+    min-width: 0;
+  }
+}
+
+.site-header__logo-link,
+.site-header__logo-text {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.site-header__logo-text {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--color-fg);
+}
+
+.site-header__logo-img {
+  max-height: 36px;
+  width: auto;
+}
+
+.site-header__logo-svg {
+  display: block;
+  height: 25px; // the wordmark's native size
+  width: auto;
+  color: var(--color-fg);
+}
+
+.site-header__nav {
+  display: none;
+  align-items: center;
+  gap: var(--space-8);
+
+  @include respond-to('lg') {
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    flex-wrap: wrap; // a long menu wraps in its column rather than running under the logo
+    row-gap: var(--space-2);
+    min-width: 0;
+  }
+}
+
+.site-header__nav-link {
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-fg);
+  transition: opacity var(--transition-fast);
+
+  &:hover {
+    opacity: 0.6;
+    color: var(--color-fg);
+  }
+}
+
+// Brands trigger — styled identically to nav links
+.site-header__brands-trigger {
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-fg);
+  transition: opacity var(--transition-fast);
+  cursor: pointer;
+
+  &:hover,
+  &[aria-expanded='true'] {
+    opacity: 0.6;
+  }
+}
+
+// ─── Search bar ────────────────────────────────────────────────────────────────
+
+// A row of its own below `lg`, where there is no room beside the logo and no
+// category nav either. Inline between the nav and the account links above it,
+// sized to shrink first when the menu is long.
+.site-header__search {
+  order: 3;
+  flex: 1 0 100%;
+
+  @include respond-to('lg') {
+    order: 0;
+    flex: 0 1 13rem;
+    min-width: 0;
+  }
+
+  @include respond-to('xl') {
+    flex-basis: 18rem;
+  }
+}
+
+// Same absolute placement, blur and max-height transition as the mega menu, on
+// the page background rather than the nav's gold: the muted vendor and price
+// type in the results has nothing like enough contrast against gold.
+.site-header__search-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: var(--z-dropdown);
+  background-color: color-mix(in srgb, var(--color-bg) 92%, transparent);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  max-height: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition: max-height var(--duration-slow) var(--ease-out);
+
+  .site-header--search-open & {
+    max-height: min(70vh, 520px);
+    pointer-events: auto;
+  }
+}
+
+.site-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex-shrink: 0;
+}
+
+.site-header__action {
+  font-size: var(--text-sm);
+  color: var(--color-fg);
+}
+
+.site-header__cart,
+.site-header__wishlist {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+// Two classes rather than one shared badge class: cart-feedback.js finds the
+// cart badge by `.site-header__cart-count`, and the wishlist badge sits first.
+.site-header__cart-count,
+.site-header__wishlist-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  padding-inline: var(--space-1);
+  height: 18px;
+  font-size: 10px;
+  font-weight: var(--weight-medium);
+  background-color: var(--color-fg);
+  color: var(--color-fg-inverted);
+  border-radius: var(--radius-full);
+  line-height: 1;
+}
+
+// ─── Cart confirmation panel ───────────────────────────────────────────────────
+
+.site-header__cart-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: var(--z-dropdown);
+  background-color: color-mix(in srgb, var(--color-bg-header) 90%, transparent);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-height: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition: max-height 0.18s var(--ease-out);
+  // padding: var(--space-6);
+
+  .site-header--cart-open & {
+    max-height: 64px;
+    pointer-events: auto;
+  }
+}
+
+.site-header__cart-panel-text {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+}
+
+// ─── Brands mega menu ──────────────────────────────────────────────────────────
+
+// Absolutely positioned so it overlays the page without pushing content down.
+// max-height animates so it visually grows from the header edge.
+.site-header__mega {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: var(--z-dropdown);
+  background-color: color-mix(in srgb, var(--color-bg-header) 90%, transparent);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  max-height: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition: max-height 0.35s var(--ease-out);
+
+  .site-header--mega-open & {
+    max-height: 440px;
+    pointer-events: auto;
+  }
+}
+
+.site-header__mega-inner {
+  padding: var(--space-8);
+}
+
+// ─── Brands grid ───────────────────────────────────────────────────────────────
+
+.site-header__mega-inner {
+  max-height: 360px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-strong) transparent;
+}
+
+.site-header__brands-grid {
+  list-style: none;
+  columns: 2;
+  column-gap: var(--space-8);
+
+  @include respond-to('lg') {
+    columns: 4;
+  }
+}
+
+.site-header__brands-grid li {
+  break-inside: avoid;
+  margin-bottom: var(--space-2);
+}
+
+.site-header__brand-item {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--color-fg);
+  letter-spacing: var(--tracking-wide);
+  transition: opacity var(--transition-fast);
+
+  &:hover {
+    opacity: 0.5;
+    color: var(--color-fg);
+  }
+}

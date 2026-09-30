@@ -1,0 +1,137 @@
+{%- comment -%}
+  Slider of editorial feature cards (image left, text right) — founder
+  spotlights, brand stories. Each card is a block; the track, arrows and peek
+  come from snippets/product-carousel.liquid so it scrolls like every other
+  slider on the site.
+{%- endcomment -%}
+
+{%- liquid
+  # Built here, not inline: `render` arguments do not evaluate filters.
+  assign heading_id = 'feature-carousel-heading-' | append: section.id
+-%}
+
+{%- capture feature_items -%}
+  {%- for block in section.blocks -%}
+    {%- liquid
+      assign block_collection = collections[block.settings.collection]
+      assign block_title = block.settings.title
+      # A new block has no collection or title yet and would render nothing,
+      # leaving nothing to click in the editor. There — and only there — it
+      # gets a placeholder title so the card shows up.
+      if request.design_mode and block_title == blank and block_collection == blank
+        assign block_title = 'sections.feature_card.placeholder_title' | t
+      endif
+    -%}
+    {%- if block_title != blank or block_collection != blank -%}
+      <div class="product-carousel__item" {{ block.shopify_attributes }}>
+        {%- render 'feature-card',
+          collection: block_collection,
+          image: block.settings.image,
+          title: block_title,
+          url: block.settings.url,
+          background: block.settings.background_color
+        -%}
+      </div>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+<div class="feature-carousel">
+  {%- render 'product-carousel',
+    items: feature_items,
+    heading: section.settings.heading,
+    heading_id: heading_id,
+    cards_desktop: section.settings.cards_desktop,
+    cards_mobile: section.settings.cards_mobile,
+    overhang: section.settings.overhang
+  -%}
+</div>
+
+{% schema %}
+{
+  "name": "Feature Carousel",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "range",
+      "id": "cards_desktop",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 2,
+      "label": "Cards in view — desktop"
+    },
+    {
+      "type": "select",
+      "id": "cards_mobile",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ],
+      "default": "1",
+      "label": "Cards in view — mobile"
+    },
+    {
+      "type": "range",
+      "id": "overhang",
+      "min": 40,
+      "max": 200,
+      "step": 10,
+      "default": 80,
+      "label": "Peek amount (px)",
+      "info": "How much of the next card is visible at the right edge"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "feature",
+      "name": "Feature card",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection",
+          "info": "Optional. Fills the image, link and title from the collection — anything set below overrides it."
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title override",
+          "info": "Leave blank to use the collection name."
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "Link"
+        },
+        {
+          "type": "color",
+          "id": "background_color",
+          "label": "Text panel background",
+          "info": "Leave blank for the brand sand colour."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Feature Carousel",
+      "blocks": [
+        { "type": "feature" },
+        { "type": "feature" },
+        { "type": "feature" }
+      ]
+    }
+  ]
+}
+{% endschema %}

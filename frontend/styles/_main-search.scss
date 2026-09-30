@@ -1,0 +1,131 @@
+@use 'abstracts/mixins' as *;
+
+// Search results page. The grid deliberately matches `.collection-products`
+// — a result set and a collection are the same thing to a shopper.
+
+.search-results__header {
+  margin-bottom: var(--space-10);
+}
+
+.search-results__eyebrow {
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-fg-muted);
+}
+
+.search-results__title {
+  margin-top: var(--space-2);
+}
+
+.search-results__form {
+  margin-top: var(--space-6);
+}
+
+.search-results__count {
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-fg-muted);
+}
+
+// ─── Result groups ─────────────────────────────────────────────────────────────
+
+.search-results__group + .search-results__group {
+  margin-top: var(--space-12);
+}
+
+// Deliberately not the h2 scale from _typography.scss: these label the two
+// halves of one result set, they are not headings competing with the term.
+.search-results__group-title {
+  margin-bottom: var(--space-4);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-fg-muted);
+}
+
+.search-results__brands {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.search-results__brand {
+  display: inline-flex;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-fg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  transition: border-color var(--transition-fast);
+
+  &:hover {
+    color: var(--color-fg);
+    border-color: var(--color-fg);
+  }
+}
+
+.search-results__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--grid-gap);
+
+  @include respond-to('sm') {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @include respond-to('lg') {
+    grid-template-columns: repeat(var(--columns-desktop, 4), 1fr);
+  }
+}
+
+// ─── Empty state ───────────────────────────────────────────────────────────────
+
+.search-results__empty {
+  padding-block: var(--space-12) var(--space-20);
+  color: var(--color-fg-muted);
+}
+
+.search-results__empty-hint {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+// ─── Pagination ────────────────────────────────────────────────────────────────
+
+.search-results__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  margin-top: var(--space-12);
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--color-border);
+}
+
+.search-results__page-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-fg);
+
+  &:hover {
+    color: var(--color-fg-muted);
+  }
+
+  // The shared chevron is drawn at the 14px the carousel buttons want; in `em`
+  // it tracks the label it sits beside.
+  .icon {
+    width: 1em;
+    height: 1em;
+  }
+}
+
+.search-results__page-count {
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-fg-muted);
+}

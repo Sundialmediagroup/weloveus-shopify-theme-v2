@@ -1,0 +1,144 @@
+@use 'abstracts/mixins' as *;
+
+// Contents of the header suggestions panel, injected by search.js from
+// sections/predictive-search.liquid. The panel shell that holds it — position,
+// backdrop and open/close transition — belongs to the header; see _header.scss.
+
+.predictive-search {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+
+  // Scrolls itself rather than the panel, so the panel keeps the clean
+  // max-height transition it shares with the mega menu.
+  max-height: min(70vh, 520px);
+  overflow-y: auto;
+  padding: var(--space-5) var(--space-6);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-strong) transparent;
+
+  @include respond-to('lg') {
+    padding: var(--space-6) var(--space-8);
+  }
+}
+
+.predictive-search__group-title {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-fg-muted);
+}
+
+// ─── Brands ────────────────────────────────────────────────────────────────────
+
+.predictive-search__brands {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.predictive-search__brand {
+  display: inline-flex;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-fg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+
+  &:hover {
+    color: var(--color-fg);
+    border-color: var(--color-fg);
+  }
+}
+
+// ─── Products ──────────────────────────────────────────────────────────────────
+
+.predictive-search__products {
+  list-style: none;
+  display: grid;
+  gap: var(--space-1);
+
+  @include respond-to('md') {
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: var(--space-4);
+  }
+}
+
+.predictive-search__product {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--color-fg);
+  transition: background-color var(--transition-fast);
+
+  &:hover {
+    color: var(--color-fg);
+    background-color: var(--color-bg-subtle);
+  }
+}
+
+.predictive-search__thumb {
+  flex: 0 0 48px;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background-color: var(--color-bg-raised);
+  border-radius: var(--radius-xs);
+}
+
+.predictive-search__thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.predictive-search__meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-px);
+  min-width: 0;
+}
+
+.predictive-search__vendor {
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-fg-muted);
+}
+
+.predictive-search__title {
+  @include truncate;
+
+  font-size: var(--text-sm);
+}
+
+.predictive-search__price {
+  font-size: var(--text-xs);
+  color: var(--color-fg-muted);
+}
+
+// ─── Footer link and empty state ───────────────────────────────────────────────
+
+.predictive-search__all {
+  align-self: start;
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-fg);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+
+  &:hover {
+    color: var(--color-fg-muted);
+  }
+}
+
+.predictive-search__empty {
+  font-size: var(--text-sm);
+  color: var(--color-fg-muted);
+}

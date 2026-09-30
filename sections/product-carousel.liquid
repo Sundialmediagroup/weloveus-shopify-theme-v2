@@ -1,0 +1,86 @@
+{%- comment -%}
+  Merchandising slider for a chosen collection. The markup lives in
+  snippets/product-carousel.liquid so this, the PDP brand slider and the
+  recommendations section all behave identically.
+{%- endcomment -%}
+
+{%- liquid
+  assign source = collections[section.settings.collection]
+  if source == blank or source.products_count == 0
+    assign source = collections.all
+  endif
+
+  # Built here, not inline: `render` arguments do not evaluate filters.
+  assign heading_id = 'carousel-heading-' | append: section.id
+-%}
+
+{%- render 'product-carousel',
+  products: source.products,
+  heading: section.settings.heading,
+  heading_id: heading_id,
+  limit: section.settings.products_to_show,
+  cards_desktop: section.settings.cards_desktop,
+  cards_mobile: section.settings.cards_mobile,
+  overhang: section.settings.overhang
+-%}
+
+{% schema %}
+{
+  "name": "Product Carousel",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 4,
+      "max": 24,
+      "step": 4,
+      "default": 12,
+      "label": "Products to show"
+    },
+    {
+      "type": "range",
+      "id": "cards_desktop",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 2,
+      "label": "Cards in view — desktop"
+    },
+    {
+      "type": "range",
+      "id": "cards_mobile",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 1,
+      "label": "Cards in view — mobile"
+    },
+    {
+      "type": "range",
+      "id": "overhang",
+      "min": 40,
+      "max": 200,
+      "step": 10,
+      "default": 80,
+      "label": "Peek amount (px)",
+      "info": "How much of the next card is visible at the right edge"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Carousel"
+    }
+  ]
+}
+{% endschema %}

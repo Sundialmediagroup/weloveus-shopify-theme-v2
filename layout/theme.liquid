@@ -1,0 +1,96 @@
+<!doctype html>
+<html
+  lang="{{ request.locale.iso_code }}"
+  dir="{% if request.locale.iso_code == 'ar' or request.locale.iso_code == 'he' %}rtl{% else %}ltr{% endif %}"
+  class="no-js"
+>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {%- if settings.favicon != blank -%}
+      <link
+        rel="icon"
+        type="image/png"
+        href="{{ settings.favicon | image_url: width: 32, height: 32 }}"
+      >
+    {%- endif -%}
+
+    <title>
+      {{ page_title -}}
+      {%- if current_page != 1 %} &ndash; {{ 'general.meta.page' | t: page: current_page }}{% endif -%}
+      {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
+    </title>
+
+    {%- if page_description -%}
+      <meta name="description" content="{{ page_description | escape }}">
+    {%- endif -%}
+
+    {%- unless template.name == 'search' -%}
+      <meta name="robots" content="index, follow">
+    {%- else -%}
+      <meta name="robots" content="noindex, nofollow">
+    {%- endunless -%}
+
+    {{ content_for_header }}
+
+    {%- render 'fonts' -%}
+    {%- render 'font-face' -%}
+    {%- render 'css-variables' -%}
+    {%- render 'theme-assets' -%}
+  </head>
+
+  <body class="template-{{ template | handle }}{% if template.suffix != blank %} template-{{ template.name }}-{{ template.suffix }}{% endif %}">
+
+    <a class="skip-to-content visually-hidden" href="#main-content">
+      {{- 'accessibility.skip_to_text' | t -}}
+    </a>
+
+    {% section 'header' %}
+
+    <main id="main-content" tabindex="-1">
+      {{ content_for_layout }}
+    </main>
+
+    {%- comment -%}
+      Sitewide brand index. Rendered here rather than added per template so it
+      is present on every page and stays out of the theme editor.
+    {%- endcomment -%}
+    {%- render 'brand-directory' -%}
+
+    {% section 'footer' %}
+
+    {%- render 'account-modal' -%}
+
+    {%- if shop.customer_accounts_enabled -%}
+      {%- comment -%}
+        Read by wishlist.js. `ids` seeds its in-memory state so every heart on
+        the page, including ones injected later, stays in step after a toggle.
+      {%- endcomment -%}
+      {%- liquid
+        assign wishlist_ids = '[]'
+        if customer
+          assign wishlist_list = customer.metafields.custom.wishlist.value
+          if wishlist_list != blank
+            assign wishlist_ids = wishlist_list | map: 'id' | json
+          endif
+        endif
+      -%}
+      <script type="application/json" id="wishlist-config">
+        {
+          "loggedIn": {% if customer %}true{% else %}false{% endif %},
+          "loginUrl": {{ routes.account_login_url | json }},
+          "proxyUrl": "/apps/wishlist",
+          "ids": {{ wishlist_ids }},
+          "textAdded": {{ 'wishlist.added' | t | json }},
+          "textRemoved": {{ 'wishlist.removed' | t | json }},
+          "textError": {{ 'wishlist.error' | t | json }}
+        }
+      </script>
+      <p class="visually-hidden" role="status" aria-live="polite" data-wishlist-status></p>
+    {%- endif -%}
+
+    {%- render 'essie-chat' -%}
+
+  </body>
+</html>

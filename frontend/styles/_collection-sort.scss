@@ -1,0 +1,50 @@
+@use 'abstracts/mixins' as *;
+
+// Sort options, below the category tree. Visually separated by space alone —
+// there is no label, matching the unlabelled category tree above it.
+
+// Matching rule spanning the whole menu, heading included.
+.collection-sort {
+  margin-top: var(--space-8);
+  border-inline-start: 1px solid var(--color-fg);
+  padding-inline-start: var(--space-3);
+}
+
+// Small uppercase label. Deliberately off the h2 element scale — this names a
+// sidebar menu, it is not a page heading.
+.collection-sort__heading {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-snug);
+  // Explicit reset — the h2 element rule sets --tracking-tight.
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-fg);
+}
+
+.collection-sort__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.collection-sort__link {
+  display: block;
+  padding-block: var(--space-1);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--color-fg-muted);
+  text-decoration: none;
+  text-underline-offset: 0.25em;
+  transition: color var(--transition-fast);
+
+  &:hover {
+    color: var(--color-fg);
+    text-decoration: underline;
+  }
+
+  &[aria-current='true'] {
+    color: var(--color-fg);
+    text-decoration: underline;
+  }
+}

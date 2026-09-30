@@ -1,0 +1,217 @@
+{%- liquid
+  assign trigger_label = section.settings.brands_trigger | default: 'Brands'
+-%}
+
+{%- comment -%}
+  Brand links carry the default sort for the same reason the collection sidebar
+  does: main-collection redirects any collection URL that arrives without
+  `sort_by`, and that redirect costs a second full render of the grid.
+{%- endcomment -%}
+{%- liquid
+  assign default_sort = settings.collection_default_sort | default: 'best-selling'
+  # The nav's All products link carries its own sort for the same reason.
+  assign all_sort = settings.collection_all_default_sort | default: 'created-descending'
+  assign all_products_href = routes.all_products_collection_url | append: '?sort_by=' | append: all_sort
+-%}
+
+{%- capture brands_items -%}
+  {%- for collection in collections -%}
+    <li>
+      <a class="site-header__brand-item" href="{{ collection.url }}?sort_by={{ default_sort }}">
+        {{- collection.title -}}
+      </a>
+    </li>
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- assign has_brands = false -%}
+{%- if brands_items != blank -%}
+  {%- assign has_brands = true -%}
+{%- endif -%}
+
+
+<header class="site-header" id="site-header" role="banner">
+
+  <div class="site-header__inner">
+
+    <div class="site-header__logo">
+      {%- if settings.logo != blank -%}
+        <a href="{{ routes.root_url }}" class="site-header__logo-link">
+          {{- settings.logo | image_url: width: 300 | image_tag:
+            class: 'site-header__logo-img',
+            alt: shop.name,
+            loading: 'eager',
+            fetchpriority: 'high'
+          -}}
+        </a>
+      {%- else -%}
+        {%- comment -%} Default wordmark; the Logo image theme setting overrides it. {%- endcomment -%}
+        <a href="{{ routes.root_url }}" class="site-header__logo-link">
+          {%- render 'logo', class: 'site-header__logo-svg' -%}
+          <span class="visually-hidden">{{ shop.name }}</span>
+        </a>
+      {%- endif -%}
+    </div>
+
+    {%- if section.settings.menu != blank -%}
+      <nav class="site-header__nav" aria-label="{{ 'general.accessibility.nav_main' | t }}">
+        {%- for link in linklists[section.settings.menu].links -%}
+          {%- if has_brands and link.title == trigger_label -%}
+            <button
+              class="site-header__nav-link site-header__brands-trigger"
+              aria-expanded="false"
+              aria-controls="header-mega"
+              type="button"
+            >
+              {{- link.title -}}
+            </button>
+          {%- else -%}
+            <a
+              class="site-header__nav-link"
+              href="{% if link.url == routes.all_products_collection_url %}{{ all_products_href }}{% else %}{{ link.url }}{% endif %}"
+              {% if link.url == request.path %}aria-current="page"{% endif %}
+            >
+              {{- link.title -}}
+            </a>
+          {%- endif -%}
+        {%- endfor -%}
+      </nav>
+    {%- endif -%}
+
+    {%- comment -%}
+      Full-width row of its own below `lg` (see _header.scss) rather than a
+      magnifier that opens something: search is the fastest route into a
+      catalogue this size, and the category nav is desktop-only.
+    {%- endcomment -%}
+    {%- comment -%}
+      Search and actions share one wrapper so, from `lg`, they fill the right
+      column of a 1fr / auto / 1fr grid that holds the logo dead centre. Below
+      `lg` the wrapper is `display: contents` and they lay out as before.
+    {%- endcomment -%}
+    <div class="site-header__end">
+    <div class="site-header__search">
+      {%- render 'search-form',
+        input_id: 'header-search',
+        modifier: 'header',
+        predictive: true
+      -%}
+    </div>
+
+    <div class="site-header__actions">
+      {%- if shop.customer_accounts_enabled -%}
+        {%- comment -%}
+          Opens the account modal (snippets/account-modal.liquid). The href is
+          the no-JS path to the same place.
+        {%- endcomment -%}
+        {%- if customer -%}
+          <a
+            href="{{ routes.account_url }}"
+            class="site-header__action"
+            data-account-open
+            aria-haspopup="dialog"
+            aria-controls="account-modal"
+          >
+            {%- comment -%}
+              `t` is applied to the fallback only — piping the name through it
+              looks "David" up as a translation key.
+            {%- endcomment -%}
+            {%- assign account_label = 'general.accessibility.account' | t -%}
+            {{- customer.first_name | default: account_label -}}
+          </a>
+        {%- else -%}
+          <a
+            href="{{ routes.account_login_url }}"
+            class="site-header__action"
+            data-account-open
+            aria-haspopup="dialog"
+            aria-controls="account-modal"
+          >
+            {{- 'general.accessibility.account' | t -}}
+          </a>
+        {%- endif -%}
+
+        {%- liquid
+          assign wishlist_count = 0
+          if customer
+            assign wishlist_count = customer.metafields.custom.wishlist.value.size | default: 0
+          endif
+        -%}
+        <a
+          href="{{ pages.wishlist.url | default: '/pages/wishlist' }}"
+          class="site-header__action site-header__wishlist"
+        >
+          {{- 'wishlist.nav' | t -}}
+          <span class="site-header__wishlist-count" aria-hidden="true" data-wishlist-count {% if wishlist_count == 0 %}hidden{% endif %}>
+            {{- wishlist_count -}}
+          </span>
+        </a>
+      {%- endif -%}
+
+      <a href="{{ routes.cart_url }}" class="site-header__action site-header__cart" aria-label="{{ 'general.accessibility.cart' | t }}">
+        {{- 'general.accessibility.cart' | t -}}
+        {%- if cart.item_count > 0 -%}
+          <span class="site-header__cart-count" aria-hidden="true">
+            {{- cart.item_count -}}
+          </span>
+        {%- endif -%}
+      </a>
+    </div>
+    </div>
+
+  </div>
+
+  {%- comment -%}
+    Shell only. search.js fills it from the predictive-search section, so it
+    stays empty — and closed — until something has actually been typed.
+
+    Not itself a live region: every keystroke replaces the whole list, and a
+    live region here would read all of it out again each time. The count below
+    is what gets announced, and it is outside the panel so that it survives
+    being replaced — a live region has to be on the page before its text
+    changes to be announced at all.
+  {%- endcomment -%}
+  <div
+    class="site-header__search-panel"
+    id="header-search-panel"
+    aria-hidden="true"
+    data-predictive-results
+  ></div>
+
+  <p class="visually-hidden" role="status" data-predictive-status></p>
+
+  <div class="site-header__cart-panel" id="site-cart-panel" aria-hidden="true" aria-live="polite">
+    <p class="site-header__cart-panel-text">Added to cart!</p>
+  </div>
+
+  {%- if has_brands -%}
+    <div class="site-header__mega" id="header-mega" aria-hidden="true">
+      <div class="site-header__mega-inner">
+        <ul class="site-header__brands-grid">
+          {{ brands_items }}
+        </ul>
+      </div>
+    </div>
+  {%- endif -%}
+
+</header>
+
+{% schema %}
+{
+  "name": "Header",
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "menu",
+      "default": "main-menu",
+      "label": "Menu"
+    },
+    {
+      "type": "text",
+      "id": "brands_trigger",
+      "label": "Brands nav label",
+      "default": "Brands",
+      "info": "Must match the nav link text exactly — that link becomes the brands mega menu trigger"
+    }
+  ]
+}
+{% endschema %}

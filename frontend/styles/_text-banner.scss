@@ -1,0 +1,74 @@
+@use 'abstracts/mixins' as *;
+
+.text-banner {
+  // Text left, image right from `md`; stacked, text first, below it.
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+  background-color: var(--tb-bg, var(--color-bg));
+  color: var(--tb-color, var(--color-fg));
+  // No top padding — the banner sits flush against whatever precedes it.
+  // Bottom padding stays so the statement isn't crowded by the next section.
+  padding-block-start: 0;
+  // padding-block-end: var(--space-8);
+  // padding-inline: var(--site-frame);
+
+  @include respond-to('md') {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-8);
+  }
+
+  @include respond-to('lg') {
+    // padding-block-end: var(--space-12);
+  }
+}
+
+.text-banner__text {
+  // Fixed by the system, and bound to the type scale: --text-xl on mobile
+  // (a step above body copy), scaling fluidly up to --text-4xl on desktop.
+  font-size: clamp(var(--text-xl), 3vw, var(--text-4xl));
+  font-family: var(--font-heading);
+  font-weight: var(--weight-regular);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+  text-align: start;
+  overflow-wrap: break-word;
+  display: block;
+  margin: 0;
+  max-width: none; // typography.scss caps `p` at 68ch — not for display type
+}
+
+.text-banner--link {
+  text-decoration: none;
+  transition: opacity var(--transition-base);
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  // The global ring is --color-fg, which can vanish on a dark banner.
+  &:focus-visible {
+    outline-color: currentColor;
+  }
+}
+
+.text-banner__media:empty {
+  display: none; // no image yet: keep the stacked layout tight on mobile
+
+  @include respond-to('md') {
+    display: block; // …but hold the right half open from `md`
+  }
+}
+
+.text-banner__image,
+.text-banner__placeholder {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.text-banner__placeholder {
+  aspect-ratio: 4 / 3;
+  background-color: var(--color-bg-raised);
+}

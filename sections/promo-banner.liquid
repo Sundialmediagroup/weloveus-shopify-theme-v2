@@ -1,0 +1,56 @@
+{%- liquid
+  assign bg    = section.settings.background_color
+  assign color = section.settings.text_color
+  assign url   = section.settings.url
+-%}
+
+{%- if url != blank -%}
+  <a class="promo-banner" href="{{ url }}" style="--banner-bg: {{ bg }}; --banner-color: {{ color }};">
+{%- else -%}
+  <div class="promo-banner" style="--banner-bg: {{ bg }}; --banner-color: {{ color }};">
+{%- endif -%}
+
+  <span class="promo-banner__text">{{ section.settings.text }}</span>
+
+{%- if url != blank -%}
+  </a>
+{%- else -%}
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Promo Banner",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "text",
+      "label": "Text",
+      "default": "NEW COLLECTION"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background colour",
+      "default": "#3a6e28"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text colour",
+      "default": "#ffffff"
+    },
+    {
+      "type": "url",
+      "id": "url",
+      "label": "Link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Promo Banner"
+    }
+  ]
+}
+{% endschema %}

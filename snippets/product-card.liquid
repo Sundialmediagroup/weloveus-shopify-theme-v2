@@ -1,0 +1,88 @@
+{%- comment -%}
+  Renders a product card.
+
+  Accepts:
+  - product:      {Object}  Shopify product object (required)
+  - lazy:         {Boolean} Lazy-load the image. Default: true
+  - show_vendor:  {Boolean} Show vendor name. Default: true
+  - image_ratio:  {String}  CSS aspect-ratio value. Default: '1 / 1'
+  - sizes:        {String}  `sizes` attribute for the srcset. Default assumes a
+                            2 / 3 / 4 column grid. Always pass the real value
+                            when the layout differs — a card is never 100vw, and
+                            100vw is what the browser assumes when `sizes` is
+                            missing, so it downloads the 1000px source for a
+                            ~380px slot.
+{%- endcomment -%}
+
+{%- liquid
+  # allow_false — without it `lazy: false` falls through to the default and
+  # every card lazy-loads, including the one that is the LCP element.
+  assign lazy         = lazy        | default: true, allow_false: true
+  assign show_vendor  = show_vendor | default: true
+  assign image_ratio  = image_ratio | default: '1 / 1'
+  assign card_sizes   = sizes       | default: '(min-width: 990px) 25vw, (min-width: 640px) 33vw, 50vw'
+
+  if lazy
+    assign loading_attr = 'lazy'
+  else
+    assign loading_attr = 'eager'
+  endif
+
+  assign card_image = product.featured_image
+  assign image_alt = card_image.alt | default: product.title | escape
+-%}
+
+<a class="product-card" href="{{ product.url }}" aria-label="{{ product.title | escape }}">
+
+  <div class="product-card__media" style="--card-ratio: {{ image_ratio }};">
+    {%- comment -%}
+      Quick-add only where there is genuinely nothing to choose. For a
+      multi-variant product, adding an arbitrary size or colour is a returns
+      problem, so the card falls through to its link and the PDP handles it.
+    {%- endcomment -%}
+    {%- assign first_variant = product.first_available_variant -%}
+    {%- if product.has_only_default_variant and first_variant != blank -%}
+      <span
+        class="product-card__add-sticker"
+        data-add-to-cart="{{ first_variant.id }}"
+        role="button"
+        aria-label="Add {{ product.title | escape }} to cart"
+      >Add to<br>Cart</span>
+    {%- endif -%}
+    {%- render 'wishlist-button', product: product, context: 'card' -%}
+    {%- if card_image != blank -%}
+      {{
+        card_image
+        | image_url: width: 1000
+        | image_tag:
+          class: 'product-card__image',
+          alt: image_alt,
+          loading: loading_attr,
+          sizes: card_sizes,
+          widths: '200, 300, 400, 600, 800, 1000',
+          width: card_image.width,
+          height: card_image.height
+      }}
+    {%- else -%}
+      <div class="product-card__placeholder">
+        {{ 'product-1' | placeholder_svg_tag }}
+      </div>
+    {%- endif -%}
+  </div>
+
+  <div class="product-card__info">
+    {%- if show_vendor and product.vendor != blank -%}
+      <p class="product-card__vendor">{{ product.vendor }}</p>
+    {%- endif -%}
+    <h3 class="product-card__title">{{ product.title }}</h3>
+    <div class="product-card__price">
+      {%- if product.compare_at_price > product.price -%}
+        <span class="product-card__price-sale">{{ product.price | money }}</span>
+        <s class="product-card__price-compare">{{ product.compare_at_price | money }}</s>
+      {%- else -%}
+        <span class="product-card__price-regular">{{ product.price | money }}</span>
+      {%- endif -%}
+    </div>
+  </div>
+
+</a>

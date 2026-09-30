@@ -1,0 +1,11 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-search",
+      "settings": {
+        "columns_desktop": 5
+      }
+    }
+  },
+  "order": ["main"]
+}

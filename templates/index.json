@@ -1,0 +1,211 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "text_banner_3VYwnE": {
+      "type": "text-banner",
+      "name": "Text Banner",
+      "settings": {
+        "text": "Where Community Meets Commerce. This platform transforms love into economic action by investing in the creators and founders who shape our world.\n\nA marketplace of over 125 Black-owned brands, backed by ESSENCE.",
+        "background_color": "#ffffff",
+        "text_color": "#0a0a0a",
+        "url": "",
+        "image": "shopify://shop_images/Untitled_design_1.jpg"
+      }
+    },
+    "feature_carousel_dwX8We": {
+      "type": "feature-carousel",
+      "blocks": {
+        "feature_MfBtDC": {
+          "type": "feature",
+          "settings": {
+            "collection": "zernell-gillie-fragrances",
+            "image": "shopify://shop_images/zernell-gillie-jazz-unisex-perfume-30ml-luxury-packaging.jpg",
+            "title": "",
+            "url": "",
+            "background_color": ""
+          }
+        },
+        "feature_UL6zLr": {
+          "type": "feature",
+          "settings": {
+            "collection": "lina-lennox",
+            "title": "",
+            "url": "",
+            "background_color": ""
+          }
+        },
+        "feature_bYqUfF": {
+          "type": "feature",
+          "settings": {
+            "collection": "de-lor-cakery",
+            "image": "shopify://shop_images/3783593E-10A4-4DF2-A6FB-34B7B97CF65A.jpg",
+            "title": "",
+            "url": "",
+            "background_color": ""
+          }
+        },
+        "feature_QAyxC6": {
+          "type": "feature",
+          "settings": {
+            "collection": "abeille-creations",
+            "image": "shopify://shop_images/Founder_Melissa_Mitchelll_wearing_her_Abeille_Creations.jpg",
+            "title": "",
+            "url": "",
+            "background_color": ""
+          }
+        },
+        "feature_bPz4w6": {
+          "type": "feature",
+          "settings": {
+            "collection": "puzzles-of-color",
+            "title": "",
+            "url": "",
+            "background_color": ""
+          }
+        }
+      },
+      "block_order": [
+        "feature_MfBtDC",
+        "feature_UL6zLr",
+        "feature_bYqUfF",
+        "feature_QAyxC6",
+        "feature_bPz4w6"
+      ],
+      "name": "Feature Carousel",
+      "settings": {
+        "heading": "Founders We Love",
+        "cards_desktop": 4,
+        "cards_mobile": "1",
+        "overhang": 80
+      }
+    },
+    "product-carousel": {
+      "type": "product-carousel",
+      "settings": {
+        "heading": "Homecoming Season",
+        "collection": "homecoming-season",
+        "products_to_show": 12,
+        "cards_desktop": 3,
+        "cards_mobile": 1,
+        "overhang": 80
+      }
+    },
+    "word_map_JM8c34": {
+      "type": "word-map",
+      "name": "Word Map",
+      "settings": {
+        "menu": "category-menu",
+        "heading": "",
+        "show_images": true
+      }
+    },
+    "video-section": {
+      "type": "video-section",
+      "disabled": true,
+      "settings": {
+        "video_url": "x9z9s22",
+        "title": "Focus on Founders",
+        "autoplay": false,
+        "background_color": "#000000",
+        "text_color": "#ffffff"
+      }
+    },
+    "product-carousel-2": {
+      "type": "product-carousel",
+      "settings": {
+        "heading": "Nicole Zïzi Studio",
+        "collection": "nicole-zizi-studio",
+        "products_to_show": 12,
+        "cards_desktop": 5,
+        "cards_mobile": 1,
+        "overhang": 80
+      }
+    },
+    "featured-section": {
+      "type": "featured-section",
+      "settings": {
+        "background_color": "#8b2a2a",
+        "text_color": "#ffffff",
+        "image": "shopify://shop_images/0D9A8550.png",
+        "eyebrow": "Featured",
+        "heading": "Shop The Father's Day Collection Today. It's gonna be great!",
+        "body": "The art, films, and more that have informed the work of the creative director whose resume includes Hailey Bieber’s Rhode, Khaite, and Hermés."
+      }
+    },
+    "product-carousel-5": {
+      "type": "product-carousel",
+      "settings": {
+        "heading": "Food & Drinks",
+        "collection": "food-beverage",
+        "products_to_show": 12,
+        "cards_desktop": 5,
+        "cards_mobile": 1,
+        "overhang": 80
+      }
+    },
+    "product-grid": {
+      "type": "product-grid",
+      "settings": {
+        "heading": "Recently Added",
+        "collection": "recently-added",
+        "products_to_show": 12,
+        "columns_desktop": 4
+      }
+    },
+    "product-carousel-3": {
+      "type": "product-carousel",
+      "settings": {
+        "heading": "For the Home",
+        "collection": "home-living",
+        "products_to_show": 12,
+        "cards_desktop": 5,
+        "cards_mobile": 1,
+        "overhang": 80
+      }
+    },
+    "featured-section-2": {
+      "type": "featured-section",
+      "settings": {
+        "background_color": "#688b2a",
+        "text_color": "#ffffff",
+        "image": "shopify://shop_images/0D9A8550.png",
+        "eyebrow": "Featured",
+        "heading": "Find Your Style",
+        "body": "Browse our curated collections and discover the perfect pieces for you. You're gonna love it!"
+      }
+    },
+    "product-carousel-4": {
+      "type": "product-carousel",
+      "settings": {
+        "heading": "Food & Drink",
+        "collection": "coffees-teas-treats",
+        "products_to_show": 12,
+        "cards_desktop": 5,
+        "cards_mobile": 1,
+        "overhang": 80
+      }
+    }
+  },
+  "order": [
+    "text_banner_3VYwnE",
+    "feature_carousel_dwX8We",
+    "product-carousel",
+    "word_map_JM8c34",
+    "video-section",
+    "product-carousel-2",
+    "featured-section",
+    "product-carousel-5",
+    "product-grid",
+    "product-carousel-3",
+    "featured-section-2",
+    "product-carousel-4"
+  ]
+}

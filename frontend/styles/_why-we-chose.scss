@@ -1,0 +1,28 @@
+@use 'abstracts/mixins' as *;
+
+// A hairline rule and the same 5/7 columns as creator-profile: the heading
+// sits in the narrow track opposite the copy, so the two sections stack into
+// one editorial spread rather than two unrelated blocks.
+.why-we-chose {
+  border-block-start: 1px solid var(--color-border);
+  padding-block-start: var(--space-8);
+
+  @include respond-to('lg') {
+    display: grid;
+    grid-template-columns: 5fr 7fr;
+    gap: var(--space-12);
+    padding-block-start: var(--space-12);
+  }
+}
+
+.why-we-chose__heading {
+  margin-bottom: var(--space-4);
+
+  @include respond-to('lg') {
+    margin-bottom: 0;
+  }
+}
+
+.why-we-chose__body {
+  max-width: 60ch;
+}

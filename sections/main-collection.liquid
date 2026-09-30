@@ -1,0 +1,212 @@
+{%- liquid
+  assign default_sort = settings.collection_default_sort | default: 'best-selling'
+  # All products leads with what is new; every other collection keeps the store
+  # default. The sidebar is handed both so its own "All products" link agrees.
+  assign all_sort = settings.collection_all_default_sort | default: 'created-descending'
+  assign page_default_sort = default_sort
+  if collection.handle == 'all'
+    assign page_default_sort = all_sort
+  endif
+
+  # Cards sit in a 2 / 3 / N column grid (see _main-collection.scss). Without a
+  # `sizes` hint the browser assumes 100vw and picks the 1000px source for what
+  # is really a ~380px slot — multiplied across a full collection that is the
+  # single largest cost on this page.
+  assign columns = section.settings.columns_desktop | default: 4
+  assign desktop_vw = 100 | divided_by: columns
+  assign card_sizes = '(min-width: 990px) ' | append: desktop_vw | append: 'vw, (min-width: 640px) 33vw, 50vw'
+-%}
+
+{%- comment -%}
+  Fallback default sort.
+
+  Every link the theme controls — the category sidebar, the sort menu, the
+  header brand menu — already carries `sort_by`, so this only fires for entries
+  that cannot: bookmarks, external links, search results. Keeping it off the
+  navigation path is the whole point. A redirect here costs a second full
+  server render and a second full paint of the grid, which is what made
+  switching categories feel slow.
+
+  Rewriting via URL preserves any other query parameters (`page`, filters, utm
+  tags); the previous `pathname + '?sort_by='` discarded them.
+{%- endcomment -%}
+<script>
+  if (!/[?&]sort_by=/.test(window.location.search)) {
+    var url = new URL(window.location.href);
+    url.searchParams.set('sort_by', {{ page_default_sort | json }});
+    window.location.replace(url.toString());
+  }
+</script>
+
+{%- comment -%}
+  Warm the next category before it is clicked. `moderate` eagerness fetches on
+  hover / touch-start, so by the time the click lands the HTML is usually
+  already in cache. Prefetch, not prerender: it costs no JS execution on the
+  target page and so cannot double-count analytics.
+
+  Matched by CSS selector rather than `href_matches`: these links now carry a
+  `sort_by` query string, and a URLPattern written as a bare path is not
+  dependable about matching one. The selector also keeps prefetching to the two
+  category menus instead of every collection link on the page.
+
+  Chromium-only today; everywhere else it is silently ignored and navigation
+  behaves exactly as before.
+{%- endcomment -%}
+<script type="speculationrules">
+  {
+    "prefetch": [
+      {
+        "source": "document",
+        "where": {
+          "selector_matches": ".collection-sidebar a, .site-header__brands-grid a"
+        },
+        "eagerness": "moderate"
+      }
+    ]
+  }
+</script>
+
+{%- comment -%}
+  Products arrive a page at a time: the first page is server-rendered, and
+  main-collection.js appends the rest as the shopper scrolls, fetching each
+  page through the Section Rendering API. The "Load more" link is a real
+  `?page=` URL, so without JS — and for crawlers — every product stays
+  reachable by plain pagination.
+{%- endcomment -%}
+{%- paginate collection.products by section.settings.products_per_page -%}
+
+<collection-page>
+
+  <div class="collection-layout">
+
+    {%- comment -%}
+      Below `lg` each menu is a <details> dropdown, the two side by side at the
+      top of the page; `name` makes them exclusive, so opening one closes the
+      other. From `lg` the summaries go and the menus show in full as the
+      sidebar (see _main-collection.scss) — the same markup, no script either way.
+    {%- endcomment -%}
+    {%- capture sidebar_html -%}
+      {%- render 'collection-sidebar', default_sort: default_sort, all_sort: all_sort -%}
+    {%- endcapture -%}
+    <div class="collection-aside">
+      {%- if sidebar_html != blank -%}
+        <details class="collection-filter" name="collection-filter">
+          <summary class="collection-filter__summary">
+            <span>{{ 'sections.collection.sidebar_label' | t }}</span>
+            {%- render 'icon', name: 'chevron' -%}
+          </summary>
+          <div class="collection-filter__panel">{{ sidebar_html }}</div>
+        </details>
+      {%- endif -%}
+      <details class="collection-filter" name="collection-filter">
+        <summary class="collection-filter__summary">
+          <span>{{ 'sections.collection.sort_label' | t }}</span>
+          {%- render 'icon', name: 'chevron' -%}
+        </summary>
+        <div class="collection-filter__panel">
+          {%- render 'collection-sort' -%}
+        </div>
+      </details>
+    </div>
+
+    <div class="collection-layout__main">
+
+      <header class="collection-header">
+        <h1>{{ collection.title }}</h1>
+        {%- if collection.description != blank -%}
+          <div class="collection-header__meta">
+            <p class="collection-header__description">{{ collection.description }}</p>
+          </div>
+        {%- endif -%}
+      </header>
+
+      <div
+        class="collection-products"
+        style="--columns-desktop: {{ section.settings.columns_desktop }};"
+        data-collection-grid
+      >
+        {%- for product in collection.products -%}
+          {%- liquid
+            # `render` takes values, not expressions, so the comparison has to
+            # resolve to a variable before it is passed down. Only the first
+            # rows of the first page are above the fold; appended pages are
+            # always lazy.
+            assign lazy_card = true
+            if paginate.current_page == 1 and forloop.index <= 8
+              assign lazy_card = false
+            endif
+          -%}
+          {%- render 'product-card', product: product, lazy: lazy_card, sizes: card_sizes -%}
+        {%- endfor -%}
+      </div>
+
+      {%- liquid
+        assign shown_count = paginate.current_offset | plus: collection.products.size
+      -%}
+      <div class="main-collection__more" data-collection-more>
+        <p class="visually-hidden" role="status" data-collection-status></p>
+        {%- if paginate.next -%}
+          <a
+            class="btn btn--secondary"
+            href="{{ paginate.next.url }}"
+            data-collection-next
+            data-section-id="{{ section.id }}"
+            data-auto-pages="{{ section.settings.auto_pages }}"
+            data-text-loading="{{ 'sections.collection.loading' | t | escape }}"
+            data-text-error="{{ 'sections.collection.load_error' | t | escape }}"
+          >
+            {{- 'sections.collection.load_more' | t -}}
+          </a>
+        {%- endif -%}
+        <p class="main-collection__count" data-collection-count>
+          {{- 'sections.collection.showing' | t: count: shown_count, total: collection.products_count -}}
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+</collection-page>
+
+{%- endpaginate -%}
+
+{% schema %}
+{
+  "name": "Collection",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Default sort order is a theme setting (Settings → Collection), because the sidebar and header menus have to build the same value into their links."
+    },
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "min": 12,
+      "max": 48,
+      "step": 4,
+      "default": 24,
+      "label": "Products per load",
+      "info": "Loaded again each time the shopper nears the bottom. A multiple of the column count keeps rows full."
+    },
+    {
+      "type": "range",
+      "id": "auto_pages",
+      "min": 0,
+      "max": 10,
+      "step": 1,
+      "default": 3,
+      "label": "Automatic loads before \"Load more\"",
+      "info": "After this many loads the shopper clicks to continue, so the footer stays reachable. 0 always needs a click."
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 4,
+      "label": "Columns (desktop)"
+    }
+  ]
+}
+{% endschema %}

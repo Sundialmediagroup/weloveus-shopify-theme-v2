@@ -1,0 +1,84 @@
+{%- comment -%}
+  Account modal — sign in, or jump to account pages, without leaving the site.
+
+  Rendered once by layout/theme.liquid and opened by anything carrying
+  `data-account-open` (the header Account link, the wishlist page prompt) and by
+  wishlist.js when a logged-out shopper taps a heart.
+
+  Signing in: `shop | login_button` renders Shopify's <shop-login-button>, which
+  signs the customer in over the page and fires `completed` — account-modal.js
+  reloads so the page renders as the logged-in customer. The email-code login
+  and the order/profile pages are hosted by Shopify and refuse to be framed, so
+  those stay links out; the fallback link carries a return_url back here.
+
+  Takes no arguments.
+{%- endcomment -%}
+
+{%- if shop.customer_accounts_enabled -%}
+  {%- liquid
+    if customer and customer.first_name != blank
+      assign modal_title = 'account.title_personalized' | t: first_name: customer.first_name
+    else
+      assign modal_title = 'account.title' | t
+    endif
+  -%}
+
+  <dialog
+    class="account-modal"
+    id="account-modal"
+    aria-labelledby="account-modal-title"
+    data-account-modal
+  >
+    <div class="account-modal__panel stack">
+
+      <header class="account-modal__header">
+        <h2 class="account-modal__title" id="account-modal-title">{{ modal_title }}</h2>
+        {%- if customer -%}
+          <p class="account-modal__email">{{ customer.email | default: customer.phone }}</p>
+        {%- else -%}
+          <p class="account-modal__intro">{{ 'account.intro' | t }}</p>
+        {%- endif -%}
+      </header>
+
+      <button
+        class="account-modal__close"
+        type="button"
+        data-account-close
+        aria-label="{{ 'account.close' | t | escape }}"
+      >
+        {%- render 'icon', name: 'close' -%}
+      </button>
+
+      {%- if customer -%}
+        <nav class="account-modal__nav" aria-label="{{ 'general.accessibility.account' | t | escape }}">
+          <ul class="account-modal__list stack">
+            <li><a class="btn btn--secondary account-modal__link" href="{{ routes.account_url }}">{{ 'account.orders' | t }}</a></li>
+            <li><a class="btn btn--secondary account-modal__link" href="{{ routes.account_addresses_url }}">{{ 'account.profile' | t }}</a></li>
+            <li><a class="btn btn--secondary account-modal__link" href="{{ pages.wishlist.url | default: '/pages/wishlist' }}">{{ 'wishlist.nav' | t }}</a></li>
+          </ul>
+        </nav>
+
+        <a class="btn btn--ghost account-modal__link" href="{{ routes.account_logout_url }}">{{ 'account.log_out' | t }}</a>
+      {%- else -%}
+        <div class="account-modal__sign-ins stack">
+          <div class="account-modal__shop-login" data-account-shop-login>
+            {{- shop | login_button -}}
+          </div>
+
+          {%- comment -%}
+            Labelled "Sign in with email" when the Shop button rendered, plain
+            "Log in" when it did not (Shop login off, or classic accounts) —
+            account-modal.js picks between the two.
+          {%- endcomment -%}
+          <a
+            class="btn btn--primary account-modal__link"
+            href="{{ routes.account_login_url }}"
+            data-account-login-link
+            data-text-alternate="{{ 'account.sign_in_options' | t | escape }}"
+          >{{ 'account.log_in' | t }}</a>
+        </div>
+      {%- endif -%}
+
+    </div>
+  </dialog>
+{%- endif -%}

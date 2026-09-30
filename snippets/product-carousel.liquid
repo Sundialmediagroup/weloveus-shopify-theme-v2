@@ -1,0 +1,117 @@
+{%- comment -%}
+  Horizontal product slider.
+
+  The markup was duplicated across the carousel, recommendations and PDP
+  sections; it lives here so all of them scroll, peek and label identically.
+
+  Nothing at all renders unless at least one card survives the exclusions —
+  heading and arrows included. They used to be emitted before the loop ran, so
+  a slider whose every candidate was excluded left a heading and a pair of dead
+  arrows over an empty track.
+
+  Accepts:
+    products       {Array}  Products to render. Required unless `items` is given —
+                            nothing renders if empty.
+    items          {String} Pre-rendered slides, each already wrapped in
+                            .product-carousel__item. Replaces `products`, so
+                            non-product sliders (feature-carousel) share the
+                            same track, arrows and peek.
+    heading        {String} Optional heading above the track.
+    heading_id     {String} Required when `heading` is set — labels the region.
+    limit          {Number} Max cards. Defaults to every product given.
+    cards_desktop  {Number} Cards in view at `lg`. Default 4.
+    cards_mobile   {Number} Cards in view below `lg`. Default 2.
+    overhang       {Number} Pixels of the next card left visible. Default 60.
+    eager          {Number} How many leading images to load eagerly. Default 0,
+                            which is right for anything below the fold.
+    exclude_id     {Number} Product id to skip — the PDP passes the product
+                            being viewed so it cannot recommend itself.
+    exclude_vendor {String} Vendor to skip. The PDP passes the current brand so
+                            "More like this" cannot repeat the brand slider
+                            sitting directly above it. Ignored when blank.
+{%- endcomment -%}
+
+{%- liquid
+  # Coerced so a caller passing nothing cannot fail the `> 0` guard below.
+  assign product_count = products.size | plus: 0
+  assign carousel_limit = limit | default: product_count
+  assign carousel_eager = eager | default: 0
+  assign cards_lg = cards_desktop | default: 4
+  assign cards_sm = cards_mobile | default: 2
+  assign peek = overhang | default: 60
+-%}
+
+{%- comment -%}
+  Cards are built first and the wrapper only follows if any were built.
+  Counted manually rather than with `limit:` — the excluded product would
+  otherwise eat one of the slots and leave the slider a card short. `break`
+  keeps the loop from walking a whole large collection.
+{%- endcomment -%}
+{%- if items != blank -%}
+  {%- assign carousel_items = items -%}
+{%- else -%}
+{%- capture carousel_items -%}
+  {%- assign shown = 0 -%}
+  {%- for item in products -%}
+    {%- if shown >= carousel_limit -%}{%- break -%}{%- endif -%}
+    {%- liquid
+      assign skip = false
+      if exclude_id and item.id == exclude_id
+        assign skip = true
+      endif
+      # Blank-vendor products are common in this catalogue, so an empty
+      # exclude_vendor must not quietly match all of them.
+      if exclude_vendor != blank and item.vendor == exclude_vendor
+        assign skip = true
+      endif
+    -%}
+    {%- unless skip -%}
+      {%- assign shown = shown | plus: 1 -%}
+      <div class="product-carousel__item">
+        {%- assign is_lazy = true -%}
+        {%- if shown <= carousel_eager -%}
+          {%- assign is_lazy = false -%}
+        {%- endif -%}
+        {%- render 'product-card', product: item, lazy: is_lazy -%}
+      </div>
+    {%- endunless -%}
+  {%- endfor -%}
+{%- endcapture -%}
+{%- endif -%}
+
+{%- if carousel_items != blank -%}
+  <product-carousel
+    class="product-carousel"
+    style="--cards-desktop: {{ cards_lg }}; --cards-mobile: {{ cards_sm }}; --overhang: {{ peek }}px;"
+    {% if heading != blank %}aria-labelledby="{{ heading_id }}"{% endif %}
+  >
+
+    <div class="product-carousel__header">
+      {%- if heading != blank -%}
+        <h2 class="product-carousel__heading" id="{{ heading_id }}">{{ heading }}</h2>
+      {%- endif -%}
+      <div class="product-carousel__controls">
+        <button
+          class="product-carousel__btn product-carousel__btn--prev"
+          type="button"
+          aria-label="{{ 'products.product.media_previous' | t }}"
+          disabled
+        >
+          {%- render 'icon', name: 'chevron-left' -%}
+        </button>
+        <button
+          class="product-carousel__btn product-carousel__btn--next"
+          type="button"
+          aria-label="{{ 'products.product.media_next' | t }}"
+        >
+          {%- render 'icon', name: 'chevron-right' -%}
+        </button>
+      </div>
+    </div>
+
+    <div class="product-carousel__track">
+      {{ carousel_items }}
+    </div>
+
+  </product-carousel>
+{%- endif -%}

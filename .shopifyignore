@@ -1,0 +1,13 @@
+node_modules/*
+frontend/*
+wishlist-proxy/*
+assets/.vite/*
+vite.config.js
+package.json
+package-lock.json
+.DS_Store
+*.log
+*.tmp.*
+templates/gift_card.liquid
+DESIGN.md
+snippets/vite-tag.liquid

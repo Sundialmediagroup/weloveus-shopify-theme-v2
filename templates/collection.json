@@ -1,0 +1,24 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-collection",
+      "settings": {
+        "columns_desktop": 5
+      }
+    },
+    "creator_profile": {
+      "type": "creator-profile",
+      "settings": {
+        "label": "The Creator",
+        "link_label": "Follow"
+      }
+    },
+    "why_we_chose": {
+      "type": "why-we-chose",
+      "settings": {
+        "heading": "Why We Chose Them"
+      }
+    }
+  },
+  "order": ["main", "creator_profile", "why_we_chose"]
+}

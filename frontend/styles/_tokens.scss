@@ -1,0 +1,231 @@
+@use 'abstracts/mixins' as *;
+
+// Design tokens as CSS custom properties.
+// These are the single source of truth for the visual system.
+// Override on a scoped selector (e.g. [data-theme="dark"]) for theming.
+
+:root {
+  // ─── Color ─────────────────────────────────────────────────────────────────
+
+  // Primitive neutral scale
+  --color-neutral-0:   #ffffff;
+  --color-neutral-50:  #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e5e5e5;
+  --color-neutral-300: #d4d4d4;
+  --color-neutral-400: #a3a3a3;
+  --color-neutral-500: #737373;
+  --color-neutral-600: #525252;
+  --color-neutral-700: #404040;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #171717;
+  --color-neutral-950: #0a0a0a;
+
+  // Primitive brand palette — from the brand guidelines. Like the neutral
+  // scale, never used directly in components: map a semantic token below.
+  --color-brand-teal:    #049AAC;   // rgb(4 154 172)
+  --color-brand-red:     #D9312B;   // rgb(217 49 43)
+  --color-brand-plum:    #630056;   // rgb(99 0 86)
+  --color-brand-cream:   #F2E5B2;   // rgb(242 229 178)
+  --color-brand-sand:    #C2AC88;   // rgb(194 172 136)
+  --color-brand-green:   #00795D;   // rgb(0 121 93)
+
+  // Semantic surface colors
+  --color-bg:            var(--color-neutral-0);
+  --color-bg-nav:        #DCA53B;
+  --color-bg-header:     var(--color-brand-cream);   // header bar and the panels that drop from it
+  --color-bg-feature:    var(--color-brand-sand);    // feature card text panels
+  --color-bg-highlight:  var(--color-brand-green);   // standout panels; pair with --color-fg-inverted
+  --color-bg-inverted:   var(--color-neutral-950);   // black panels; pair with --color-fg-inverted
+  --color-bg-footer:     var(--color-bg-inverted);
+  --color-bg-subtle:     var(--color-neutral-50);
+  --color-bg-raised:     var(--color-neutral-100);
+  --color-scrim:         rgb(0 0 0 / 0.5);   // behind modals and overlays
+
+  // Semantic text colors
+  --color-fg:            var(--color-neutral-950);
+  --color-fg-muted:      var(--color-neutral-500);
+  --color-fg-subtle:     var(--color-neutral-400);
+  --color-fg-inverted:   var(--color-neutral-0);
+  --color-fg-highlight:  var(--color-brand-cream);   // emphasis on --color-bg-highlight
+
+  // Semantic border colors
+  --color-border:        var(--color-neutral-200);
+  --color-border-strong: var(--color-neutral-300);
+
+  // Interactive
+  --color-link:          var(--color-neutral-950);
+  --color-link-hover:    var(--color-neutral-600);
+
+  // Accent (primary brand action)
+  --color-accent:        var(--color-neutral-950);
+  --color-accent-fg:     var(--color-neutral-0);
+  --color-accent-hover:  var(--color-neutral-800);
+
+  // Secondary brand colour
+  --color-secondary:       var(--color-brand-plum);
+  --color-secondary-fg:    #ffffff;
+  --color-secondary-hover: #4d0043;
+
+  // Feedback states
+  --color-success:       #16a34a;
+  --color-success-bg:    #f0fdf4;
+  --color-error:         #dc2626;
+  --color-error-bg:      #fef2f2;
+  --color-warning:       #d97706;
+  --color-warning-bg:    #fffbeb;
+  --color-info:          #2563eb;
+  --color-info-bg:       #eff6ff;
+
+  // ─── Spacing ────────────────────────────────────────────────────────────────
+  // Base unit: 4px (0.25rem). Numeric suffix = number of units.
+
+  --space-px:  1px;
+  --space-0:   0;
+  --space-1:   0.25rem;   // 4px
+  --space-2:   0.5rem;    // 8px
+  --space-3:   0.75rem;   // 12px
+  --space-4:   1rem;      // 16px
+  --space-5:   1.25rem;   // 20px
+  --space-6:   1.5rem;    // 24px
+  --space-8:   2rem;      // 32px
+  --space-10:  2.5rem;    // 40px
+  --space-12:  3rem;      // 48px
+  --space-16:  4rem;      // 64px
+  --space-20:  5rem;      // 80px
+  --space-24:  6rem;      // 96px
+  --space-32:  8rem;      // 128px
+  --space-40:  10rem;     // 160px
+  --space-48:  12rem;     // 192px
+
+  // ─── Typography ─────────────────────────────────────────────────────────────
+
+  // Families — Söhne as primary, Shopify font picker can still override via css-variables.liquid
+  --font-heading: 'Sohne', 'Helvetica Neue', helvetica, arial, sans-serif;
+  --font-body:    'Sohne', 'Helvetica Neue', helvetica, arial, sans-serif;
+  --font-mono:    ui-monospace, 'SF Mono', 'Fira Code', monospace;
+
+  // Type scale
+  --text-2xs:  0.6875rem;  // 11px
+  --text-xs:   0.75rem;    // 12px
+  --text-sm:   0.875rem;   // 14px
+  --text-base: 1rem;       // 16px
+  --text-lg:   1.125rem;   // 18px
+  --text-xl:   1.25rem;    // 20px
+  --text-2xl:  1.5rem;     // 24px
+  --text-3xl:  1.875rem;   // 30px
+  --text-4xl:  2.25rem;    // 36px
+  --text-5xl:  3rem;       // 48px
+  --text-6xl:  3.75rem;    // 60px
+  --text-7xl:  4.5rem;     // 72px
+  --text-8xl:  6rem;       // 96px
+  --text-9xl:  8rem;       // 128px — display only (word-map)
+
+  // Line heights
+  --leading-none:    1;
+  --leading-tight:   1.25;
+  --leading-snug:    1.375;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose:   2;
+
+  // Letter spacing
+  --tracking-tighter: -0.05em;
+  --tracking-tight:   -0.025em;
+  --tracking-normal:  0em;
+  --tracking-wide:    0.025em;
+  --tracking-wider:   0.05em;
+  --tracking-widest:  0.1em;
+
+  // Weights
+  --weight-thin:       100;
+  --weight-extralight: 200;
+  --weight-light:      300;
+  --weight-regular:    400;
+  --weight-medium:     500;
+  --weight-semibold:   600;
+  --weight-bold:       700;
+  --weight-extrabold:  800;
+  --weight-black:      900;
+
+  // ─── Border Radius ──────────────────────────────────────────────────────────
+
+  --radius-none: 0;
+  --radius-xs:   0.125rem;  // 2px
+  --radius-sm:   0.25rem;   // 4px
+  --radius-md:   0.375rem;  // 6px
+  --radius-lg:   0.5rem;    // 8px
+  --radius-xl:   0.75rem;   // 12px
+  --radius-2xl:  1rem;      // 16px
+  --radius-full: 9999px;
+
+  // ─── Shadows ────────────────────────────────────────────────────────────────
+
+  --shadow-xs:    0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm:    0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md:    0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg:    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl:    0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl:   0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+  --shadow-none:  none;
+
+  // ─── Z-index Layers ─────────────────────────────────────────────────────────
+
+  --z-below:    -1;
+  --z-base:      0;
+  --z-raised:   10;
+  --z-dropdown: 100;
+  --z-sticky:   200;
+  --z-overlay:  300;
+  --z-modal:    400;
+  --z-popover:  450;
+  --z-toast:    500;
+
+  // ─── Motion ─────────────────────────────────────────────────────────────────
+
+  --ease-linear:  linear;
+  --ease-in:      cubic-bezier(0.4, 0, 1, 1);
+  --ease-out:     cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out:  cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring:  cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  --duration-fast:   100ms;
+  --duration-base:   200ms;
+  --duration-slow:   300ms;
+  --duration-slower: 500ms;
+
+  --transition-fast:   var(--duration-fast) var(--ease-out);
+  --transition-base:   var(--duration-base) var(--ease-out);
+  --transition-slow:   var(--duration-slow) var(--ease-out);
+
+  // ─── Layout ─────────────────────────────────────────────────────────────────
+
+  --page-width:    100%;
+  --page-gutter:   0px;
+  --site-frame:    var(--space-3);    // 12px on phones, 20px from `md` (below)
+  --grid-cols:     12;
+  --grid-gap:      var(--site-frame); // carousels and card grids — follows the frame
+
+  // Populated by JS after first paint
+  --header-height: 0px;
+}
+
+// Honor reduced-motion preference — zero durations, keep easing curves
+// The frame widens once there is room for it. Everything that uses it — the
+// body inset, the gap under the header, the header and footer side padding —
+// moves with it.
+:root {
+  @include respond-to('md') {
+    --site-frame: var(--space-5); // 20px
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast:   0ms;
+    --duration-base:   0ms;
+    --duration-slow:   0ms;
+    --duration-slower: 0ms;
+  }
+}

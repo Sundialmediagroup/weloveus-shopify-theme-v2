@@ -1,0 +1,90 @@
+@use 'sass:map';
+@use 'sass:math';
+@use 'variables' as *;
+
+// Respond to a named breakpoint (mobile-first, min-width)
+@mixin respond-to($bp) {
+  $value: map.get($breakpoints, $bp);
+
+  @if $value == null {
+    @error "Unknown breakpoint `#{$bp}`. Available: #{map.keys($breakpoints)}";
+  }
+
+  @media (min-width: #{$value}) {
+    @content;
+  }
+}
+
+// Respond below a named breakpoint (desktop-first, max-width)
+@mixin respond-below($bp) {
+  $value: map.get($breakpoints, $bp);
+
+  @if $value == null {
+    @error "Unknown breakpoint `#{$bp}`. Available: #{map.keys($breakpoints)}";
+  }
+
+  @media (max-width: #{$value - 1px}) {
+    @content;
+  }
+}
+
+// Centered container with max-width and gutters
+@mixin container {
+  width: 100%;
+  max-width: var(--page-width);
+  margin-inline: auto;
+  padding-inline: var(--page-gutter);
+}
+
+// Visually hidden but accessible to screen readers
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+// Single-line text truncation with ellipsis
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Trims the space above the first line's capitals, so the top of the text
+// lines up with the top of whatever sits beside it (an image, another column)
+// instead of floating half a line-gap lower.
+@mixin trim-to-cap {
+  text-box: trim-start cap alphabetic;
+
+  // No text-box yet (Firefox): pull the line up by roughly the space above
+  // its capitals — half of what the line box has beyond the cap height.
+  @supports not (text-box: trim-start cap alphabetic) {
+    margin-block-start: calc((1cap - 1lh) / 2);
+  }
+}
+
+// Multi-line text clamp
+@mixin line-clamp($lines) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// Fluid type — scales smoothly between two sizes across the viewport range.
+// Usage: @include fluid-type(1rem, 1.5rem)
+@mixin fluid-type($min-size, $max-size, $min-vw: 375px, $max-vw: 1440px) {
+  $slope: math.div($max-size - $min-size, $max-vw - $min-vw);
+  $y-intercept: $min-size - ($slope * $min-vw);
+  font-size: clamp(
+    #{$min-size},
+    #{$slope * 100vw} + #{$y-intercept},
+    #{$max-size}
+  );
+}

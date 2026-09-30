@@ -1,0 +1,11 @@
+// Wishlist page — sections/main-wishlist.liquid.
+// Header and grid come from _main-collection.scss (.collection-header,
+// .collection-products), so the page reads as a collection.
+
+.main-wishlist__empty {
+  --stack-gap: var(--space-4);
+
+  align-items: flex-start;
+  padding-block: var(--space-8);
+  color: var(--color-fg-muted);
+}

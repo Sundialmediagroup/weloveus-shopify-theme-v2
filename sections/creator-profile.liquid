@@ -1,0 +1,104 @@
+{%- comment -%}
+  Creator profile for a brand collection page.
+
+  Content comes from collection metafields rather than section settings.
+  templates/collection.json is shared by every collection, so copy typed into
+  the theme editor would appear identically on all of them — the metafields
+  keep each brand's creator attached to that brand.
+
+  Collection metafields (namespace `custom`):
+  - creator_name      Single line text
+  - creator_role      Single line text
+  - creator_portrait  File reference (must accept images)
+  - creator_bio       Rich text
+  - creator_link      URL
+
+  Renders nothing when there is no name and no bio, so this is safe to leave on
+  the shared collection template — non-brand collections simply skip it.
+{%- endcomment -%}
+
+{%- liquid
+  assign cm       = collection.metafields.custom
+  assign name     = cm.creator_name.value
+  assign role     = cm.creator_role.value
+  assign portrait = cm.creator_portrait.value
+  assign bio      = cm.creator_bio
+  assign link     = cm.creator_link.value
+  assign img_alt  = name | default: collection.title | escape
+-%}
+
+{%- if name != blank or bio != blank -%}
+  <div class="creator-profile">
+
+    {%- if portrait != blank -%}
+      <div class="creator-profile__media">
+        {{
+          portrait
+          | image_url: width: 1000
+          | image_tag:
+            class: 'creator-profile__img',
+            alt: img_alt,
+            loading: 'lazy',
+            widths: '400, 600, 800, 1000',
+            width: portrait.width,
+            height: portrait.height
+        }}
+      </div>
+    {%- endif -%}
+
+    <div class="creator-profile__content">
+      {%- if section.settings.label != blank -%}
+        <p class="creator-profile__label">{{ section.settings.label }}</p>
+      {%- endif -%}
+
+      {%- if name != blank -%}
+        <h2 class="creator-profile__name">{{ name }}</h2>
+      {%- endif -%}
+
+      {%- if role != blank -%}
+        <p class="creator-profile__role">{{ role }}</p>
+      {%- endif -%}
+
+      {%- if bio != blank -%}
+        <div class="creator-profile__bio rte">{{ bio }}</div>
+      {%- endif -%}
+
+      {%- if link != blank -%}
+        <a class="creator-profile__link" href="{{ link | escape }}" rel="noopener">
+          {{- section.settings.link_label -}}
+        </a>
+      {%- endif -%}
+    </div>
+
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Creator Profile",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Content is read from this collection's metafields: creator_name, creator_role, creator_portrait, creator_bio and creator_link. The section hides itself when they are empty."
+    },
+    {
+      "type": "text",
+      "id": "label",
+      "label": "Label",
+      "default": "The Creator"
+    },
+    {
+      "type": "text",
+      "id": "link_label",
+      "label": "Link label",
+      "default": "Follow"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Creator Profile"
+    }
+  ]
+}
+{% endschema %}

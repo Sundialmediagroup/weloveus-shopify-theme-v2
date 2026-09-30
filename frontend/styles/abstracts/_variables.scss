@@ -1,0 +1,11 @@
+// Sass-side variables — only for things that must be resolved at compile time.
+// All design tokens live in _tokens.scss as CSS custom properties.
+
+// Breakpoints — mobile-first
+$breakpoints: (
+  'sm':  640px,
+  'md':  768px,
+  'lg':  990px,
+  'xl':  1200px,
+  '2xl': 1440px,
+) !default;

@@ -1,0 +1,117 @@
+{%- comment -%}
+  "More from this brand" slider on the PDP.
+
+  Brands are modelled as collections carrying `custom.type == 'Brand'`, and the
+  product's own collection membership is what identifies its brand — see the
+  note on the lookup below for why the vendor string cannot be trusted to.
+
+  Renders nothing when the brand has no other products, so a single-product
+  brand does not leave an empty heading behind.
+{%- endcomment -%}
+
+{%- liquid
+  # The brand is found through the product's own collections, not by
+  # handleizing the vendor. Vendor strings and brand collection handles drift
+  # apart constantly in this catalogue: accents fold ("Vontélle Eyewear" lives
+  # at vontelle-eyewear), apostrophes vanish ("L'Jai Amor" at ljai-amor),
+  # vendors carry suffixes the collection does not ("Abeille Creations (ABL)"
+  # at abeille-creations) and some handles simply carry typos
+  # (coutney-kelly-books). Every one of those mismatches dropped the slider
+  # silently — 19 vendors and 260 products at last count. Membership of a
+  # Brand-tagged collection is the fact the store actually maintains.
+  assign brand_collection = nil
+  for coll in product.collections
+    if coll.metafields.custom.type.value == 'Brand'
+      assign brand_collection = coll
+      break
+    endif
+  endfor
+
+  # Retained as a fallback for a product that has not been added to its brand
+  # collection yet — it is what the lookup used to do on its own.
+  unless brand_collection
+    assign vendor_handle = product.vendor | handleize
+    assign brand_collection = collections[vendor_handle]
+  endunless
+
+  # Counted into its own number rather than compared through the collection.
+  # A product with no brand collection leaves `products_count` as something
+  # that is not a number — and comparing that with `> 1` is a hard Liquid
+  # error, not a falsy result.
+  #
+  # `plus: 0` rather than `default: 0`: default only substitutes for nil, false
+  # and empty string, so a non-empty String would pass straight through and
+  # fail the comparison anyway. plus coerces anything non-numeric to 0.
+  assign brand_products_count = brand_collection.products_count | plus: 0
+
+  # The collection title, not the raw vendor: it is the name the store curates
+  # and the one the A–Z brand directory shows.
+  assign brand_name = brand_collection.title | default: product.vendor
+-%}
+
+{%- comment -%}
+  `> 1` because one of the brand's products is the one being viewed — a brand
+  with a single product would otherwise render a heading over an empty track.
+{%- endcomment -%}
+{%- if brand_products_count > 1 -%}
+  {%- capture brand_heading -%}
+    {{- 'products.product.more_from_brand' | t: vendor: brand_name -}}
+  {%- endcapture -%}
+
+  {%- render 'product-carousel',
+    products: brand_collection.products,
+    heading: brand_heading,
+    heading_id: 'brand-carousel-heading',
+    exclude_id: product.id,
+    limit: section.settings.products_to_show,
+    cards_desktop: section.settings.cards_desktop,
+    cards_mobile: section.settings.cards_mobile,
+    overhang: section.settings.overhang
+  -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "More from brand",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 4,
+      "max": 20,
+      "step": 1,
+      "default": 8,
+      "label": "Products to show"
+    },
+    {
+      "type": "range",
+      "id": "cards_desktop",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 4,
+      "label": "Cards in view — desktop"
+    },
+    {
+      "type": "range",
+      "id": "cards_mobile",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2,
+      "label": "Cards in view — mobile"
+    },
+    {
+      "type": "range",
+      "id": "overhang",
+      "min": 40,
+      "max": 200,
+      "step": 10,
+      "default": 60,
+      "label": "Peek amount (px)",
+      "info": "How much of the next card is visible at the right edge"
+    }
+  ]
+}
+{% endschema %}

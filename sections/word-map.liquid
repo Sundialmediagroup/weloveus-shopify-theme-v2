@@ -1,0 +1,95 @@
+{%- comment -%}
+  Word map: the category nav set as one run of huge display type, each word a
+  link, with the linked collection's image dropped into the flow beside it.
+
+  Words come from a menu (the header's main menu by default), so the map stays
+  in step with the nav without being edited twice. Images come from what each
+  link points at — a collection's image (or its first product's), a product's
+  featured image — and a link with nothing to show is just a word.
+
+  Images are decorative (alt=""): the word beside them is the link's name.
+{%- endcomment -%}
+
+{%- liquid
+  assign menu = linklists[section.settings.menu]
+  assign heading_id = 'word-map-heading-' | append: section.id
+
+  # Tilts cycled across the images so the map reads as scattered, not gridded.
+  assign tilts = '-8,6,-3,10,-11,4,-6,8' | split: ','
+-%}
+
+{%- if menu.links.size > 0 -%}
+  <nav class="word-map" aria-labelledby="{{ heading_id }}">
+    <h2 class="visually-hidden" id="{{ heading_id }}">
+      {{- section.settings.heading | default: menu.title -}}
+    </h2>
+
+    <ul class="word-map__list" role="list">
+      {%- for link in menu.links -%}
+        {%- liquid
+          assign link_image = nil
+          if section.settings.show_images and link.object
+            assign link_image = link.object.featured_image | default: link.object.image
+          endif
+          assign tilt_index = forloop.index0 | modulo: tilts.size
+          # Built here: filter arguments cannot run filters of their own.
+          assign tilt_style = '--word-map-tilt: ' | append: tilts[tilt_index] | append: 'deg;'
+        -%}
+        <li class="word-map__item">
+          <a
+            class="word-map__word"
+            href="{{ link.url }}"
+            {% if link.current %}aria-current="page"{% endif %}
+          >
+            {{- link.title | escape -}}
+          </a>
+          {%- if link_image -%}
+            {{- link_image | image_url: width: 400 | image_tag:
+              class: 'word-map__image',
+              alt: '',
+              loading: 'lazy',
+              widths: '200, 300, 400',
+              sizes: '(min-width: 990px) 128px, 72px',
+              width: link_image.width,
+              height: link_image.height,
+              style: tilt_style
+            -}}
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </nav>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Word Map",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "menu",
+      "default": "main-menu",
+      "label": "Menu",
+      "info": "Each link becomes a word. Defaults to the header's category nav."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Read by screen readers only. Defaults to the menu name."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_images",
+      "default": true,
+      "label": "Show collection images"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Word Map"
+    }
+  ]
+}
+{% endschema %}

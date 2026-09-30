@@ -1,0 +1,72 @@
+// Account modal — snippets/account-modal.liquid.
+// A native <dialog>; the browser centres it and draws ::backdrop.
+
+.account-modal {
+  // The reset's `* { margin: 0 }` removes the UA `margin: auto` that centres a
+  // modal <dialog> in the viewport, so it is restored here.
+  margin: auto;
+  width: min(100% - var(--space-8), var(--account-modal-width, 26rem)); // 416px
+  max-height: calc(100dvh - var(--space-8));
+  overflow-y: auto;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  box-shadow: var(--shadow-xl);
+
+  &::backdrop {
+    background-color: var(--color-scrim);
+  }
+}
+
+.account-modal__panel {
+  --stack-gap: var(--space-6);
+
+  position: relative;
+  padding: var(--space-8) var(--space-6) var(--space-6);
+}
+
+.account-modal__header {
+  padding-inline-end: var(--space-10); // clear of the close button
+}
+
+.account-modal__title {
+  font-size: var(--text-2xl);
+  letter-spacing: var(--tracking-tight);
+}
+
+.account-modal__intro,
+.account-modal__email {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-fg-muted);
+  overflow-wrap: anywhere;
+}
+
+.account-modal__close {
+  position: absolute;
+  inset-block-start: var(--space-4);
+  inset-inline-end: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-10);
+  height: var(--space-10);
+  border-radius: var(--radius-full);
+  color: var(--color-fg);
+  transition: background-color var(--transition-fast);
+
+  &:hover {
+    background-color: var(--color-bg-raised);
+  }
+}
+
+.account-modal__sign-ins,
+.account-modal__list {
+  --stack-gap: var(--space-3);
+}
+
+.account-modal__link {
+  width: 100%;
+}

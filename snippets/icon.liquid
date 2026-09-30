@@ -1,0 +1,74 @@
+{%- comment -%}
+  Renders an inline SVG icon.
+
+  Accepts:
+  - name: {String} Icon name. One of: truck, return, lock, check, chevron,
+                   chevron-left, chevron-right, close, search, heart.
+
+  Icons inherit currentColor and are decorative — the caller is responsible for
+  labelling (aria-hidden on a wrapper, or an adjacent text label).
+{%- endcomment -%}
+
+{%- case name -%}
+  {%- when 'truck' -%}
+    <svg class="icon icon--truck" viewBox="0 0 20 20" fill="none" width="18" height="18" aria-hidden="true" focusable="false">
+      <path d="M1.5 5h10v9h-10V5Zm10 3h3.6L18 11v3h-6.5V8Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+      <circle cx="5.5" cy="15.5" r="1.6" stroke="currentColor" stroke-width="1.2"/>
+      <circle cx="14.5" cy="15.5" r="1.6" stroke="currentColor" stroke-width="1.2"/>
+    </svg>
+
+  {%- when 'return' -%}
+    <svg class="icon icon--return" viewBox="0 0 20 20" fill="none" width="18" height="18" aria-hidden="true" focusable="false">
+      <path d="M3 10a7 7 0 1 1 2.6 5.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      <path d="M3 5.5V10h4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+
+  {%- when 'lock' -%}
+    <svg class="icon icon--lock" viewBox="0 0 20 20" fill="none" width="18" height="18" aria-hidden="true" focusable="false">
+      <rect x="4.25" y="8.5" width="11.5" height="8.25" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+      <path d="M7 8.5V6a3 3 0 0 1 6 0v2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+
+  {%- when 'chevron' -%}
+    <svg class="icon icon--chevron" viewBox="0 0 20 20" fill="none" width="18" height="18" aria-hidden="true" focusable="false">
+      <path d="M5.5 8l4.5 4.5L14.5 8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+
+  {%- when 'chevron-left' -%}
+    <svg class="icon icon--chevron-left" viewBox="0 0 14 14" fill="none" width="14" height="14" aria-hidden="true" focusable="false">
+      <path d="M9 1L3 7l6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+
+  {%- when 'chevron-right' -%}
+    <svg class="icon icon--chevron-right" viewBox="0 0 14 14" fill="none" width="14" height="14" aria-hidden="true" focusable="false">
+      <path d="M5 1l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+
+  {%- when 'arrow-right' -%}
+    <svg class="icon icon--arrow-right" viewBox="0 0 20 20" fill="none" width="20" height="20" aria-hidden="true" focusable="false">
+      <path d="M3 10h14M11.5 4.5 17 10l-5.5 5.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+
+  {%- when 'search' -%}
+    <svg class="icon icon--search" viewBox="0 0 20 20" fill="none" width="18" height="18" aria-hidden="true" focusable="false">
+      <circle cx="8.75" cy="8.75" r="5.25" stroke="currentColor" stroke-width="1.2"/>
+      <path d="M12.75 12.75 17 17" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+
+  {%- when 'heart' -%}
+    {%- comment -%} Filled via CSS when the parent toggle is aria-pressed. {%- endcomment -%}
+    <svg class="icon icon--heart" viewBox="0 0 20 20" fill="none" width="18" height="18" aria-hidden="true" focusable="false">
+      <path d="M10 16.5s-6.25-3.9-6.25-8.4A3.35 3.35 0 0 1 10 6.05a3.35 3.35 0 0 1 6.25 2.05c0 4.5-6.25 8.4-6.25 8.4Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+    </svg>
+
+  {%- when 'close' -%}
+    <svg class="icon icon--close" viewBox="0 0 20 20" fill="none" width="18" height="18" aria-hidden="true" focusable="false">
+      <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+
+  {%- else -%}
+    <svg class="icon icon--check" viewBox="0 0 20 20" fill="none" width="18" height="18" aria-hidden="true" focusable="false">
+      <circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.2"/>
+      <path d="M6.8 10.2l2.2 2.2 4.2-4.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+{%- endcase -%}

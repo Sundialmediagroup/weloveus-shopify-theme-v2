@@ -1,0 +1,83 @@
+{%- comment -%}
+  Horizontal editorial card: image on the left, text on the right, arrow at the
+  inline end. Used by sections/feature-carousel.liquid.
+
+  The whole card is the link when `url` is set; the title's link is stretched
+  over the card (::after) so there is one tab stop and one accessible name.
+
+  With a `collection` (a brand), anything left blank is filled from it: the
+  image (collection image, or its first product's), the link and the title.
+
+  Accepts:
+  - collection: {Object}  Shopify collection. Optional; fills the blanks below.
+  - image:      {Object}  Shopify image. Placeholder when blank.
+  - title:      {String}  Required unless `collection` is given.
+  - url:        {String}  Optional. Makes the card a link.
+  - background: {String}  Colour for the text panel. Default: --color-bg-feature.
+  - lazy:       {Boolean} Lazy-load the image. Default: true
+{%- endcomment -%}
+
+{%- liquid
+  assign card_image = image
+  assign card_title = title
+  assign card_url = url
+
+  if collection != blank
+    # Same default sort the header's brand links carry: main-collection
+    # redirects a collection URL without `sort_by`, costing a second render.
+    assign default_sort = settings.collection_default_sort | default: 'best-selling'
+    if url == blank
+      assign card_url = collection.url | append: '?sort_by=' | append: default_sort
+    endif
+    # featured_image falls back to the first product's image, so a brand
+    # with no collection image still gets a picture.
+    assign card_image = image | default: collection.featured_image
+
+    assign card_title = title | default: collection.title
+  endif
+
+  assign card_lazy = lazy | default: true
+  assign loading_attr = 'lazy'
+  unless card_lazy
+    assign loading_attr = 'eager'
+  endunless
+-%}
+
+{%- if card_title != blank -%}
+  <article
+    class="feature-card{% if card_url != blank %} feature-card--link{% endif %}"
+    {% if background != blank %}style="--feature-card-bg: {{ background }};"{% endif %}
+  >
+    <div class="feature-card__media">
+      {%- if card_image != blank -%}
+        {{- card_image | image_url: width: 900 | image_tag:
+          class: 'feature-card__image',
+          alt: card_image.alt | default: card_title,
+          loading: loading_attr,
+          sizes: '(min-width: 990px) 25vw, 45vw',
+          widths: '300, 450, 600, 900',
+          width: card_image.width,
+          height: card_image.height
+        -}}
+      {%- else -%}
+        {{- 'image' | placeholder_svg_tag: 'feature-card__image feature-card__placeholder' -}}
+      {%- endif -%}
+    </div>
+
+    <div class="feature-card__body">
+      <div class="feature-card__text">
+        <h3 class="feature-card__title">
+          {%- if card_url != blank -%}
+            <a class="feature-card__link" href="{{ card_url }}">{{ card_title | escape }}</a>
+          {%- else -%}
+            {{- card_title | escape -}}
+          {%- endif -%}
+        </h3>
+      </div>
+
+      {%- if card_url != blank -%}
+        <span class="feature-card__arrow">{%- render 'icon', name: 'arrow-right' -%}</span>
+      {%- endif -%}
+    </div>
+  </article>
+{%- endif -%}

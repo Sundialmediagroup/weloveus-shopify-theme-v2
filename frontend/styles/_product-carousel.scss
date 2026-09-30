@@ -1,0 +1,84 @@
+@use 'abstracts/mixins' as *;
+
+.product-carousel {
+  // Gap is defined here so both the track and the width calc stay in sync.
+  // It is the grid gap, which follows the site frame at every size.
+  --carousel-gap: var(--grid-gap);
+  // cards-in-view resolves to mobile count by default, desktop overrides below
+  --cards-in-view: var(--cards-mobile, 1);
+
+  display: block;
+  overflow: hidden; // clips the track — partial next card is visible by design
+
+  @include respond-to('lg') {
+    --cards-in-view: var(--cards-desktop, 2);
+  }
+}
+
+// ─── Header row ────────────────────────────────────────────────────────────────
+
+.product-carousel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.product-carousel__controls {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.product-carousel__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+  color: var(--color-fg);
+  flex-shrink: 0;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    opacity var(--transition-fast);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-bg-subtle);
+  }
+
+  &:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+  }
+}
+
+// ─── Track ─────────────────────────────────────────────────────────────────────
+
+.product-carousel__track {
+  display: flex;
+  gap: var(--carousel-gap);
+  overflow-x: scroll;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// ─── Item ──────────────────────────────────────────────────────────────────────
+
+.product-carousel__item {
+  // Width is calculated so that exactly --cards-in-view full cards
+  // + --overhang of the next card = 100% of the container.
+  // Formula: (100% - N × gap - overhang) / N
+  flex: 0 0 calc(
+    (100% - var(--cards-in-view) * var(--carousel-gap) - var(--overhang, 80px))
+    / var(--cards-in-view)
+  );
+  scroll-snap-align: start;
+}

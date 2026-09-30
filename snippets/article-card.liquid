@@ -1,0 +1,99 @@
+{%- comment -%}
+  Editorial article card, laid out like a news feed entry: the date in a narrow
+  column at the inline start, then the title run into the excerpt as one
+  paragraph, with the image underneath. A rule on top separates entries.
+
+  The title's link is stretched over the whole card (::after), so there is one
+  tab stop and one accessible name, the same as the feature card.
+
+  Accepts:
+  - article:      {Object}  Shopify article. When blank, a placeholder card is
+                            drawn instead (for the theme editor).
+  - image_ratio:  {String}  CSS aspect-ratio for the image, or 'natural'.
+                            Default: '3 / 4'
+  - excerpt_words:{Number}  Words of body copy when the article has no excerpt.
+                            Default: 40
+  - show_image:   {Boolean} Default: true
+  - lazy:         {Boolean} Lazy-load the image. Default: true
+{%- endcomment -%}
+
+{%- liquid
+  assign card_ratio = image_ratio | default: '3 / 4'
+  assign card_words = excerpt_words | default: 40
+  assign card_show_image = true
+  if show_image == false
+    assign card_show_image = false
+  endif
+  assign card_lazy = lazy | default: true
+  assign loading_attr = 'lazy'
+  unless card_lazy
+    assign loading_attr = 'eager'
+  endunless
+
+  if article != blank
+    assign card_title = article.title
+    # The merchant's excerpt when there is one; otherwise the opening of the
+    # post, stripped, so it runs on from the title as plain sentence text.
+    if article.excerpt != blank
+      assign card_excerpt = article.excerpt | strip_html | strip
+    else
+      assign card_excerpt = article.content | strip_html | strip | truncatewords: card_words
+    endif
+    assign card_image = article.image
+    assign image_alt = card_image.alt | default: card_title
+  else
+    assign card_title = 'sections.article_card.placeholder_title' | t
+    assign card_excerpt = 'sections.article_card.placeholder_excerpt' | t
+  endif
+
+  assign card_style = ''
+  if card_ratio != 'natural'
+    assign card_style = '--article-card-ratio: ' | append: card_ratio | append: ';'
+  endif
+-%}
+
+<article
+  class="article-card{% if card_ratio == 'natural' %} article-card--natural{% endif %}"
+  {% if card_style != blank %}style="{{ card_style }}"{% endif %}
+>
+  <p class="article-card__date">
+    {%- if article != blank -%}
+      {{- article.published_at | time_tag: '%B %-d, %Y' -}}
+    {%- else -%}
+      {{- 'now' | date: '%B %-d, %Y' -}}
+    {%- endif -%}
+  </p>
+
+  <div class="article-card__body stack">
+    <p class="article-card__text">
+      <strong class="article-card__title">
+        {%- if article != blank -%}
+          <a class="article-card__link" href="{{ article.url }}">{{ card_title | escape }}</a>
+        {%- else -%}
+          {{- card_title | escape -}}
+        {%- endif -%}
+      </strong>
+      {% if card_excerpt != blank %}{{ card_excerpt | escape }}{% endif %}
+    </p>
+
+    {%- if card_show_image -%}
+      {%- if card_image != blank -%}
+        <div class="article-card__media">
+          {{- card_image | image_url: width: 1200 | image_tag:
+            class: 'article-card__image',
+            alt: image_alt,
+            loading: loading_attr,
+            sizes: '(min-width: 990px) 40vw, 80vw',
+            widths: '400, 600, 800, 1000, 1200',
+            width: card_image.width,
+            height: card_image.height
+          -}}
+        </div>
+      {%- elsif article == blank -%}
+        <div class="article-card__media">
+          {{- 'lifestyle-2' | placeholder_svg_tag: 'article-card__image article-card__placeholder' -}}
+        </div>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+</article>

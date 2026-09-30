@@ -1,0 +1,81 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-product",
+      "blocks": {
+        "delivery": {
+          "type": "assurance",
+          "settings": {
+            "text": "Delivery options shown at checkout",
+            "icon": "truck"
+          }
+        },
+        "secure": {
+          "type": "assurance",
+          "settings": {
+            "text": "Secure checkout",
+            "icon": "lock"
+          }
+        },
+        "returns": {
+          "type": "assurance",
+          "settings": {
+            "text": "",
+            "icon": "return"
+          }
+        },
+        "delivery_accordion": {
+          "type": "accordion",
+          "settings": {
+            "heading": "Delivery and returns",
+            "content": ""
+          }
+        }
+      },
+      "block_order": [
+        "delivery",
+        "secure",
+        "returns",
+        "delivery_accordion"
+      ],
+      "settings": {
+        "low_stock_threshold": 5,
+        "shipping_note": ""
+      }
+    },
+    "brand-carousel": {
+      "type": "product-brand-carousel",
+      "settings": {
+        "products_to_show": 8,
+        "cards_desktop": 4,
+        "cards_mobile": 2,
+        "overhang": 60
+      }
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "heading": "More like this",
+        "intent": "related",
+        "products_to_show": 8,
+        "cards_desktop": 4,
+        "cards_mobile": 2,
+        "overhang": 60
+      }
+    }
+  },
+  "order": [
+    "main",
+    "brand-carousel",
+    "recommendations"
+  ]
+}

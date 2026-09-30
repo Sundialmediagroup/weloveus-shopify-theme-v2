@@ -1,0 +1,60 @@
+@use 'abstracts/mixins' as *;
+
+// Category tree. Column-level layout (sticky, hiding, alignment) belongs to
+// .collection-aside in _main-collection.scss — this file styles the tree only.
+
+.collection-sidebar__list {
+  display: flex;
+  flex-direction: column;
+}
+
+// One continuous editorial rule spanning the whole menu, heading included.
+.collection-sidebar {
+  border-inline-start: 1px solid var(--color-fg);
+  padding-inline-start: var(--space-3);
+}
+
+// Small uppercase label. Deliberately off the h2 element scale — this names a
+// sidebar menu, it is not a page heading.
+.collection-sidebar__heading {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-snug);
+  // Explicit reset — the h2 element rule sets --tracking-tight.
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--color-fg);
+}
+
+// Each level steps in by one unit; nesting makes the indent cumulative.
+.collection-sidebar__list--nested {
+  padding-inline-start: var(--space-4);
+}
+
+.collection-sidebar__link {
+  display: block;
+  padding-block: var(--space-1);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--color-fg-muted);
+  text-decoration: none;
+  text-underline-offset: 0.25em;
+  transition: color var(--transition-fast);
+
+  &:hover {
+    color: var(--color-fg);
+    text-decoration: underline;
+  }
+
+  &[aria-current='page'] {
+    color: var(--color-fg);
+    text-decoration: underline;
+  }
+}
+
+.collection-sidebar__link--l1 {
+  color: var(--color-fg);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}

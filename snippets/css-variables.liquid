@@ -1,0 +1,15 @@
+{%- comment -%}
+  Bridges Shopify theme settings → CSS custom properties.
+  This runs server-side so values are inlined in the <head>, with no FOUC.
+{%- endcomment -%}
+
+{%- liquid
+  assign font_heading_bold = settings.font_heading | font_modify: 'weight', 'bolder'
+  assign font_body_bold    = settings.font_body    | font_modify: 'weight', 'bolder'
+-%}
+
+<style>
+  :root {
+    --page-width: {{ settings.page_width }}px;
+  }
+</style>

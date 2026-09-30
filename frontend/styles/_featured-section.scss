@@ -1,0 +1,82 @@
+@use 'abstracts/mixins' as *;
+
+.featured-section {
+  background-color: var(--featured-bg, var(--color-fg));
+  color: var(--featured-color, var(--color-bg));
+}
+
+// Full width of the page, with --site-frame on all four sides: the text and
+// the image both sit the frame's width in from the edge of the colour.
+.featured-section__inner {
+  padding: var(--site-frame);
+
+  @include respond-to('lg') {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: var(--site-frame);
+  }
+}
+
+// ─── Text ──────────────────────────────────────────────────────────────────────
+
+// A grid rather than a flex column so the label can take a column of its own
+// (--split); align-content keeps the text at the top of the column.
+.featured-section__content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  align-items: start; // label and heading share the same top edge
+  column-gap: var(--space-4);
+  padding-block: var(--space-6) var(--space-10);
+
+  @include respond-to('lg') {
+    column-gap: var(--space-6);
+    padding-block: var(--space-10) 0;
+    padding-inline-end: var(--space-12);
+  }
+}
+
+.featured-section__content--split {
+  grid-template-columns: var(--featured-eyebrow-width, 6rem) minmax(0, 1fr); // 96px
+}
+
+.featured-section__eyebrow {
+  font-size: var(--text-sm);
+}
+
+// The two boxes already share a top edge; what differs is the space above the
+// letters, which grows with font size. Trimming each box to its capital height
+// puts the top of the "F" level with the top of the "S".
+.featured-section__eyebrow,
+.featured-section__heading {
+  @include trim-to-cap;
+}
+
+.featured-section__heading {
+  font-family: var(--font-body);
+  font-size: clamp(var(--text-2xl), 3vw, var(--text-5xl));
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-tight);
+  margin-bottom: var(--space-3);
+}
+
+.featured-section__body {
+  font-size: var(--text-sm);
+  max-width: 48ch;
+}
+
+// ─── Image ─────────────────────────────────────────────────────────────────────
+
+.featured-section__media {
+  margin: 0;
+}
+
+// Landscape at every size; the image sets the section's height on desktop.
+.featured-section__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: var(--featured-ratio, 3 / 2);
+  object-fit: cover;
+}

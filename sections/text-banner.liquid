@@ -1,0 +1,98 @@
+{%- comment -%}
+  Statement banner: text in the left half, an image in the right half. Below
+  `md` the two stack, text first.
+
+  Type size is fixed by the design system, not the merchant — it sits on the
+  type scale a step above body copy (--text-xl) and scales fluidly up to
+  --text-4xl on desktop, so it always reads as a statement without shouting.
+
+  Accepts (via section settings):
+  - text:             {String} Statement copy. Line breaks are preserved.
+  - background_color: {Color}
+  - text_color:       {Color}
+  - url:              {String} Optional. Makes the whole banner clickable.
+  - image:            {Image}  Optional. Right half; a placeholder stands in for
+                      it in the theme editor, and the half stays empty on the
+                      live site until one is chosen.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign banner_text = s.text | escape | newline_to_br
+-%}
+
+{%- if s.text != blank -%}
+  {%- capture banner_style -%}--tb-bg: {{ s.background_color }}; --tb-color: {{ s.text_color }};{%- endcapture -%}
+
+  {%- capture banner_media -%}
+    <div class="text-banner__media">
+      {%- if s.image != blank -%}
+        {{- s.image | image_url: width: 1800 | image_tag:
+          class: 'text-banner__image',
+          sizes: '(min-width: 768px) 50vw, 100vw',
+          widths: '600, 900, 1200, 1500, 1800',
+          loading: 'lazy'
+        -}}
+      {%- elsif request.design_mode -%}
+        {{- 'lifestyle-1' | placeholder_svg_tag: 'text-banner__placeholder' -}}
+      {%- endif -%}
+    </div>
+  {%- endcapture -%}
+
+  {%- if s.url != blank -%}
+    <a class="text-banner text-banner--link" href="{{ s.url }}" style="{{ banner_style }}">
+      <span class="text-banner__text">{{ banner_text }}</span>
+      {{- banner_media -}}
+    </a>
+  {%- else -%}
+    <div class="text-banner" style="{{ banner_style }}">
+      <h2 class="text-banner__text">{{ banner_text }}</h2>
+      {{- banner_media -}}
+    </div>
+  {%- endif -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Text Banner",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "Text",
+      "info": "Line breaks are preserved.",
+      "default": "We love us"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#0a0a0a"
+    },
+    {
+      "type": "url",
+      "id": "url",
+      "label": "Link",
+      "info": "Optional. Makes the whole banner clickable."
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image",
+      "info": "Shown in the right half of the banner."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Text Banner"
+    }
+  ]
+}
+{% endschema %}

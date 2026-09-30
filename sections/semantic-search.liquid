@@ -1,0 +1,170 @@
+{%- comment -%}
+  Homepage search prompt: a large search bar whose placeholder rotates through
+  suggestions written the way a shopper would describe what they want ("a silk
+  bonnet to protect my curls overnight"), not as keywords.
+
+  That is the point of the section. Shopify's semantic search only runs on the
+  full /search results page — never in the header's predictive dropdown — so
+  this sends shoppers there directly, and the rotating suggestions show that
+  full sentences work. Each one is a `suggestion` block, so the merchant can
+  keep them in step with the catalogue.
+
+  Accepts (via section settings):
+  - title:            {String} One-line heading at the h2 scale.
+  - name:             {String} The assistant's name. Wherever it appears in the
+                      title it is picked out in the highlight colour.
+  - text:             {String} Optional line under the heading.
+  - placeholder:      {String} Shown first, and on its own without JS.
+  - background_color: {Color}  Optional. Defaults to --color-bg-highlight (brand green).
+  - text_color:       {Color}  Optional. Defaults to --color-fg-inverted.
+  Blocks:
+  - suggestion:       text {String}
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign input_id = 'semantic-search-' | append: section.id
+  assign panel_style = ''
+  if s.background_color != blank and s.background_color.alpha != 0
+    assign panel_style = panel_style | append: '--semantic-search-bg: ' | append: s.background_color | append: ';'
+  endif
+  if s.text_color != blank and s.text_color.alpha != 0
+    assign panel_style = panel_style | append: '--semantic-search-color: ' | append: s.text_color | append: ';'
+  endif
+
+  # Escaped first, then the name wrapped, so the only markup in the heading is
+  # the span added here.
+  assign title_html = s.title | escape
+  if s.name != blank
+    assign name_escaped = s.name | escape
+    assign name_html = '<span class="semantic-search__name">' | append: name_escaped | append: '</span>'
+    assign title_html = title_html | replace: name_escaped, name_html
+  endif
+
+  # A JSON array of the suggestion phrases, for the rotating placeholder.
+  assign suggestions_json = ''
+  for block in section.blocks
+    if block.settings.text != blank
+      if suggestions_json != blank
+        assign suggestions_json = suggestions_json | append: ','
+      endif
+      assign phrase_json = block.settings.text | json
+      assign suggestions_json = suggestions_json | append: phrase_json
+    endif
+  endfor
+  if suggestions_json != blank
+    assign suggestions_json = '[' | append: suggestions_json | append: ']'
+  endif
+-%}
+
+<div class="semantic-search" {% if panel_style != blank %}style="{{ panel_style }}"{% endif %}>
+  <div class="semantic-search__inner container stack">
+
+    {%- if s.title != blank or s.text != blank -%}
+      <header class="semantic-search__header stack">
+        {%- if s.title != blank -%}
+          <h2 class="semantic-search__heading">{{ title_html }}</h2>
+        {%- endif -%}
+        {%- if s.text != blank -%}
+          <p class="semantic-search__text">{{ s.text | escape }}</p>
+        {%- endif -%}
+      </header>
+    {%- endif -%}
+
+    {%- comment -%}
+      Not predictive: the point is to land on the results page, where semantic
+      matching runs, and search.js only drives the header's dropdown anyway.
+
+      The suggestion blocks become the bar's placeholder, one at a time —
+      semantic-search.js rotates them. Without it the placeholder setting
+      shows, and the bar works the same.
+    {%- endcomment -%}
+    <div
+      class="semantic-search__form"
+      {% if suggestions_json != blank %}data-semantic-search data-suggestions="{{ suggestions_json | escape }}"{% endif %}
+    >
+      {%- render 'search-form',
+        input_id: input_id,
+        modifier: 'hero',
+        placeholder: s.placeholder,
+        value: ''
+      -%}
+    </div>
+
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Semantic search",
+  "tag": "section",
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Ask Essie to find what you’re looking for"
+    },
+    {
+      "type": "text",
+      "id": "name",
+      "label": "Assistant name",
+      "info": "Highlighted wherever it appears in the heading.",
+      "default": "Essie"
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "label": "Text",
+      "info": "Optional line under the heading."
+    },
+    {
+      "type": "text",
+      "id": "placeholder",
+      "label": "Search bar placeholder",
+      "default": "A thoughtful gift for my sister who loves self-care"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "info": "Leave blank for the brand green."
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "info": "Leave blank for white."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "suggestion",
+      "name": "Suggestion",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Search phrase",
+          "info": "Write it the way a shopper would say it. Shown in turn as the search bar’s placeholder.",
+          "default": "A silk bonnet to protect my curls overnight"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Semantic search",
+      "blocks": [
+        { "type": "suggestion", "settings": { "text": "A silk bonnet to protect my curls overnight" } },
+        { "type": "suggestion", "settings": { "text": "Something to keep my skin glowing in winter" } },
+        { "type": "suggestion", "settings": { "text": "A cozy robe for a slow Sunday" } },
+        { "type": "suggestion", "settings": { "text": "Heels I can wear all day" } },
+        { "type": "suggestion", "settings": { "text": "A candle that makes my home smell warm" } },
+        { "type": "suggestion", "settings": { "text": "Bold sunglasses that make a statement" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

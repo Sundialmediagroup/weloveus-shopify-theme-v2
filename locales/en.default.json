@@ -1,0 +1,183 @@
+{
+  "general": {
+    "meta": {
+      "page": "Page {{ page }}"
+    },
+    "accessibility": {
+      "nav_main": "Main navigation",
+      "nav_footer": "Footer navigation",
+      "account": "Account",
+      "cart": "Cart"
+    },
+    "search": {
+      "label": "Search",
+      "placeholder": "Search products and brands",
+      "submit": "Search",
+      "brands": "Brands",
+      "products": "Products",
+      "results_count": {
+        "one": "{{ count }} result",
+        "other": "{{ count }} results"
+      },
+      "no_results": "No results for “{{ terms }}”",
+      "view_all": "View all results for “{{ terms }}”"
+    }
+  },
+  "accessibility": {
+    "skip_to_text": "Skip to content"
+  },
+  "sections": {
+    "video_carousel": {
+      "video_label": "Video {{ number }}"
+    },
+    "cart_icon": {
+      "cart_count": {
+        "one": "{{ count }} item",
+        "other": "{{ count }} items"
+      }
+    },
+    "collection": {
+      "sidebar_label": "Categories",
+      "sort_label": "Sort by",
+      "sort": {
+        "latest": "Latest arrivals",
+        "trending": "Trending",
+        "price_low": "Price: Low to high",
+        "price_high": "Price: High to low"
+      },
+      "load_more": "Load more",
+      "loading": "Loading…",
+      "load_error": "Couldn't load more products. Try again.",
+      "showing": "Showing {{ count }} of {{ total }} products"
+    },
+    "brand_directory": {
+      "title": "All Brands"
+    },
+    "feature_card": {
+      "placeholder_title": "Choose a collection"
+    },
+    "article_feed": {
+      "view_all": "View all stories"
+    },
+    "article_card": {
+      "placeholder_title": "Your story title.",
+      "placeholder_excerpt": "The first lines of the post run on from the title here, so the card reads as one short paragraph."
+    }
+  },
+  "onboarding": {
+    "product_title": "Product title",
+    "product_vendor": "Vendor name"
+  },
+  "products": {
+    "product": {
+      "add_to_cart": "Add to cart",
+      "adding": "Adding…",
+      "added": "Added to cart",
+      "add_error": "Couldn't add — try again",
+      "sold_out": "Sold out",
+      "unavailable": "Unavailable",
+      "quantity": "Quantity",
+      "quantity_decrease": "Decrease quantity",
+      "quantity_increase": "Increase quantity",
+      "choose_variant": "Choose an option",
+      "description": "Description",
+      "product_details": "Product details",
+      "more_info": "More information",
+      "return_policy": "{{ brand }} return policy",
+      "about_brand": "About {{ brand }}",
+      "brand": "Brand",
+      "type": "Type",
+      "sku": "SKU",
+      "saving": "Save {{ percent }}%",
+      "tax_note": "Taxes and shipping calculated at checkout",
+      "stock_low": {
+        "one": "Only {{ count }} left",
+        "other": "Only {{ count }} left"
+      },
+      "stock_out": "Out of stock",
+      "zoom": "View larger image",
+      "zoom_close": "Close",
+      "media_label": "Images of {{ title }}",
+      "media_go_to": "Go to image {{ index }}",
+      "media_previous": "Previous",
+      "media_next": "Next",
+      "more_from_brand": "More from {{ vendor }}",
+      "more_like_this": "More like this",
+      "read_more": "Read more",
+      "read_less": "Read less"
+    }
+  },
+  "templates": {
+    "404": {
+      "title": "Page not found",
+      "subtext": "The page you were looking for doesn't exist.",
+      "homepage": "Back to home"
+    },
+    "search": {
+      "title": "Search",
+      "prompt": "What are you looking for?",
+      "results_count": {
+        "one": "{{ count }} result",
+        "other": "{{ count }} results"
+      },
+      "empty_hint": "Check the spelling, or try a shorter or more general term.",
+      "pagination": "Search results pages",
+      "page_of": "Page {{ current }} of {{ total }}",
+      "previous": "Previous",
+      "next": "Next"
+    }
+  },
+  "wishlist": {
+    "nav": "Wishlist",
+    "title": "Your wishlist",
+    "save": "Save {{ title }} to wishlist",
+    "added": "Saved to your wishlist",
+    "removed": "Removed from your wishlist",
+    "error": "Couldn't update your wishlist — try again",
+    "login_prompt": "Log in to see your wishlist.",
+    "login": "Log in",
+    "empty": "Nothing saved yet. Tap the heart on any product to keep it here.",
+    "browse": "Start browsing",
+    "count": {
+      "one": "{{ count }} item",
+      "other": "{{ count }} items"
+    }
+  },
+  "account": {
+    "title": "Sign in",
+    "title_personalized": "Hi, {{ first_name }}",
+    "intro": "Sign in to save your wishlist and see your orders.",
+    "log_in": "Log in",
+    "sign_in_options": "Sign in with email",
+    "orders": "Orders",
+    "profile": "Profile",
+    "log_out": "Log out",
+    "close": "Close"
+  },
+  "essie": {
+    "title": "Essie",
+    "placeholder": "Ask Essie anything…",
+    "input_label": "Message Essie",
+    "send": "Send",
+    "close": "Close chat",
+    "new_chat": "New chat",
+    "greeting": "Hey friend — I'm Essie. What are you shopping for?",
+    "starter_gift": "Help me find a gift",
+    "starter_body_care": "Show me body care",
+    "starter_cart": "What's in my cart?",
+    "looking": "Looking…",
+    "sold_out": "Sold out",
+    "cart_empty": "Your cart is empty",
+    "subtotal": "Subtotal",
+    "quantity": "Qty",
+    "error": "Sorry, I couldn't reach Essie just now.",
+    "retry": "Retry",
+    "prompts_title": "Ask Essie about this",
+    "prompts_dismiss": "Dismiss suggestions",
+    "prompt_brand": "Tell me more about {{ brand }}",
+    "prompt_similar": "Other products like this",
+    "prompt_similar_message": "Show me other products like the {{ title }}",
+    "prompt_how": "How do I use it?",
+    "prompt_how_message": "How do I use the {{ title }}?"
+  }
+}

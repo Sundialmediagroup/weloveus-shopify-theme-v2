@@ -1,0 +1,65 @@
+{%- comment -%}
+  Heart toggle that saves a product to the customer's wishlist.
+
+  Accepts:
+  - product: {Object} Shopify product object (required)
+  - context: {String} 'card' or 'pdp'. Default: 'card'
+
+  The wishlist lives in the `custom.wishlist` customer metafield (a list of
+  product references), so the saved state is known on the server and the heart
+  paints filled on first render. Writes go through the app proxy at
+  /apps/wishlist — see wishlist.js and wishlist-proxy/.
+
+  On a card the toggle sits inside the card's <a>, where a <button> is invalid
+  HTML, so it is a span with role="button" (the same pattern as the quick-add
+  sticker) and wishlist.js supplies the keyboard behaviour. On the PDP it is a
+  real button.
+
+  Logged-out shoppers still see the heart; clicking it sends them to the
+  Shopify login and the product is saved when they come back.
+{%- endcomment -%}
+
+{%- if shop.customer_accounts_enabled -%}
+  {%- liquid
+    assign context = context | default: 'card'
+
+    assign saved = false
+    if customer
+      assign saved_list = customer.metafields.custom.wishlist.value
+      if saved_list != blank
+        # Delimited both ends so product 12 never matches inside 123.
+        assign saved_ids = saved_list | map: 'id' | join: ','
+        assign saved_ids = ',' | append: saved_ids | append: ','
+        assign product_key = ',' | append: product.id | append: ','
+        if saved_ids contains product_key
+          assign saved = true
+        endif
+      endif
+    endif
+
+    assign label = 'wishlist.save' | t: title: product.title
+  -%}
+
+  {%- if context == 'pdp' -%}
+    <button
+      class="wishlist-button wishlist-button--pdp"
+      type="button"
+      data-wishlist-toggle="{{ product.id }}"
+      aria-pressed="{{ saved }}"
+      aria-label="{{ label | escape }}"
+    >
+      {%- render 'icon', name: 'heart' -%}
+    </button>
+  {%- else -%}
+    <span
+      class="wishlist-button wishlist-button--card"
+      role="button"
+      tabindex="0"
+      data-wishlist-toggle="{{ product.id }}"
+      aria-pressed="{{ saved }}"
+      aria-label="{{ label | escape }}"
+    >
+      {%- render 'icon', name: 'heart' -%}
+    </span>
+  {%- endif -%}
+{%- endif -%}

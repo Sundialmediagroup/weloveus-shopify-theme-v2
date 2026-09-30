@@ -1,0 +1,103 @@
+@use 'abstracts/mixins' as *;
+
+// Video carousel — sections/video-carousel.liquid.
+// Track, arrows and peek come from _product-carousel.scss. Section spacing is
+// the global bottom-only padding; the padding here is inside the black panel.
+
+.video-carousel {
+  // An inverted surface: the carousel's own rules read these tokens, so
+  // swapping them here turns its heading and arrows light without any
+  // dark-only overrides of their own.
+  --color-fg: var(--color-fg-inverted);
+  --color-border-strong: color-mix(in srgb, var(--color-fg-inverted) 40%, transparent);
+  --color-bg-subtle: color-mix(in srgb, var(--color-fg-inverted) 12%, transparent);
+
+  padding: var(--space-8) var(--space-4);
+  color: var(--color-fg);
+  background-color: var(--video-carousel-bg, var(--color-bg-inverted));
+
+  @include respond-to('lg') {
+    padding: var(--space-12) var(--space-8);
+  }
+}
+
+// Every slide the same height, its width set by its own shape rather than by
+// a cards-in-view share of the track, so vertical and horizontal videos can
+// share one slider. A horizontal slide is capped at the track width less the
+// peek, so on a phone it comes out shorter than its vertical neighbours
+// rather than wider than the screen. Top-aligned so every frame starts on one
+// line whatever the length of its title.
+.video-carousel--small {
+  --video-carousel-height: 18rem;
+
+  @include respond-to('lg') {
+    --video-carousel-height: 24rem;
+  }
+}
+
+.video-carousel--medium {
+  --video-carousel-height: 24rem;
+
+  @include respond-to('lg') {
+    --video-carousel-height: 30rem;
+  }
+}
+
+.video-carousel--large {
+  --video-carousel-height: 28rem;
+
+  @include respond-to('lg') {
+    --video-carousel-height: 38rem;
+  }
+}
+
+.video-carousel .product-carousel__track {
+  container-type: inline-size; // for the cqi cap below
+  align-items: flex-start;
+}
+
+.video-carousel .product-carousel__item {
+  flex: 0 0 auto;
+}
+
+.video-carousel__slide--vertical {
+  --video-carousel-ratio: 9 / 16;
+
+  inline-size: calc(var(--video-carousel-height, 24rem) * 9 / 16);
+}
+
+.video-carousel__slide--horizontal {
+  --video-carousel-ratio: 16 / 9;
+
+  inline-size: min(
+    calc(var(--video-carousel-height, 24rem) * 16 / 9),
+    calc(100cqi - var(--overhang, 80px))
+  );
+}
+
+.video-carousel__slide {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.video-carousel__frame {
+  aspect-ratio: var(--video-carousel-ratio, 9 / 16);
+  overflow: hidden;
+  // Shows as a shape while the lazy player loads, and in the editor for a
+  // block with no video yet.
+  background-color: color-mix(in srgb, var(--color-fg-inverted) 8%, transparent);
+
+  iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+}
+
+.video-carousel__title {
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+}

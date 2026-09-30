@@ -1,0 +1,177 @@
+{%- comment -%}
+  Slider of Dailymotion videos on a black panel. Each video is a block with its
+  own shape — vertical (9:16) or horizontal (16:9) — so one slider can hold
+  both: every slide is the same height and as wide as its shape needs. The
+  track, arrows and peek come from snippets/product-carousel.liquid so it
+  scrolls like every other slider on the site.
+
+  Each slide is the Dailymotion player's iframe embed, not the script embed
+  used by the Video section: the iframe fills whatever box it is given, so the
+  frame holds whatever shape the player is configured with. Iframes are
+  lazy, so only the slides near the viewport load a player.
+
+  Accepts (via section settings):
+  - heading:          {String} Optional heading above the track.
+  - player_id:        {String} Dailymotion player ID from Partner HQ.
+  - height:           {String} 'small' | 'medium' | 'large' — the slide height.
+  - overhang:         {Number} Peek, in px; also caps a horizontal slide's width.
+  - background_color: {Color}  Optional. Defaults to --color-bg-inverted (black).
+  Blocks:
+  - video: video_url {String} Dailymotion URL or bare ID; title {String};
+           shape {String} 'vertical' | 'horizontal'.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  # Built here, not inline: `render` arguments do not evaluate filters.
+  assign heading_id = 'video-carousel-heading-' | append: section.id
+  assign player_id = s.player_id | strip | default: 'x1krmq'
+
+  assign panel_style = ''
+  if s.background_color != blank and s.background_color.alpha != 0
+    assign panel_style = '--video-carousel-bg: ' | append: s.background_color | append: ';'
+  endif
+-%}
+
+{%- capture video_items -%}
+  {%- for block in section.blocks -%}
+    {%- liquid
+      # Accepts https://www.dailymotion.com/video/x9abc12, https://dai.ly/x9abc12
+      # or a bare x9abc12.
+      assign video_id = block.settings.video_url | strip
+      if video_id contains '/video/'
+        assign video_id = video_id | split: '/video/' | last
+      elsif video_id contains 'dai.ly/'
+        assign video_id = video_id | split: 'dai.ly/' | last
+      endif
+      assign video_id = video_id | split: '?' | first | strip
+
+      assign video_title = block.settings.title
+      if video_title == blank
+        assign video_title = 'sections.video_carousel.video_label' | t: number: forloop.index
+      endif
+    -%}
+    {%- if video_id != blank or request.design_mode -%}
+      <div class="product-carousel__item" {{ block.shopify_attributes }}>
+        <figure class="video-carousel__slide video-carousel__slide--{{ block.settings.shape | default: 'vertical' }}">
+          <div class="video-carousel__frame">
+            {%- if video_id != blank -%}
+              <iframe
+                src="https://geo.dailymotion.com/player/{{ player_id | url_encode }}.html?video={{ video_id | url_encode }}"
+                title="{{ video_title | escape }}"
+                allow="autoplay; fullscreen; picture-in-picture; web-share"
+                allowfullscreen
+                loading="lazy"
+              ></iframe>
+            {%- endif -%}
+          </div>
+          {%- if block.settings.title != blank -%}
+            <figcaption class="video-carousel__title">{{ block.settings.title | escape }}</figcaption>
+          {%- endif -%}
+        </figure>
+      </div>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+<div class="video-carousel video-carousel--{{ s.height | default: 'medium' }}" {% if panel_style != blank %}style="{{ panel_style }}"{% endif %}>
+  {%- render 'product-carousel',
+    items: video_items,
+    heading: s.heading,
+    heading_id: heading_id,
+    overhang: s.overhang
+  -%}
+</div>
+
+{% schema %}
+{
+  "name": "Video carousel",
+  "tag": "section",
+  "max_blocks": 12,
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "player_id",
+      "label": "Dailymotion player ID",
+      "info": "From Dailymotion Partner HQ (Players). Defaults to the site's standard player.",
+      "default": "x1krmq"
+    },
+    {
+      "type": "select",
+      "id": "height",
+      "label": "Video height",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "medium",
+      "info": "Every video is this tall. Each one's width follows its own shape."
+    },
+    {
+      "type": "range",
+      "id": "overhang",
+      "min": 40,
+      "max": 200,
+      "step": 10,
+      "default": 80,
+      "unit": "px",
+      "label": "Peek amount",
+      "info": "How much of the next video stays visible at the right edge"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "info": "Leave blank for black."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "video",
+      "name": "Video",
+      "settings": [
+        {
+          "type": "text",
+          "id": "video_url",
+          "label": "Dailymotion video",
+          "info": "Paste the full Dailymotion URL or just the video ID (e.g. x9abc12)"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "info": "Optional. Shown under the video."
+        },
+        {
+          "type": "select",
+          "id": "shape",
+          "label": "Video shape",
+          "options": [
+            { "value": "vertical", "label": "Vertical (9:16)" },
+            { "value": "horizontal", "label": "Horizontal (16:9)" }
+          ],
+          "default": "vertical",
+          "info": "Mix both in one slider — each video is sized to its own shape."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Video carousel",
+      "blocks": [
+        { "type": "video", "settings": { "video_url": "xat07am", "title": "Ingrid Best on Building Equity Through Business", "shape": "vertical" } },
+        { "type": "video", "settings": { "video_url": "xat00wi", "title": "ESSENCE Black Women In Hollywood 2025 Pre-Show", "shape": "horizontal" } },
+        { "type": "video", "settings": { "video_url": "xat078y", "title": "Mariah the Scientist", "shape": "vertical" } },
+        { "type": "video", "settings": { "video_url": "xat0m92", "title": "“I Met My Person”: Terrence J & Mikalah’s Dubai Wedding", "shape": "horizontal" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

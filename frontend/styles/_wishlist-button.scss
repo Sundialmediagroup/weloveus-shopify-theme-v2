@@ -1,0 +1,65 @@
+// Wishlist heart — snippets/wishlist-button.liquid.
+// Two placements: over the card image, and beside Add to cart on the PDP.
+
+.wishlist-button {
+  --heart-fill: none;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-fg);
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    opacity var(--transition-fast),
+    transform var(--transition-fast);
+
+  // The svg's `fill="none"` attribute is overridden here, so the path inherits
+  // whatever the state below sets — no reaching into the svg's children.
+  .icon--heart {
+    fill: var(--heart-fill);
+    transition: fill var(--transition-fast);
+  }
+
+  &:hover {
+    transform: scale(1.08);
+  }
+
+  &[aria-pressed='true'] {
+    --heart-fill: currentColor;
+
+    color: var(--color-secondary);
+  }
+
+  &.is-pending {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+// Top corner of the card image, opposite the sale badge.
+.wishlist-button--card {
+  position: absolute;
+  inset-block-start: var(--space-2);
+  inset-inline-end: var(--space-2);
+  z-index: var(--z-raised);
+  width: var(--space-10);
+  height: var(--space-10);
+  border-radius: var(--radius-full);
+  background-color: color-mix(in srgb, var(--color-bg) 85%, transparent);
+}
+
+// Square to the buy row, so it always matches the submit button's height.
+.wishlist-button--pdp {
+  flex: 0 0 auto;
+  align-self: stretch;
+  aspect-ratio: 1;
+  border: var(--space-px) solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+  background: none;
+
+  .icon {
+    width: var(--space-5);
+    height: var(--space-5);
+  }
+}

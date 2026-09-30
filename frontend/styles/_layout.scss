@@ -1,0 +1,60 @@
+@use 'abstracts/mixins' as *;
+
+// Page-level spacing standards
+// The gap under the header matches the frame on the page's other edges, so
+// it follows --site-frame instead of holding a spacing value of its own.
+#main-content {
+  padding-top: var(--site-frame);
+}
+
+#main-content .shopify-section {
+  padding-bottom: var(--space-6);
+
+  @include respond-to('lg') {
+    padding-bottom: var(--space-12);
+  }
+}
+
+// Centered page container
+.container {
+  @include container;
+}
+
+// Sections — vertical padding for page sections
+.section {
+  padding-block: var(--space-16);
+
+  @include respond-to('lg') {
+    padding-block: var(--space-24);
+  }
+}
+
+// 12-column CSS grid
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), 1fr);
+  gap: var(--grid-gap);
+}
+
+// Flex column stack with optional gap via --stack-gap
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-gap, var(--space-4));
+}
+
+// Flex row cluster — wraps, aligns center
+.cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cluster-gap, var(--space-4));
+}
+
+// Overlay utilities
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  background-color: var(--color-scrim);
+}

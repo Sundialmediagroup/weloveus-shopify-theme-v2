@@ -1,0 +1,184 @@
+@use 'abstracts/mixins' as *;
+
+// ─── Heading scale ────────────────────────────────────────────────────────────
+
+h1 {
+  font-size: var(--text-5xl);
+  letter-spacing: var(--tracking-tighter);
+
+  @include respond-to('lg') {
+    font-size: var(--text-7xl);
+  }
+}
+
+h2 {
+  font-size: var(--text-3xl);
+  letter-spacing: var(--tracking-tight);
+
+  @include respond-to('lg') {
+    font-size: var(--text-4xl);
+  }
+}
+
+h3 {
+  font-size: var(--text-2xl);
+  letter-spacing: var(--tracking-tight);
+
+  @include respond-to('lg') {
+    font-size: var(--text-3xl);
+  }
+}
+
+h4 {
+  font-size: var(--text-xl);
+  letter-spacing: var(--tracking-tight);
+}
+
+h5 {
+  font-size: var(--text-lg);
+  letter-spacing: var(--tracking-normal);
+}
+
+h6 {
+  font-size: var(--text-base);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+// ─── Body copy ────────────────────────────────────────────────────────────────
+
+p {
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  max-width: 68ch;
+
+  & + p {
+    margin-top: var(--space-4);
+  }
+}
+
+strong, b {
+  font-weight: var(--weight-semibold);
+}
+
+em, i {
+  font-style: italic;
+}
+
+small {
+  font-size: var(--text-sm);
+  color: var(--color-fg-muted);
+}
+
+// ─── Lists ────────────────────────────────────────────────────────────────────
+
+// Only style lists inside rich text — bare lists stay unstyled (reset)
+.rte ul,
+.rte ol {
+  padding-left: var(--space-6);
+  line-height: var(--leading-relaxed);
+
+  & + p,
+  p + & {
+    margin-top: var(--space-4);
+  }
+}
+
+.rte ul {
+  list-style: disc;
+}
+
+.rte ol {
+  list-style: decimal;
+}
+
+.rte li + li {
+  margin-top: var(--space-2);
+}
+
+// ─── Rich text (Shopify .rte) ─────────────────────────────────────────────────
+// Applied to any block rendered by the Shopify rich text editor
+
+.rte {
+  > * + * {
+    margin-top: var(--space-4);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    margin-top: var(--space-8);
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  blockquote {
+    padding-left: var(--space-6);
+    border-left: 2px solid var(--color-border-strong);
+    color: var(--color-fg-muted);
+    font-style: italic;
+  }
+
+  a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  img {
+    border-radius: var(--radius-sm);
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--color-border);
+    margin-block: var(--space-8);
+  }
+}
+
+// Rich text one step up the type scale, for short editorial passages that
+// should read as a considered statement rather than body filler. Lives here
+// because it has to override the element-level `p` size set above.
+.rte--lg {
+  font-size: var(--text-lg);
+
+  p,
+  li {
+    font-size: inherit;
+    line-height: var(--leading-relaxed);
+  }
+}
+
+// ─── Utilities ────────────────────────────────────────────────────────────────
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.skip-to-content {
+  position: fixed;
+  top: var(--space-4);
+  left: var(--space-4);
+  z-index: var(--z-toast);
+  padding: var(--space-3) var(--space-6);
+  background-color: var(--color-fg);
+  color: var(--color-fg-inverted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wide);
+  border-radius: var(--radius-sm);
+  transform: translateY(calc(-100% - var(--space-8)));
+  transition: transform var(--transition-base);
+
+  &:focus-visible {
+    transform: translateY(0);
+    outline-color: var(--color-fg-inverted);
+  }
+}

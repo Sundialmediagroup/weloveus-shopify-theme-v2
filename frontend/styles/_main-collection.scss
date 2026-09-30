@@ -1,0 +1,172 @@
+@use 'abstracts/mixins' as *;
+
+// ─── Header ────────────────────────────────────────────────────────────────────
+
+.collection-header {
+  margin-bottom: var(--space-8);
+}
+
+.collection-header__meta {
+  margin-top: var(--space-3);
+}
+
+// ─── Two-column layout ─────────────────────────────────────────────────────────
+
+.collection-layout {
+  @include respond-to('lg') {
+    display: grid;
+    grid-template-columns: var(--sidebar-width, 14rem) 1fr;
+    gap: var(--space-10);
+    align-items: start;
+  }
+}
+
+// ─── Sidebar column ────────────────────────────────────────────────────────────
+
+// Below `lg`: two dropdowns side by side at the top of the page, each opening
+// its menu in a panel across the full width beneath them. From `lg`: the
+// sidebar column, sticky, with both menus open and no summaries.
+.collection-aside {
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+
+  @include respond-to('lg') {
+    display: block;
+    margin-bottom: 0;
+    // Optical alignment: nudges the first link's cap-height down to meet the
+    // h1's, which sits low inside its own line box at --text-7xl.
+    padding-top: var(--space-4);
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-4));
+    align-self: start;
+    max-height: calc(100vh - var(--header-height) - var(--space-16));
+    overflow-y: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+}
+
+// Square, compact field — the same treatment as the product option dropdowns.
+.collection-filter__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  block-size: var(--space-10);
+  padding-inline: var(--space-3) var(--space-2);
+  font-size: var(--text-sm);
+  border: 1px solid var(--color-border-strong);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  .icon {
+    flex: 0 0 auto;
+    transition: transform var(--transition-fast);
+  }
+
+  .collection-filter[open] & {
+    border-color: var(--color-fg);
+
+    .icon {
+      transform: rotate(180deg);
+    }
+  }
+
+  @include respond-to('lg') {
+    display: none;
+  }
+}
+
+// Positioned against .collection-aside, not its own <details>, so it spans
+// both dropdowns rather than just the one that opened it.
+.collection-filter__panel {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: calc(100% + var(--space-2));
+  z-index: var(--z-dropdown);
+  max-block-size: 60vh;
+  overflow-y: auto;
+  padding: var(--space-4);
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-fg);
+
+  // The dropdown's own label already names the menu.
+  @include respond-below('lg') {
+    .collection-sidebar__heading,
+    .collection-sort__heading {
+      @include visually-hidden;
+    }
+
+    // The panel's own border frames the list, so the menus' editorial side
+    // rule would only double it.
+    .collection-sidebar,
+    .collection-sort {
+      margin-top: 0;
+      padding-inline-start: 0;
+      border-inline-start: 0;
+    }
+  }
+
+  @include respond-to('lg') {
+    position: static;
+    max-block-size: none;
+    overflow: visible;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+}
+
+// From `lg` a closed <details> must still show its menu, so its content box
+// is forced visible — the summaries that would toggle it are hidden.
+.collection-filter::details-content {
+  @include respond-to('lg') {
+    content-visibility: visible;
+    display: contents;
+  }
+}
+
+// ─── Grid ──────────────────────────────────────────────────────────────────────
+
+.collection-products {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--grid-gap);
+
+  @include respond-to('sm') {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @include respond-to('lg') {
+    grid-template-columns: repeat(var(--columns-desktop, 4), 1fr);
+  }
+}
+
+// ─── Load more ─────────────────────────────────────────────────────────────────
+// main-collection.js appends pages above this; the link is the no-JS fallback
+// and, after the automatic loads, the way on.
+
+.main-collection__more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  margin-block-start: var(--space-8);
+}
+
+.main-collection__count {
+  font-size: var(--text-sm);
+  color: var(--color-fg-muted);
+}

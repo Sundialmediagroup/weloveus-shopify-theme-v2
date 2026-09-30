@@ -1,0 +1,79 @@
+{%- comment -%}
+  Renders the search form.
+
+  One snippet for both placements — the header bar and the search page — so the
+  two never drift apart in what they actually query.
+
+  Accepts:
+  - input_id:    {String}  Required. id for the input, and what the <label>
+                           points at. Both placements can be on screen at once
+                           on the search page, so this cannot be hardcoded.
+  - modifier:    {String}  BEM modifier suffix, e.g. 'header'. Optional.
+  - placeholder: {String}  Placeholder text. Defaults to the locale string.
+  - value:       {String}  Prefilled term. Defaults to `search.terms`, which is
+                           set on the search page and blank everywhere else.
+  - predictive:  {Boolean} Wire the input up to the suggestions panel in
+                           search.js. Default: false.
+  - autofocus:   {Boolean} Focus the input on load. Default: false.
+
+  Products only, because that is all the storefront search endpoint returns —
+  `type=collection` is accepted and silently ignored there. Brands matter just
+  as much in this catalogue, so they are matched separately: the suggestions
+  panel asks the predictive endpoint for them (it does support collections) and
+  the results page scans brand collection titles in Liquid.
+
+  `options[prefix]=last` makes the final word match as a prefix, so "silk paj"
+  finds the pyjama set. Without it Shopify only matches whole words and the
+  results empty out while you are still typing.
+{%- endcomment -%}
+
+{%- liquid
+  # Not `placeholder | default: '...' | t` — that pipes a caller-supplied
+  # string through `t` as if it were a key and renders "Translation missing".
+  assign form_placeholder = placeholder
+  if form_placeholder == blank
+    assign form_placeholder = 'general.search.placeholder' | t
+  endif
+  assign form_value = value | default: search.terms
+  assign form_class = 'search-form'
+  if modifier != blank
+    assign form_class = form_class | append: ' search-form--' | append: modifier
+  endif
+-%}
+
+<form
+  class="{{ form_class }}"
+  action="{{ routes.search_url }}"
+  method="get"
+  role="search"
+  {% if predictive %}data-predictive-form{% endif %}
+>
+  <label class="visually-hidden" for="{{ input_id }}">
+    {{- 'general.search.label' | t -}}
+  </label>
+
+  <input type="hidden" name="type" value="product">
+  <input type="hidden" name="options[prefix]" value="last">
+
+  {%- comment -%}
+    `autocomplete="off"` so the browser's own history dropdown does not cover
+    the suggestions panel. `enterkeyhint` labels the virtual keyboard's action
+    key, which is the whole submit affordance on a phone.
+  {%- endcomment -%}
+  <input
+    class="search-form__input"
+    id="{{ input_id }}"
+    type="search"
+    name="q"
+    value="{{ form_value | escape }}"
+    placeholder="{{ form_placeholder | escape }}"
+    autocomplete="off"
+    enterkeyhint="search"
+    {% if predictive %}data-predictive-input{% endif %}
+    {% if autofocus %}autofocus{% endif %}
+  >
+
+  <button class="search-form__submit" type="submit" aria-label="{{ 'general.search.submit' | t }}">
+    {%- render 'icon', name: 'search' -%}
+  </button>
+</form>

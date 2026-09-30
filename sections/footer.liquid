@@ -1,0 +1,31 @@
+<footer class="site-footer" role="contentinfo">
+  <div class="site-footer__inner">
+
+    {%- if section.settings.menu != blank -%}
+      <nav class="site-footer__nav" aria-label="{{ 'general.accessibility.nav_footer' | t }}">
+        {%- for link in linklists[section.settings.menu].links -%}
+          <a class="site-footer__nav-link" href="{{ link.url }}">{{ link.title }}</a>
+        {%- endfor -%}
+      </nav>
+    {%- endif -%}
+
+    <p class="site-footer__legal">
+      &copy; {{ 'now' | date: '%Y' }} {{ shop.name }}
+    </p>
+
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer",
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "menu",
+      "default": "footer",
+      "label": "Menu"
+    }
+  ]
+}
+{% endschema %}

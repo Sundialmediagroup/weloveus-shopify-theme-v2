@@ -1,0 +1,161 @@
+{%- comment -%}
+  Ask Essie — floating shopping chat, docked to the bottom-centre of the page.
+
+  Rendered once by layout/theme.liquid. Behaviour lives in
+  frontend/scripts/essie-chat.js and styles in frontend/styles/_essie-chat.scss.
+  The collapsed pill and the expanded panel are one element: when `data-open`
+  is set the shell widens, then the panel slides up out of the search bar.
+
+  Configured under Theme settings → Essie chat. Takes no arguments.
+
+  Also switched by the shop metafield custom.essie_enabled (Settings → Custom
+  data → Shop): false hides Essie; unset leaves it to the theme setting.
+{%- endcomment -%}
+
+{%- liquid
+  assign essie_switch = shop.metafields.custom.essie_enabled.value
+  assign essie_on = settings.essie_enabled
+  if essie_switch == false or essie_switch == 'false'
+    assign essie_on = false
+  endif
+-%}
+
+{%- if essie_on and settings.essie_api_base != blank -%}
+  <script type="application/json" id="essie-config">
+    {
+      "apiBase": {{ settings.essie_api_base | strip | json }},
+      "customerId": {% if customer %}{{ customer.id | append: '' | json }}{% else %}null{% endif %},
+      "greeting": {{ 'essie.greeting' | t | json }},
+      "starters": [
+        {{ 'essie.starter_gift' | t | json }},
+        {{ 'essie.starter_body_care' | t | json }},
+        {{ 'essie.starter_cart' | t | json }}
+      ],
+      "textLooking": {{ 'essie.looking' | t | json }},
+      "textSoldOut": {{ 'essie.sold_out' | t | json }},
+      "textCartEmpty": {{ 'essie.cart_empty' | t | json }},
+      "textSubtotal": {{ 'essie.subtotal' | t | json }},
+      "textQuantity": {{ 'essie.quantity' | t | json }},
+      "textError": {{ 'essie.error' | t | json }},
+      "textRetry": {{ 'essie.retry' | t | json }},
+      "productPrompts": {%- if request.page_type == 'product' and product -%}
+        [
+          {%- if product.vendor != blank -%}
+            {%- assign brand_prompt = 'essie.prompt_brand' | t: brand: product.vendor -%}
+            { "label": {{ brand_prompt | json }}, "message": {{ brand_prompt | json }} },
+          {%- endif -%}
+          {
+            "label": {{ 'essie.prompt_similar' | t | json }},
+            "message": {{ 'essie.prompt_similar_message' | t: title: product.title | json }}
+          },
+          {
+            "label": {{ 'essie.prompt_how' | t | json }},
+            "message": {{ 'essie.prompt_how_message' | t: title: product.title | json }}
+          }
+        ]
+      {%- else -%}
+        null
+      {%- endif %}
+    }
+  </script>
+
+  <div class="essie" data-essie>
+    <section
+      class="essie__panel"
+      id="essie-panel"
+      role="dialog"
+      aria-labelledby="essie-title"
+      data-essie-panel
+    >
+      <div class="essie__panel-inner">
+        <header class="essie__header">
+          <h2 class="essie__title" id="essie-title">{{ 'essie.title' | t }}</h2>
+          <button class="essie__new" type="button" data-essie-new>{{ 'essie.new_chat' | t }}</button>
+          <button
+            class="essie__close"
+            type="button"
+            data-essie-close
+            aria-label="{{ 'essie.close' | t | escape }}"
+          >
+            {%- render 'icon', name: 'close' -%}
+          </button>
+        </header>
+
+        <div
+          class="essie__messages"
+          role="log"
+          aria-live="polite"
+          aria-relevant="additions"
+          data-essie-messages
+        ></div>
+      </div>
+    </section>
+
+    {%- comment -%}
+      Product pages only: suggestions that rise out of the closed bar. Filled
+      from the config above; shown after a moment, gone once Essie opens.
+    {%- endcomment -%}
+    {%- if request.page_type == 'product' and product -%}
+      <div class="essie__prompts" data-essie-prompts inert>
+        <div class="essie__prompts-inner">
+          <div class="essie__prompts-content">
+            <div class="essie__prompts-header">
+              <p class="essie__prompts-title">{{ 'essie.prompts_title' | t }}</p>
+              <button
+                class="essie__prompts-dismiss"
+                type="button"
+                aria-label="{{ 'essie.prompts_dismiss' | t | escape }}"
+                data-essie-prompts-dismiss
+              >
+                {%- render 'icon', name: 'close' -%}
+              </button>
+            </div>
+            <div class="essie__chips" data-essie-prompts-list></div>
+          </div>
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- comment -%}
+      The search bar is the same element open or closed. While closed, the pill
+      button covers it and the form is inert; opening hands focus to the input.
+    {%- endcomment -%}
+    <div class="essie__bar">
+      <form class="essie__composer" data-essie-form inert>
+        <span class="essie__monogram" aria-hidden="true">
+          <svg viewBox="0 0 21 25" focusable="false">
+            <path d="M11.18 24.284C4.68 24.284 0 19.396 0 12.428C0 5.304 5.044 0 11.544 0C16.484 0 19.708 3.068 20.488 7.748H4.16C4.004 8.58 3.9 9.516 3.9 10.504C3.9 17.368 7.644 21.84 13.624 21.84C16.536 21.84 18.772 20.748 20.176 19.396L20.436 19.656C18.304 22.516 15.132 24.284 11.18 24.284ZM4.472 6.5H16.38C15.808 3.172 13.884 1.3 10.868 1.3C8.008 1.3 5.512 3.068 4.472 6.5Z" fill="currentColor"/>
+          </svg>
+        </span>
+        <label class="visually-hidden" for="essie-input">{{ 'essie.input_label' | t }}</label>
+        <input
+          class="essie__input"
+          id="essie-input"
+          type="text"
+          autocomplete="off"
+          enterkeyhint="send"
+          placeholder="{{ 'essie.placeholder' | t | escape }}"
+          data-essie-input
+        >
+        <button
+          class="essie__send"
+          type="submit"
+          aria-label="{{ 'essie.send' | t | escape }}"
+          data-essie-send
+        >
+          {%- render 'icon', name: 'arrow-right' -%}
+        </button>
+      </form>
+
+      <button
+        class="essie__pill"
+        type="button"
+        aria-expanded="false"
+        aria-controls="essie-panel"
+        data-essie-open
+      >
+        <span class="visually-hidden">{{ 'essie.placeholder' | t }}</span>
+      </button>
+    </div>
+  </div>
+{%- endif -%}

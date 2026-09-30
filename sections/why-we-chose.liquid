@@ -1,0 +1,51 @@
+{%- comment -%}
+  "Why we chose this creator" for a brand collection page.
+
+  The rationale is per-brand, so it comes from a collection metafield rather
+  than a section setting — templates/collection.json is shared by every
+  collection, so editor copy would repeat on all of them. Only the heading,
+  which is the same on every brand page, lives in settings.
+
+  Collection metafield (namespace `custom`):
+  - why_we_chose      Rich text
+
+  Renders nothing when the metafield is empty.
+{%- endcomment -%}
+
+{%- liquid
+  assign body = collection.metafields.custom.why_we_chose
+-%}
+
+{%- if body != blank -%}
+  <div class="why-we-chose">
+    {%- if section.settings.heading != blank -%}
+      <h2 class="why-we-chose__heading">{{ section.settings.heading }}</h2>
+    {%- endif -%}
+
+    <div class="why-we-chose__body rte rte--lg">{{ body }}</div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Why We Chose",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Copy is read from this collection's why_we_chose metafield. The section hides itself when it is empty."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Why We Chose Them"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Why We Chose"
+    }
+  ]
+}
+{% endschema %}

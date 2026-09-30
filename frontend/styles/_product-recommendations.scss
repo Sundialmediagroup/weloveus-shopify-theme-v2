@@ -1,0 +1,26 @@
+@use 'abstracts/mixins' as *;
+
+// Recommendations wrapper. Ships empty and is filled in by
+// product-recommendations.js, so it must collapse until it has content.
+
+.product-recommendations {
+  // No margin-top. Both carousels are `tag: section`, so the brand carousel
+  // above already contributes the standard `#main-content .shopify-section`
+  // padding-bottom (see _layout.scss). A margin here stacked on top of that
+  // padding and read as a gap between the two sliders.
+  //
+  // Nothing collapses the box when it is empty — the script waits for an
+  // IntersectionObserver callback, and a `display: none` element has no box to
+  // intersect, so the observer would never fire and recommendations would
+  // never load. An empty block is already zero-height.
+  display: block;
+}
+
+.product-carousel__heading {
+  font-size: var(--text-xl);
+  letter-spacing: var(--tracking-tight);
+
+  @include respond-to('lg') {
+    font-size: var(--text-2xl);
+  }
+}

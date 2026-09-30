@@ -1,0 +1,59 @@
+<style>
+  .main-content {
+    padding-block: var(--space-24);
+    text-align: center;
+  }
+
+  .main-content__heading {
+    font-size: var(--text-5xl);
+    letter-spacing: var(--tracking-tighter);
+  }
+
+  .main-content__subheading {
+    margin-top: var(--space-6);
+    font-size: var(--text-lg);
+    color: var(--color-fg-muted);
+    max-width: 60ch;
+    margin-inline: auto;
+  }
+</style>
+
+<section class="main-content section">
+  <div class="container">
+
+    {%- if section.settings.heading != blank -%}
+      <h1 class="main-content__heading">{{ section.settings.heading }}</h1>
+    {%- endif -%}
+
+    {%- if section.settings.subheading != blank -%}
+      <p class="main-content__subheading">{{ section.settings.subheading }}</p>
+    {%- endif -%}
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Main Content",
+  "tag": "section",
+  "class": "main-content-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "WeLoveUs"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Main Content"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,140 @@
+{%- comment -%}
+  Renders the collection category sidebar — a three-level category tree driven
+  by the "Category Menu" navigation menu (Content → Menus in admin).
+
+  Not a theme setting by design: the sidebar is a fixed part of the collection
+  page. To point it at a different menu, change `menu_handle` below.
+
+  Branches expand server-side — a branch is open when the current page is that
+  link or sits beneath it — so the tree is usable navigation with no JavaScript.
+  Every link carries `data-category` as the hook for grid filtering.
+
+  The nav is named by its visible heading via aria-labelledby.
+
+  Accepts:
+  - default_sort: {String} Sort key to build into collection links. Optional,
+    but pass it: main-collection redirects any collection URL that arrives
+    without `sort_by`, and a redirect means rendering the whole grid twice.
+    Building the parameter into the href here is what keeps category switching
+    to a single page load.
+  - all_sort:     {String} Sort key for links to All products (/collections/all).
+    Optional; falls back to `default_sort`.
+{%- endcomment -%}
+
+{%- liquid
+  assign menu_handle = 'category-menu'
+  assign menu_links = linklists[menu_handle].links
+-%}
+
+{%- if menu_links.size > 0 -%}
+  <nav class="collection-sidebar" aria-labelledby="collection-sidebar-heading">
+
+    <h2 class="collection-sidebar__heading" id="collection-sidebar-heading">
+      {{- 'sections.collection.sidebar_label' | t -}}
+    </h2>
+
+    <ul class="collection-sidebar__list">
+      {%- for link in menu_links -%}
+        {%- comment -%}
+          `active` matches on URL hierarchy, `child_active`/`child_current` on
+          menu nesting. A child collection URL is rarely a URL descendant of its
+          parent (/collections/kids-clothing is not under /collections/kids), so
+          both families of check are needed to open the right branch.
+        {%- endcomment -%}
+        {%- liquid
+          assign l1_open = false
+          if link.current or link.active or link.child_active or link.child_current
+            assign l1_open = true
+          endif
+
+          # Only collection URLs take the sort parameter, and only when they do
+          # not already carry a query string of their own.
+          assign l1_href = link.url
+          if default_sort != blank and l1_href contains '/collections/'
+            unless l1_href contains '?'
+              assign l1_sort = default_sort
+              if link.url == routes.all_products_collection_url
+                assign l1_sort = all_sort | default: default_sort
+              endif
+              assign l1_href = l1_href | append: '?sort_by=' | append: l1_sort
+            endunless
+          endif
+        -%}
+        <li class="collection-sidebar__item">
+          <a
+            class="collection-sidebar__link collection-sidebar__link--l1"
+            href="{{ l1_href }}"
+            data-category="{{ link.title | escape }}"
+            {% if link.current %}aria-current="page"{% endif %}
+          >
+            {{- link.title | escape -}}
+          </a>
+
+          {%- if l1_open and link.links.size > 0 -%}
+            <ul class="collection-sidebar__list collection-sidebar__list--nested">
+              {%- for child in link.links -%}
+                {%- liquid
+                  assign l2_open = false
+                  if child.current or child.active or child.child_active or child.child_current
+                    assign l2_open = true
+                  endif
+
+                  assign l2_href = child.url
+                  if default_sort != blank and l2_href contains '/collections/'
+                    unless l2_href contains '?'
+                      assign l2_sort = default_sort
+              if child.url == routes.all_products_collection_url
+                assign l2_sort = all_sort | default: default_sort
+              endif
+              assign l2_href = l2_href | append: '?sort_by=' | append: l2_sort
+                    endunless
+                  endif
+                -%}
+                <li class="collection-sidebar__item">
+                  <a
+                    class="collection-sidebar__link collection-sidebar__link--l2"
+                    href="{{ l2_href }}"
+                    data-category="{{ child.title | escape }}"
+                    {% if child.current %}aria-current="page"{% endif %}
+                  >
+                    {{- child.title | escape -}}
+                  </a>
+
+                  {%- if l2_open and child.links.size > 0 -%}
+                    <ul class="collection-sidebar__list collection-sidebar__list--nested">
+                      {%- for grandchild in child.links -%}
+                        {%- liquid
+                          assign l3_href = grandchild.url
+                          if default_sort != blank and l3_href contains '/collections/'
+                            unless l3_href contains '?'
+                              assign l3_sort = default_sort
+              if grandchild.url == routes.all_products_collection_url
+                assign l3_sort = all_sort | default: default_sort
+              endif
+              assign l3_href = l3_href | append: '?sort_by=' | append: l3_sort
+                            endunless
+                          endif
+                        -%}
+                        <li class="collection-sidebar__item">
+                          <a
+                            class="collection-sidebar__link collection-sidebar__link--l3"
+                            href="{{ l3_href }}"
+                            data-category="{{ grandchild.title | escape }}"
+                            {% if grandchild.current %}aria-current="page"{% endif %}
+                          >
+                            {{- grandchild.title | escape -}}
+                          </a>
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                  {%- endif -%}
+                </li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+
+  </nav>
+{%- endif -%}

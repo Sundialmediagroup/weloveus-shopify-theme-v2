@@ -1,0 +1,14 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-wishlist",
+      "settings": {
+        "heading": "[name]'s wishlist",
+        "columns_desktop": 5
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}
