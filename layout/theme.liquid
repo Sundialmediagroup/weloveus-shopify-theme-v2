@@ -34,6 +34,8 @@
 
     {{ content_for_header }}
 
+    {%- render 'analytics' -%}
+
     {%- render 'fonts' -%}
     {%- render 'font-face' -%}
     {%- render 'css-variables' -%}
@@ -57,6 +59,13 @@
       is present on every page and stays out of the theme editor.
     {%- endcomment -%}
     {%- render 'brand-directory' -%}
+
+    {%- comment -%}
+      Rendered directly before the footer, not at the end of <body>: the Essie
+      bar docks on the footer's top edge by being sticky at this point in the
+      page (see _essie-chat.scss).
+    {%- endcomment -%}
+    {%- render 'essie-chat' -%}
 
     {% section 'footer' %}
 
@@ -89,8 +98,5 @@
       </script>
       <p class="visually-hidden" role="status" aria-live="polite" data-wishlist-status></p>
     {%- endif -%}
-
-    {%- render 'essie-chat' -%}
-
   </body>
 </html>

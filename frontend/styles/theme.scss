@@ -19,6 +19,11 @@
 @use 'collection-grid';
 @use 'main-collection';
 @use 'main-search';
+@use 'editorial';
+@use 'main-blog';
+@use 'main-article';
+@use 'main-404';
+@use 'main-content';
 @use 'collection-sidebar';
 @use 'collection-sort';
 @use 'creator-profile';
@@ -39,3 +44,6 @@
 @use 'main-wishlist';
 @use 'wishlist-button';
 @use 'essie-chat';
+
+// Last, so a holdout outranks the feature's own display rules.
+@use 'experiments';

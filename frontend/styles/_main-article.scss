@@ -1,0 +1,15 @@
+@use 'abstracts/mixins' as *;
+
+// Blog article — sections/main-article.liquid. The article itself is the
+// shared editorial block (_editorial.scss).
+
+// "More from" shares the product carousel's heading size, so the two sections
+// after the post read as a pair.
+.main-article__more-heading {
+  font-size: var(--text-xl);
+  letter-spacing: var(--tracking-tight);
+
+  @include respond-to('lg') {
+    font-size: var(--text-2xl);
+  }
+}

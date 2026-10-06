@@ -8,9 +8,9 @@
 
 .promo-banner__text {
   display: block;
-  font-size: clamp(2rem, 5vw, 6rem);
-  font-weight: var(--weight-black);
+  font-size: clamp(var(--text-4xl), 5vw, var(--text-8xl));
+  font-weight: var(--weight-bold);
   text-transform: uppercase;
   letter-spacing: var(--tracking-tighter);
-  line-height: 1;
+  line-height: var(--leading-none);
 }

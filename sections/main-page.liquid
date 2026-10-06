@@ -1,0 +1,96 @@
+{%- comment -%}
+  Default page template — About, Delivery, Returns, Terms and the rest.
+
+  Laid out as an editorial page rather than a text dump: the title full width
+  over a subtle rule, as on collection pages, then the content in a reading
+  column capped at about 66 characters a line. From `lg` an aside to its left
+  holds the page's meta and, on long pages, an "On this page" list of its h2s,
+  sticky while the content scrolls. Any products the page links to follow as
+  product cards. Styles are the shared editorial block
+  (_editorial.scss), which blog articles use too.
+
+  The contents list is built by editorial-contents.js from the rich text, since the
+  headings live in the merchant's content; it stays hidden on short pages and
+  with no JavaScript.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+-%}
+
+<article class="editorial">
+
+  <header class="editorial__header">
+    <h1 class="editorial__title">{{ page.title | escape }}</h1>
+  </header>
+
+  <div class="editorial__layout">
+
+    <aside class="editorial__aside">
+      <div class="editorial__aside-inner">
+        {%- if s.show_date and page.published_at != blank -%}
+          {%- capture page_date -%}{{ page.published_at | time_tag: format: 'date' }}{%- endcapture -%}
+          <p class="editorial__meta">{{ 'templates.page.published_html' | t: date: page_date }}</p>
+        {%- endif -%}
+
+        {%- if s.show_contents -%}
+          <nav class="editorial__contents" aria-labelledby="page-contents-heading" data-page-contents hidden>
+            <p class="editorial__contents-heading" id="page-contents-heading">{{ 'templates.page.contents' | t }}</p>
+            <ol class="editorial__contents-list" data-page-contents-list></ol>
+          </nav>
+        {%- endif -%}
+      </div>
+    </aside>
+
+    <div class="editorial__content editorial__content--lead rte rte--lg" data-page-content>
+      {%- render 'editorial-content', content: page.content -%}
+    </div>
+
+  </div>
+
+</article>
+
+{%- if s.show_products -%}
+  {%- assign shop_heading = 'templates.page.shop' | t -%}
+  {%- render 'editorial-products',
+    content: page.content,
+    heading: shop_heading,
+    heading_id: 'page-shop-heading',
+    list_name: page.title
+  -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Page",
+  "tag": "section",
+  "class": "main-page-section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_contents",
+      "label": "Show contents list",
+      "info": "Lists the page's headings beside the content, on pages with three or more",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_products",
+      "label": "Show linked products",
+      "info": "Products the page links to, as cards under it",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_date",
+      "label": "Show published date",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Page"
+    }
+  ]
+}
+{% endschema %}

@@ -2,8 +2,35 @@
   "sections": {
     "main": {
       "type": "main-cart",
+      "blocks": {
+        "secure": {
+          "type": "assurance",
+          "settings": {
+            "text": "Secure checkout",
+            "icon": "lock"
+          }
+        },
+        "delivery": {
+          "type": "assurance",
+          "settings": {
+            "text": "Delivery options shown at checkout",
+            "icon": "truck"
+          }
+        }
+      },
+      "block_order": ["secure", "delivery"],
       "settings": {}
+    },
+    "discover": {
+      "type": "product-carousel",
+      "settings": {
+        "heading": "You may also like",
+        "products_to_show": 12,
+        "cards_desktop": 4,
+        "cards_mobile": 2,
+        "overhang": 80
+      }
     }
   },
-  "order": ["main"]
+  "order": ["main", "discover"]
 }

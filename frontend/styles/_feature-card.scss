@@ -37,7 +37,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform var(--duration-slow) var(--ease-out);
 }
 
 .feature-card__placeholder {
@@ -64,7 +63,7 @@
 .feature-card__title {
   // Display size that scales with the viewport, not the h3 element scale — the
   // panel is a fraction of the page wide.
-  font-size: clamp(var(--text-base), 1.5vw, var(--text-l));
+  font-size: clamp(var(--text-base), 1.5vw, var(--text-lg));
   overflow-wrap: anywhere; // one long brand word must not widen the panel
 }
 
@@ -101,10 +100,6 @@
 }
 
 .feature-card--link:hover {
-  .feature-card__image {
-    transform: scale(1.03);
-  }
-
   .feature-card__arrow {
     transform: translateX(var(--space-1));
   }

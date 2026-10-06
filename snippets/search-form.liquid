@@ -46,6 +46,7 @@
   action="{{ routes.search_url }}"
   method="get"
   role="search"
+  data-search-form="{{ modifier | default: 'page' }}"
   {% if predictive %}data-predictive-form{% endif %}
 >
   <label class="visually-hidden" for="{{ input_id }}">

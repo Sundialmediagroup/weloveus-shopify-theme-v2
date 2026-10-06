@@ -12,6 +12,17 @@
   }
 }
 
+// When Essie is on, its bar docks on the footer directly below this, so the
+// bottom padding makes room for it: the bar plus its gap above the footer,
+// and the same gap again between it and the last brands.
+.brand-directory:has(~ .essie-dock) {
+  padding-block-end: calc(var(--essie-bar-height) + var(--space-6) * 2);
+
+  @include respond-to('lg') {
+    padding-block-end: calc(var(--essie-bar-height) + var(--space-10) + var(--space-6));
+  }
+}
+
 .brand-directory__title {
   padding-bottom: var(--space-4);
 }
@@ -35,9 +46,8 @@
 }
 
 .brand-directory__letter {
-  font-size: var(--text-xs);
+  @include type-label;
   font-weight: var(--weight-bold);
-  letter-spacing: var(--tracking-wider);
   color: var(--color-fg-muted);
   margin-bottom: var(--space-2);
 }

@@ -1,7 +1,9 @@
 {%- comment -%}
-  Editorial article card, laid out like a news feed entry: the date in a narrow
-  column at the inline start, then the title run into the excerpt as one
-  paragraph, with the image underneath. A rule on top separates entries.
+  Editorial article card: image, then date, title and excerpt — the blog's
+  lead story (main-blog.liquid) at card size, with the same type roles.
+
+  The excerpt is `escape_once`d: Shopify's stripped HTML still carries
+  entities like `&amp;`, which a plain `escape` would double.
 
   The title's link is stretched over the whole card (::after), so there is one
   tab stop and one accessible name, the same as the feature card.
@@ -33,7 +35,7 @@
   if article != blank
     assign card_title = article.title
     # The merchant's excerpt when there is one; otherwise the opening of the
-    # post, stripped, so it runs on from the title as plain sentence text.
+    # post, stripped, as plain text.
     if article.excerpt != blank
       assign card_excerpt = article.excerpt | strip_html | strip
     else
@@ -56,44 +58,45 @@
   class="article-card{% if card_ratio == 'natural' %} article-card--natural{% endif %}"
   {% if card_style != blank %}style="{{ card_style }}"{% endif %}
 >
-  <p class="article-card__date">
-    {%- if article != blank -%}
-      {{- article.published_at | time_tag: '%B %-d, %Y' -}}
-    {%- else -%}
-      {{- 'now' | date: '%B %-d, %Y' -}}
+  {%- if card_show_image -%}
+    {%- if card_image != blank -%}
+      <div class="article-card__media">
+        {{- card_image | image_url: width: 1200 | image_tag:
+          class: 'article-card__image',
+          alt: image_alt,
+          loading: loading_attr,
+          sizes: '(min-width: 990px) 33vw, 100vw',
+          widths: '400, 600, 800, 1000, 1200',
+          width: card_image.width,
+          height: card_image.height
+        -}}
+      </div>
+    {%- elsif article == blank -%}
+      <div class="article-card__media">
+        {{- 'lifestyle-2' | placeholder_svg_tag: 'article-card__image article-card__placeholder' -}}
+      </div>
     {%- endif -%}
-  </p>
+  {%- endif -%}
 
-  <div class="article-card__body stack">
-    <p class="article-card__text">
-      <strong class="article-card__title">
-        {%- if article != blank -%}
-          <a class="article-card__link" href="{{ article.url }}">{{ card_title | escape }}</a>
-        {%- else -%}
-          {{- card_title | escape -}}
-        {%- endif -%}
-      </strong>
-      {% if card_excerpt != blank %}{{ card_excerpt | escape }}{% endif %}
+  <div class="article-card__body">
+    <p class="article-card__date">
+      {%- if article != blank -%}
+        {{- article.published_at | time_tag: '%B %-d, %Y' -}}
+      {%- else -%}
+        {{- 'now' | date: '%B %-d, %Y' -}}
+      {%- endif -%}
     </p>
 
-    {%- if card_show_image -%}
-      {%- if card_image != blank -%}
-        <div class="article-card__media">
-          {{- card_image | image_url: width: 1200 | image_tag:
-            class: 'article-card__image',
-            alt: image_alt,
-            loading: loading_attr,
-            sizes: '(min-width: 990px) 40vw, 80vw',
-            widths: '400, 600, 800, 1000, 1200',
-            width: card_image.width,
-            height: card_image.height
-          -}}
-        </div>
-      {%- elsif article == blank -%}
-        <div class="article-card__media">
-          {{- 'lifestyle-2' | placeholder_svg_tag: 'article-card__image article-card__placeholder' -}}
-        </div>
+    <h3 class="article-card__title">
+      {%- if article != blank -%}
+        <a class="article-card__link" href="{{ article.url }}">{{ card_title | escape }}</a>
+      {%- else -%}
+        {{- card_title | escape -}}
       {%- endif -%}
+    </h3>
+
+    {%- if card_excerpt != blank -%}
+      <p class="article-card__excerpt">{{ card_excerpt | escape_once }}</p>
     {%- endif -%}
   </div>
 </article>

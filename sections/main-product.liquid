@@ -126,6 +126,7 @@
 <product-page
   class="pdp"
   data-product-url="{{ product.url }}"
+  {% render 'item-data', product: product %}
   data-text-add="{{ 'products.product.add_to_cart' | t }}"
   data-text-adding="{{ 'products.product.adding' | t }}"
   data-text-added="{{ 'products.product.added' | t }}"

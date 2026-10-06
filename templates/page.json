@@ -1,0 +1,15 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "show_contents": true,
+        "show_products": true,
+        "show_date": false
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

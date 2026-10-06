@@ -30,6 +30,8 @@
   // gap is the smaller of the two — it only ever applies to that second row.
   flex-wrap: wrap;
   gap: var(--space-3) var(--space-6);
+  // Shared with the footer's menu bar, so the two bars are the same height.
+  min-block-size: var(--bar-row);
   max-width: var(--page-width);
   margin-inline: auto;
   padding-inline: var(--page-gutter);
@@ -95,43 +97,43 @@
 .site-header__nav {
   display: none;
   align-items: center;
-  gap: var(--space-8);
+  gap: var(--space-2) var(--menu-gap);
 
   @include respond-to('lg') {
     grid-column: 1;
     grid-row: 1;
     display: flex;
     flex-wrap: wrap; // a long menu wraps in its column rather than running under the logo
-    row-gap: var(--space-2);
     min-width: 0;
   }
 }
 
-.site-header__nav-link {
-  font-size: var(--text-xs);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
+// Every header and footer menu item shares this size and tracking, and
+// underlines on hover.
+.site-header__nav-link,
+.site-header__action-label {
+  @include underline-on-hover;
+  @include type-label;
   color: var(--color-fg);
-  transition: opacity var(--transition-fast);
 
   &:hover {
-    opacity: 0.6;
     color: var(--color-fg);
   }
 }
 
-// Brands trigger — styled identically to nav links
-.site-header__brands-trigger {
-  font-size: var(--text-sm);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-  color: var(--color-fg);
-  transition: opacity var(--transition-fast);
+// The action links carry a badge beside the label; only the label underlines,
+// whenever anywhere on the link is hovered.
+.site-header__action:hover .site-header__action-label {
+  text-decoration-color: currentColor;
+}
+
+// Mega menu triggers (Brands, Categories) — nav links that stay underlined
+// while their menu is open.
+.site-header__mega-trigger {
   cursor: pointer;
 
-  &:hover,
   &[aria-expanded='true'] {
-    opacity: 0.6;
+    text-decoration-color: currentColor;
   }
 }
 
@@ -181,13 +183,21 @@
 .site-header__actions {
   display: flex;
   align-items: center;
-  gap: var(--space-5);
+  gap: var(--menu-gap);
   flex-shrink: 0;
 }
 
+// Flex on every action, not just the ones with a badge: as a plain inline box
+// the small label sat on the baseline of a 16px line and dropped below the
+// others.
 .site-header__action {
-  font-size: var(--text-sm);
+  display: flex;
+  align-items: center;
   color: var(--color-fg);
+
+  &:hover {
+    color: var(--color-fg);
+  }
 }
 
 .site-header__cart,
@@ -208,8 +218,8 @@
   min-width: 18px;
   padding-inline: var(--space-1);
   height: 18px;
-  font-size: 10px;
-  font-weight: var(--weight-medium);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-regular);
   background-color: var(--color-fg);
   color: var(--color-fg-inverted);
   border-radius: var(--radius-full);
@@ -243,16 +253,14 @@
 }
 
 .site-header__cart-panel-text {
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wider);
+  @include type-label;
 }
 
-// ─── Brands mega menu ──────────────────────────────────────────────────────────
+// ─── Mega menus ────────────────────────────────────────────────────────────────
 
 // Absolutely positioned so it overlays the page without pushing content down.
-// max-height animates so it visually grows from the header edge.
+// Height animates to --mega-height, which header.js sets from the active pane,
+// so switching menus resizes the one container rather than stacking two.
 .site-header__mega {
   position: absolute;
   top: 100%;
@@ -262,22 +270,25 @@
   background-color: color-mix(in srgb, var(--color-bg-header) 90%, transparent);
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
-  max-height: 0;
+  height: 0;
   overflow: hidden;
   pointer-events: none;
-  transition: max-height 0.35s var(--ease-out);
+  transition: height 0.35s var(--ease-out);
 
+  // The header class is what search.js clears to shut the menu.
   .site-header--mega-open & {
-    max-height: 440px;
+    height: var(--mega-height, auto);
     pointer-events: auto;
   }
 }
 
+// Inline padding is the header's frame, and the grid below repeats the inner
+// row's width and gutter, so the first column lines up with the nav links.
 .site-header__mega-inner {
-  padding: var(--space-8);
+  padding: var(--space-8) var(--site-frame);
 }
 
-// ─── Brands grid ───────────────────────────────────────────────────────────────
+// ─── Mega grid ─────────────────────────────────────────────────────────────────
 
 .site-header__mega-inner {
   max-height: 360px;
@@ -286,30 +297,65 @@
   scrollbar-color: var(--color-border-strong) transparent;
 }
 
-.site-header__brands-grid {
-  list-style: none;
+// Mirrors .brand-directory in _brand-directory.scss — same groups, column
+// counts, type and spacing — so the menus read as the same index as the footer.
+// Brands group by letter; categories by top-level link.
+.site-header__mega-grid {
+  max-width: var(--page-width);
+  margin-inline: auto;
+  padding-inline: var(--page-gutter);
   columns: 2;
   column-gap: var(--space-8);
 
+  @include respond-to('md') {
+    columns: 3;
+  }
+
   @include respond-to('lg') {
-    columns: 4;
+    columns: 5;
   }
 }
 
-.site-header__brands-grid li {
+.site-header__mega-group {
   break-inside: avoid;
+  margin-bottom: var(--space-6);
+}
+
+.site-header__mega-heading {
+  @include type-label;
+  font-weight: var(--weight-bold);
+  display: block;
+  color: var(--color-fg-muted);
   margin-bottom: var(--space-2);
 }
 
-.site-header__brand-item {
+.site-header__mega-list {
+  list-style: none;
+}
+
+.site-header__mega-list--nested {
+  padding-inline-start: var(--space-4);
+}
+
+.site-header__mega-link {
   display: block;
   font-size: var(--text-sm);
   color: var(--color-fg);
-  letter-spacing: var(--tracking-wide);
+  line-height: var(--leading-relaxed);
   transition: opacity var(--transition-fast);
 
   &:hover {
     opacity: 0.5;
     color: var(--color-fg);
   }
+}
+
+// Categories: top-level links take the sidebar's uppercase top level.
+.site-header__mega-link--parent {
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.site-header__mega-group > .site-header__mega-link--parent {
+  margin-bottom: var(--space-1);
 }

@@ -11,6 +11,18 @@
 // backwards. The shell is only as wide as its content, so clicks beside it
 // reach the page.
 
+// Zero-height, sticky to the bottom of the viewport, and placed in the page
+// directly before the footer (layout/theme.liquid). Until the footer arrives
+// it pins to the viewport's bottom edge; once it does, it stays put on the
+// footer's top edge. The browser does it as part of scrolling — no script, so
+// nothing lags behind the page.
+.essie-dock {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: var(--z-popover);
+  height: 0;
+}
+
 .essie {
   --essie-bg:        rgb(20 20 20 / 0.55);
   --essie-fg:        var(--color-neutral-0);
@@ -18,14 +30,16 @@
   --essie-line:      rgb(255 255 255 / 0.16);
   --essie-surface:   rgb(255 255 255 / 0.12);
   --essie-radius:    22px;
-  --essie-bar:       3.5rem;  // 56px search bar
+  --essie-bar:       var(--essie-bar-height);  // 56px search bar
   --essie-tile:      2.5rem;  // 40px monogram and send button
   --essie-width:     min(22rem, 100vw - var(--space-6));
   --essie-height:    calc(min(70dvh, 44rem) - var(--essie-bar)); // open panel, above the bar
   --essie-duration:  var(--duration-slow);
   --essie-widen:     var(--essie-duration); // width step; 0s where width doesn't change
 
-  position: fixed;
+  // Closed, it hangs from the zero-height dock below; open, it is fixed.
+  // Either way it sits --space-6 above whatever is beneath it.
+  position: absolute;
   inset-inline: 0;
   inset-block-end: var(--space-6);
   z-index: var(--z-popover);
@@ -46,12 +60,29 @@
 
   transition: width var(--essie-widen) var(--ease-in-out) var(--essie-duration);
 
-  // Opening: widen, then slide up.
+  // Opening: widen, then slide up. The open chat is fixed to the viewport
+  // rather than docked, so it always has the full height to open into.
+  // essie-dock.js animates the move between the two.
   &[data-open] {
     --essie-width: min(420px, 100vw - var(--space-6));
     --essie-panel-transition: height var(--essie-duration) var(--ease-in-out) var(--essie-widen);
 
+    position: fixed;
     transition: width var(--essie-widen) var(--ease-in-out);
+  }
+
+  // Set by essie-dock.js for the one-off slide between docked and fixed: the
+  // same width timing as each state above, plus the slide.
+  &.is-moving {
+    transition:
+      width var(--essie-widen) var(--ease-in-out) var(--essie-duration),
+      translate var(--essie-duration) var(--ease-in-out);
+  }
+
+  &[data-open].is-moving {
+    transition:
+      width var(--essie-widen) var(--ease-in-out),
+      translate var(--essie-duration) var(--ease-in-out);
   }
 
   // Global focus ring is dark; flip it for the dark shell.
@@ -231,9 +262,8 @@
 }
 
 .essie__prompts-title {
+  @include type-label;
   color: var(--essie-fg-muted);
-  font-size: var(--text-xs);
-  letter-spacing: 0.02em;
 }
 
 .essie__prompts-dismiss {
@@ -301,7 +331,7 @@
   flex: 1;
   font-family: var(--font-heading);
   font-size: var(--text-base);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-regular);
 }
 
 .essie__new {
@@ -428,7 +458,6 @@
 
 .essie__thinking-label {
   font-size: var(--text-xs);
-  letter-spacing: 0.02em;
   color: transparent;
   background: linear-gradient(
     100deg,
@@ -516,8 +545,8 @@
   background-color: var(--color-neutral-0);
   color: var(--color-neutral-950);
   font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
-  letter-spacing: var(--tracking-wider);
+  font-weight: var(--weight-regular);
+  letter-spacing: var(--tracking-wide);
   text-align: center;
   text-decoration: none;
   text-transform: uppercase;
@@ -584,16 +613,14 @@
 }
 
 .essie__card-vendor {
+  @include type-label;
   color: var(--color-fg-muted);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wide);
-  font-size: var(--text-2xs);
 }
 
 .essie__card-title {
   @include line-clamp(2);
 
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-regular);
 }
 
 .essie__badge {
@@ -642,5 +669,5 @@
   justify-content: space-between;
   padding-top: var(--space-2);
   border-top: 1px solid var(--essie-line);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-regular);
 }

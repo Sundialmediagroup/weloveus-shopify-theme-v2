@@ -49,6 +49,54 @@
   border-width: 0;
 }
 
+// Underlines on hover. The underline is always there, just transparent, so
+// hovering only changes its colour — nothing reflows.
+@mixin underline-on-hover {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: var(--space-1);
+  transition: text-decoration-color var(--transition-fast);
+
+  &:hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+// ─── Type roles ───────────────────────────────────────────────────────────────
+// The theme's small set of type treatments beyond the element defaults in
+// _typography.scss. Use these rather than restating size, tracking and case.
+// Söhne loads at 400 and 700 only: weights are --weight-regular or
+// --weight-bold, nothing between.
+
+// Small uppercase label: menu items, meta, dates, tags, small headings, table
+// heads and text links like "Remove" or "Continue shopping". Colour is the
+// caller's.
+@mixin type-label {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+// Large, light display line: standfirsts, pull quotes, media titles.
+@mixin type-display {
+  font-family: var(--font-heading);
+  font-size: var(--text-display);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+}
+
+// A section's statement line: text banner, featured section heading.
+@mixin type-statement {
+  font-family: var(--font-heading);
+  font-size: var(--text-statement);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+
 // Single-line text truncation with ellipsis
 @mixin truncate {
   overflow: hidden;

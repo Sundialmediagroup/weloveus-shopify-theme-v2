@@ -188,6 +188,38 @@ defaults to `--weight-regular` (Söhne 400) with tight leading and tracking.
 - Wrap any Shopify rich-text output in `.rte` — it supplies flow spacing,
   list styling, blockquotes, underlined links and `hr` rules. Bare `ul`/`ol` are
   unstyled by the reset on purpose.
+- **Weights are `--weight-regular` or `--weight-bold`, nothing else.** Söhne
+  loads at 400 and 700 only, so medium, semibold and black just snap to one of
+  those two and misstate the design.
+- **Type roles.** Beyond the element defaults, text takes one of these mixins
+  from `abstracts/mixins` rather than restating size, tracking and case:
+
+  | Mixin | Treatment | Used for |
+  |---|---|---|
+  | `type-label` | `--text-xs`, regular, `--tracking-wide`, uppercase | Menu items, meta and dates, tags, small headings (summary, contents, filter groups), table heads, text links like Remove / Continue shopping |
+  | `type-display` | `--text-display` (fluid xl → 3xl), heading font, snug, tight | Standfirsts, pull quotes, media titles |
+  | `type-statement` | `--text-statement` (fluid 2xl → 5xl), heading font, tight | A section's one big line: text banner, featured section |
+
+  Body text is `--text-base`, secondary text `--text-sm`; neither is tracked.
+  Letter-spacing goes on uppercase text only, and uppercase text is always
+  `--tracking-wide` (the logo wordmark is the one exception). Colour is set by
+  the caller, never by the role. The A–Z index letters add `--weight-bold` to
+  `type-label`.
+- **Measure.** Running text is capped at `--measure` (38rem, ~66 characters a
+  line at `--text-lg`); never let body copy run the width of a wide column.
+  Images, rules and tables inside a reading column share its width, so the
+  column keeps two clean edges.
+- **Alignment.** Text is start-aligned, everywhere — page headers, empty
+  states, 404. No centred blocks of copy. Rich text pasted in with inline
+  alignment, sizes or colours is reset in `_editorial.scss`.
+- **Links.** Three kinds, never mixed:
+  inline links in running text are always underlined (quiet
+  `--color-fg-subtle` line that darkens on hover — `.rte a`);
+  navigation and label links carry `underline-on-hover`;
+  whole-card links stretch the title's link over the card and underline the
+  title on hover. Products mentioned in editorial copy are also shown as product
+  cards beneath it (`snippets/editorial-products.liquid`), never left as text
+  links alone.
 - Fonts load from `snippets/fonts.liquid` (self-hosted Söhne woff2, 400/700,
   `font-display: swap`). Use `--font-heading` / `--font-body`, never the family
   name.
@@ -201,7 +233,7 @@ defaults to `--weight-regular` (Söhne 400) with tight leading and tracking.
 `_components.scss` holds only genuinely global primitives:
 
 - `.btn` + `.btn--primary` / `--secondary` / `--ghost` / `--sm` / `--lg`.
-  Uppercase, `--tracking-wider`, pill radius. Handles `:disabled` **and**
+  Uppercase, `--tracking-wide`, pill radius. Handles `:disabled` **and**
   `[aria-disabled="true"]`.
 - `.input` — full-width, `--radius-sm`, visible `:focus-visible` ring.
 - `.badge` — pill, uppercase, `--text-xs`.
@@ -280,6 +312,25 @@ Vanilla ES modules. No framework, no bundled runtime beyond Vite.
 - `theme.js` swaps `html.no-js` → `html.js`, so `.no-js` selectors are a valid
   progressive-enhancement hook.
 
+### Analytics
+
+Feature tracking runs through `frontend/scripts/analytics.js`; GA4 receives it
+via the custom pixel in `frontend/pixels/`. The Google & YouTube app already
+sends page views and ecommerce events — never send those again from the theme.
+
+- Send events with `track(name, params)`. Use GA4's recommended event names
+  (`select_item`, `view_item_list`, `add_to_wishlist`) where one fits; otherwise
+  snake_case, prefixed with the feature (`essie_open`). Add any new event name
+  to the pixel's `THEME_EVENTS`, and register new parameters in GA4.
+- Any list of products gets `data-item-list="<id>"` and
+  `data-item-list-name`; each selectable product link gets `data-item` plus
+  `{% render 'item-data', product: product %}`. That's all a new list needs.
+- A feature that can be held out gets `data-feature="<id>"`, a setting under
+  Analytics & experiments, and a rule in `_experiments.scss`.
+- Every `/cart/add.js` call passes `properties: lineItemProperties(...)` and
+  then calls `syncCartAttributes()`, so the order records where the product came
+  from.
+
 ---
 
 ## 11. Accessibility
@@ -302,6 +353,12 @@ Treated as part of the definition of done, not a pass afterwards.
   tabindex="-1">`; keep landmark roles on new top-level regions.
 - RTL is supported for `ar`/`he` via `dir` on `<html>` — use logical properties
   (`padding-inline`, `margin-inline`, `inset`) rather than `left`/`right`.
+
+**No image zoom on hover — anywhere.** Images never scale, pan or otherwise
+move on rollover: no `transform: scale()` on `:hover` for product, card, cart,
+blog or banner imagery. A linked card says it is linked through its title
+(underline on hover) or an arrow, never by moving the picture. Small controls
+(the wishlist heart, the quick-add sticker) may still respond to hover.
 
 **Motion.** `prefers-reduced-motion` is handled once, globally, by zeroing the
 `--duration-*` tokens. That only works if your transitions use
@@ -335,8 +392,6 @@ than copying them:
   applies to v2.
 - `_components.scss` claims sections ship styles in `<style>` blocks. They don't
   — one partial per section is the rule.
-- `sections/main-content.liquid` and `sections/main-404.liquid` do still carry
-  inline `<style>` blocks; they should move into partials.
 - `snippets/css-variables.liquid` computes `font_heading_bold` and
   `font_body_bold` but never emits them, and injects no font variables at all —
   families come from `_tokens.scss` and `snippets/fonts.liquid`. The Shopify

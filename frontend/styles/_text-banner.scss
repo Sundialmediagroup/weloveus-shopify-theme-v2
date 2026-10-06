@@ -25,13 +25,9 @@
 }
 
 .text-banner__text {
+  @include type-statement;
   // Fixed by the system, and bound to the type scale: --text-xl on mobile
   // (a step above body copy), scaling fluidly up to --text-4xl on desktop.
-  font-size: clamp(var(--text-xl), 3vw, var(--text-4xl));
-  font-family: var(--font-heading);
-  font-weight: var(--weight-regular);
-  letter-spacing: var(--tracking-tight);
-  line-height: var(--leading-tight);
   text-align: start;
   overflow-wrap: break-word;
   display: block;

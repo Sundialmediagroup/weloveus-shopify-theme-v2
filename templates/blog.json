@@ -1,0 +1,17 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-blog",
+      "settings": {
+        "show_lead": true,
+        "show_tags": true,
+        "per_page": 12,
+        "columns_desktop": "3",
+        "image_ratio": "4 / 3"
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

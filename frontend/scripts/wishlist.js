@@ -11,6 +11,7 @@
 // and the parked product is saved then.
 
 import { openAccountModal } from './account-modal.js';
+import { track, itemFrom, listOf, markFeature } from './analytics.js';
 
 const configEl = document.getElementById('wishlist-config');
 const config = configEl ? JSON.parse(configEl.textContent) : null;
@@ -103,6 +104,7 @@ async function setSaved(id, shouldSave) {
   try {
     saved = await request(shouldSave ? 'add' : 'remove', id);
     session(s => s.setItem(SYNC_KEY, JSON.stringify([...saved])));
+    trackSave(id, shouldSave);
     announce(saved.has(id) ? config.textAdded : config.textRemoved);
   } catch (err) {
     console.error(err);
@@ -117,10 +119,22 @@ async function setSaved(id, shouldSave) {
   }
 }
 
+// Any element describing the product will do: a card, or the PDP itself.
+function trackSave(id, added) {
+  const el = document.querySelector(`[data-product-id="${id}"]`);
+  track(added ? 'add_to_wishlist' : 'remove_from_wishlist', {
+    ...listOf(el),
+    items: el ? [itemFrom(el)] : [],
+  });
+  if (added) markFeature('wishlist');
+}
+
 function activate(toggle) {
   const id = toggle.dataset.wishlistToggle;
 
   if (!config.loggedIn) {
+    // Logged out, the heart is a sign-in prompt; this counts how often.
+    track('wishlist_login_prompt', listOf(toggle));
     session(s => s.setItem(PENDING_KEY, id));
     if (!openAccountModal()) window.location.href = loginUrl();
     return;

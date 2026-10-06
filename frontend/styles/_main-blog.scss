@@ -1,0 +1,128 @@
+@use 'abstracts/mixins' as *;
+
+// Blog index — sections/main-blog.liquid.
+//
+// Header from the shared editorial block (_editorial.scss), a lead story on the
+// first page, then the article feed's card list (_article-feed.scss).
+
+// ─── Tag filter ────────────────────────────────────────────────────────────────
+
+// The header and footer menu treatment, with the current tag held underlined.
+.main-blog__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--menu-gap);
+}
+
+.main-blog__tag {
+  @include underline-on-hover;
+  @include type-label;
+  color: var(--color-fg);
+
+  &:hover {
+    color: var(--color-fg);
+  }
+
+  &[aria-current='page'] {
+    text-decoration-color: currentColor;
+  }
+}
+
+// ─── Lead story ────────────────────────────────────────────────────────────────
+
+// Image and text side by side from `lg`, in the cart's proportions. The title's
+// link is stretched over the whole story, as on the cards.
+.main-blog__lead {
+  position: relative;
+  display: grid;
+  gap: var(--space-6);
+  margin-bottom: var(--space-12);
+
+  @include respond-to('lg') {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: var(--space-10);
+    align-items: end;
+    margin-bottom: var(--space-16);
+  }
+}
+
+.main-blog__lead-media {
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background-color: var(--color-bg-subtle);
+}
+
+.main-blog__lead-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.main-blog__lead-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.main-blog__lead-date {
+  @include type-label;
+}
+
+.main-blog__lead-title {
+  overflow-wrap: break-word;
+}
+
+.main-blog__lead-link {
+  @include underline-on-hover;
+  color: inherit;
+  text-underline-offset: 0.15em;
+
+  &:hover {
+    color: inherit;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-raised);
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    &::after {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+    }
+  }
+}
+
+// Body copy, as on the cards; only the title steps up for the lead.
+.main-blog__lead-excerpt {
+  @include line-clamp(4);
+}
+
+.main-blog__lead-more {
+  @include type-label;
+  text-decoration: underline;
+  text-underline-offset: var(--space-1);
+}
+
+.main-blog__lead:hover {
+  .main-blog__lead-link {
+    text-decoration-color: currentColor;
+  }
+}
+
+// ─── Empty ─────────────────────────────────────────────────────────────────────
+
+.main-blog__empty {
+  font-size: var(--text-xl);
+
+  @include respond-to('lg') {
+    font-size: var(--text-2xl);
+  }
+}

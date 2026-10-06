@@ -11,9 +11,7 @@
 .article-feed__list {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  column-gap: var(--grid-gap);
-  // Closing rule under the last row, so the feed is bracketed like the entries.
-  border-block-end: 1px solid var(--color-border);
+  gap: var(--space-12) var(--grid-gap);
 
   @include respond-to('lg') {
     grid-template-columns: repeat(var(--article-feed-cols, 3), minmax(0, 1fr));

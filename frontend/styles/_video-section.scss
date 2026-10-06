@@ -1,3 +1,5 @@
+@use 'abstracts/mixins' as *;
+
 .video-section {
   background-color: var(--video-bg, #000000);
   color: var(--video-color, #ffffff);
@@ -26,8 +28,6 @@
 }
 
 .video-section__title {
+  @include type-display;
   // margin-top: var(--space-6);
-  font-size: clamp(1.25rem, 3vw, 2.5rem);
-  font-weight: var(--weight-regular);
-  letter-spacing: var(--tracking-tight);
 }

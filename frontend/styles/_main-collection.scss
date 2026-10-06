@@ -109,13 +109,8 @@
       @include visually-hidden;
     }
 
-    // The panel's own border frames the list, so the menus' editorial side
-    // rule would only double it.
-    .collection-sidebar,
     .collection-sort {
       margin-top: 0;
-      padding-inline-start: 0;
-      border-inline-start: 0;
     }
   }
 

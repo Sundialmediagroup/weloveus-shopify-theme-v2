@@ -1,0 +1,197 @@
+{%- comment -%}
+  Blog index.
+
+  The title full width over a subtle rule, as on pages and collections, with
+  the blog's tags beneath as a filter in the menu style. The first page opens
+  on its newest post as a lead story — image and text side by side from `lg`
+  — then the rest as the article feed's cards (snippets/article-card.liquid).
+
+  Paginated; the pager is the shared .pagination component.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign per_page = s.per_page | default: 12
+-%}
+
+{%- paginate blog.articles by per_page -%}
+
+{%- liquid
+  assign show_lead = false
+  if s.show_lead and paginate.current_page == 1 and blog.articles.size > 0
+    assign show_lead = true
+  endif
+  assign current_tag = current_tags | first
+-%}
+
+<div class="main-blog">
+
+  <header class="editorial__header main-blog__header">
+    <h1 class="editorial__title">{{ blog.title | escape }}</h1>
+
+    {%- if s.show_tags and blog.all_tags.size > 0 -%}
+      <nav class="main-blog__tags" aria-label="{{ 'templates.blog.filter' | t }}">
+        <a
+          class="main-blog__tag"
+          href="{{ blog.url }}"
+          {% if current_tag == blank %}aria-current="page"{% endif %}
+        >
+          {{- 'templates.blog.all' | t -}}
+        </a>
+        {%- for tag in blog.all_tags -%}
+          <a
+            class="main-blog__tag"
+            href="{{ blog.url }}/tagged/{{ tag | handleize }}"
+            {% if tag == current_tag %}aria-current="page"{% endif %}
+          >
+            {{- tag | escape -}}
+          </a>
+        {%- endfor -%}
+      </nav>
+    {%- endif -%}
+  </header>
+
+  {%- if blog.articles.size == 0 -%}
+    <p class="main-blog__empty">{{ 'templates.blog.empty' | t }}</p>
+  {%- else -%}
+
+    {%- if show_lead -%}
+      {%- liquid
+        assign lead = blog.articles.first
+        if lead.excerpt != blank
+          assign lead_excerpt = lead.excerpt | strip_html | strip
+        else
+          assign lead_excerpt = lead.content | strip_html | strip | truncatewords: 50
+        endif
+      -%}
+      <article class="main-blog__lead">
+        {%- if lead.image != blank -%}
+          <div class="main-blog__lead-media">
+            {{ lead.image | image_url: width: 1800 | image_tag:
+              class: 'main-blog__lead-img',
+              alt: lead.image.alt | default: lead.title,
+              loading: 'eager',
+              fetchpriority: 'high',
+              sizes: '(min-width: 990px) 60vw, 100vw',
+              widths: '600, 900, 1200, 1500, 1800',
+              width: lead.image.width,
+              height: lead.image.height
+            }}
+          </div>
+        {%- endif -%}
+
+        <div class="main-blog__lead-body">
+          <p class="main-blog__lead-date">{{ lead.published_at | time_tag: '%B %-d, %Y' }}</p>
+          <h2 class="main-blog__lead-title">
+            <a class="main-blog__lead-link" href="{{ lead.url }}">{{ lead.title | escape }}</a>
+          </h2>
+          {%- if lead_excerpt != blank -%}
+            <p class="main-blog__lead-excerpt">{{ lead_excerpt | escape_once }}</p>
+          {%- endif -%}
+          <span class="main-blog__lead-more" aria-hidden="true">{{ 'templates.blog.read' | t }}</span>
+        </div>
+      </article>
+    {%- endif -%}
+
+    {%- liquid
+      assign feed_offset = 0
+      if show_lead
+        assign feed_offset = 1
+      endif
+    -%}
+
+    {%- if blog.articles.size > feed_offset -%}
+      <ul class="article-feed__list main-blog__list" style="--article-feed-cols: {{ s.columns_desktop }};">
+        {%- for article in blog.articles offset: feed_offset -%}
+          <li class="article-feed__item">
+            {%- render 'article-card', article: article, image_ratio: s.image_ratio, lazy: true -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    {%- if paginate.pages > 1 -%}
+      <nav class="pagination" aria-label="{{ 'templates.blog.pagination' | t }}">
+        {%- if paginate.previous -%}
+          <a class="pagination__link" href="{{ paginate.previous.url }}" rel="prev">
+            {%- render 'icon', name: 'chevron-left' -%}
+            {{ 'templates.search.previous' | t }}
+          </a>
+        {%- endif -%}
+
+        <span class="pagination__count">
+          {{- 'templates.search.page_of' | t: current: paginate.current_page, total: paginate.pages -}}
+        </span>
+
+        {%- if paginate.next -%}
+          <a class="pagination__link" href="{{ paginate.next.url }}" rel="next">
+            {{ 'templates.search.next' | t }}
+            {%- render 'icon', name: 'chevron-right' -%}
+          </a>
+        {%- endif -%}
+      </nav>
+    {%- endif -%}
+
+  {%- endif -%}
+
+</div>
+
+{%- endpaginate -%}
+
+{% schema %}
+{
+  "name": "Blog",
+  "tag": "section",
+  "class": "main-blog-section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_lead",
+      "label": "Feature the newest post",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tags",
+      "label": "Show tag filter",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "per_page",
+      "label": "Posts per page",
+      "min": 6,
+      "max": 24,
+      "step": 3,
+      "default": 12
+    },
+    {
+      "type": "select",
+      "id": "columns_desktop",
+      "label": "Columns on desktop",
+      "default": "3",
+      "options": [
+        { "value": "2", "label": "2" },
+        { "value": "3", "label": "3" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio",
+      "default": "4 / 3",
+      "options": [
+        { "value": "1 / 1", "label": "Square" },
+        { "value": "4 / 3", "label": "Landscape" },
+        { "value": "3 / 4", "label": "Portrait" },
+        { "value": "natural", "label": "Original" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Blog"
+    }
+  ]
+}
+{% endschema %}
