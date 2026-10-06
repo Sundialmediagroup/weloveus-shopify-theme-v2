@@ -44,6 +44,7 @@ const KEYS = {
   token: 'essie.visitorToken',
   conversation: 'essie.conversationId',
   transcript: 'essie.transcript',
+  shopper: 'essie.shopper',
 };
 const MAX_SAVED_MESSAGES = 60;
 const PROMPTS_DISMISSED = 'essie.promptsDismissed'; // sessionStorage
@@ -75,6 +76,24 @@ function loadBrands(id) {
 
 function saveBrands(id, brands) {
   store(brandsKey(id), brands.size ? JSON.stringify(Object.fromEntries(brands)) : null);
+}
+
+// A chat belongs to whoever was signed in when it started. When that changes
+// on this browser — sign in, sign out, another account — drop the saved chat
+// before it is shown, rather than wait for the API's 409 on the next message.
+// A saved chat with no recorded shopper predates this check, so it goes too.
+function forgetPreviousShopper() {
+  const shopper = config.customerId ? `customer:${config.customerId}` : 'guest';
+  const previous = load(KEYS.shopper);
+
+  if (previous !== shopper && (previous !== null || load(KEYS.conversation) || load(KEYS.transcript))) {
+    const id = load(KEYS.conversation);
+    if (id) store(brandsKey(id), null);
+    store(KEYS.conversation, null);
+    store(KEYS.transcript, null);
+  }
+
+  store(KEYS.shopper, shopper);
 }
 
 // ─── API ───────────────────────────────────────────────────────────────────────
@@ -121,8 +140,12 @@ function conversationId() {
 }
 
 // POSTs a message; on 401 re-issues the token, on 403/404 starts a new
-// conversation — each retried once.
-async function postMessage(text, retried = {}) {
+// conversation — each retried once. A 409 `conversation_identity_changed`
+// means the shopper signed in, out or as someone else since this chat began:
+// the API won't continue it, and what's on screen may be the previous
+// shopper's (orders included), so `onShopperChanged` wipes the transcript
+// before the message goes out again on a new conversation.
+async function postMessage(text, retried = {}, onShopperChanged = () => {}) {
   const body = { conversation_id: conversationId(), message: text };
   if (config.customerId) body.customer_id = config.customerId;
 
@@ -138,7 +161,7 @@ async function postMessage(text, retried = {}) {
 
   if (res.status === 401 && !retried.token) {
     store(KEYS.token, null);
-    return postMessage(text, { ...retried, token: true });
+    return postMessage(text, { ...retried, token: true }, onShopperChanged);
   }
   if ((res.status === 403 || res.status === 404) && !retried.conversation) {
     // Same chat on screen, new id on the server — the brands carry over.
@@ -146,7 +169,17 @@ async function postMessage(text, retried = {}) {
     store(brandsKey(body.conversation_id), null);
     store(KEYS.conversation, null);
     saveBrands(conversationId(), brands);
-    return postMessage(text, { ...retried, conversation: true });
+    return postMessage(text, { ...retried, conversation: true }, onShopperChanged);
+  }
+  if (res.status === 409 && !retried.shopper) {
+    const { error } = await res.json().catch(() => ({}));
+    if (error === 'conversation_identity_changed') {
+      // Unlike 403/404, nothing carries over — not even the brands.
+      store(brandsKey(body.conversation_id), null);
+      store(KEYS.conversation, null);
+      onShopperChanged();
+      return postMessage(text, { ...retried, shopper: true }, onShopperChanged);
+    }
   }
   if (!res.ok || !res.body) throw new Error(`chat ${res.status}`);
   return res;
@@ -443,6 +476,8 @@ function initEssie() {
   const send = root.querySelector('[data-essie-send]');
   const newChat = root.querySelector('[data-essie-new]');
 
+  forgetPreviousShopper();
+
   let transcript = loadTranscript();
   let busy = false;
   let rendered = false;
@@ -571,7 +606,13 @@ function initEssie() {
     };
 
     try {
-      const res = await postMessage(text);
+      const res = await postMessage(text, {}, () => {
+        brands = new Map();
+        transcript = [{ role: 'user', parts: [{ type: 'text', text }] }];
+        save();
+        renderAll();
+        showThinking();
+      });
 
       for await (const event of readEvents(res)) {
         switch (event.event) {
