@@ -1,144 +1,149 @@
 @use 'abstracts/mixins' as *;
 
-// ─── Page layout ───────────────────────────────────────────────────────────────
-
-.cart {
-  max-width: 960px;
-  margin-inline: auto;
-}
-
-.cart__header {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-4);
-  padding-bottom: var(--space-6);
-  border-bottom: 1px solid var(--color-border);
-  margin-bottom: var(--space-8);
-}
-
-.cart__title {
-  font-size: var(--text-3xl);
-  font-weight: var(--weight-bold);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-tight);
-}
+// Cart page — sections/main-cart.liquid.
+//
+// Full width like the collection and product pages. The header is the
+// collection page's (.collection-header, _main-collection.scss); the items take
+// the wide column and the summary sits beside them at `lg`, ruled like the
+// item list and sticky until the list runs out.
 
 .cart__count {
+  margin-top: var(--space-3);
   font-size: var(--text-sm);
   color: var(--color-fg-muted);
 }
 
 .cart__layout {
   display: grid;
-  gap: var(--space-12);
+  gap: var(--space-10);
 
   @include respond-to('lg') {
-    grid-template-columns: 1fr 340px;
-    align-items: start;
-    gap: var(--space-16);
+    // Same proportions as the product page's media and buy columns.
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    align-items: stretch;
+    gap: var(--space-10);
   }
+}
+
+// Set while cart.js waits on the server, so a change reads as in hand.
+.cart.is-updating .cart__layout {
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity var(--transition-base);
 }
 
 // ─── Items ─────────────────────────────────────────────────────────────────────
 
+.cart__items {
+  list-style: none;
+  border-top: 1px solid var(--color-border);
+}
+
 .cart-item {
   display: grid;
-  grid-template-columns: 90px 1fr auto;
-  grid-template-rows: auto auto;
-  column-gap: var(--space-5);
-  row-gap: var(--space-3);
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: var(--space-4);
   padding-block: var(--space-6);
   border-bottom: 1px solid var(--color-border);
 
   @include respond-to('md') {
-    grid-template-columns: 100px 1fr auto auto;
-    grid-template-rows: auto;
-    align-items: center;
+    grid-template-columns: 9rem minmax(0, 1fr) auto;
     gap: var(--space-6);
+  }
+
+  @include respond-to('lg') {
+    grid-template-columns: 12rem minmax(0, 1fr) auto;
+    gap: var(--space-8);
   }
 }
 
+// Product-card proportions, so the cart shows the products the way the grid did.
 .cart-item__media {
-  grid-row: span 2;
+  display: block;
   aspect-ratio: 1 / 1;
   overflow: hidden;
   background-color: var(--color-bg-subtle);
-
-  @include respond-to('md') {
-    grid-row: span 1;
-  }
 }
 
-.cart-item__img {
+.cart-item__img,
+.cart-item__placeholder {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
 }
 
 .cart-item__details {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  align-items: flex-start;
+  gap: var(--space-2);
 }
 
+// The product page's vendor treatment: medium weight, underline on hover.
 .cart-item__vendor {
-  font-size: var(--text-xs);
-  color: var(--color-fg-muted);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wider);
-}
-
-.cart-item__title {
+  @include trim-to-cap;
   font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wide);
+  font-weight: var(--weight-regular);
   color: var(--color-fg);
-}
-
-.cart-item__variant {
-  font-size: var(--text-xs);
-  color: var(--color-fg-muted);
-}
-
-.cart-item__remove {
-  font-size: var(--text-xs);
-  color: var(--color-fg-subtle);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wide);
-  cursor: pointer;
-  background: none;
-  border: none;
-  padding: 0;
-  margin-top: var(--space-3);
-  transition: color var(--transition-fast);
-  align-self: start;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: var(--space-1);
+  transition: text-decoration-color var(--transition-fast);
 
   &:hover {
     color: var(--color-fg);
+    text-decoration-color: currentColor;
   }
 }
 
-// ─── Quantity ──────────────────────────────────────────────────────────────────
+.cart-item__title {
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-fg);
 
-.cart-item__qty-wrap {
+  @include respond-to('lg') {
+    font-size: var(--text-2xl);
+  }
+
+  &:hover {
+    color: var(--color-fg);
+    opacity: 0.6;
+  }
+}
+
+.cart-item__variant,
+.cart-item__unit,
+.cart-item__discount {
+  font-size: var(--text-sm);
+  color: var(--color-fg-muted);
+}
+
+// Pushed to the bottom of the details column on wide rows, so the controls
+// line up with the foot of the image.
+.cart-item__actions {
   display: flex;
   align-items: center;
-  border: 1px solid var(--color-border-strong);
-  height: 36px;
+  gap: var(--space-6);
+  margin-top: var(--space-2);
 
   @include respond-to('md') {
-    align-self: center;
+    margin-top: auto;
   }
+}
+
+// Square, compact field — the same treatment as the collection filters and the
+// product option dropdowns.
+.cart-item__qty {
+  display: flex;
+  align-items: stretch;
+  block-size: var(--space-10);
+  border: 1px solid var(--color-border-strong);
 }
 
 .cart-item__qty-btn {
-  width: 32px;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  inline-size: var(--space-10);
   font-size: var(--text-lg);
   line-height: 1;
   color: var(--color-fg);
@@ -151,15 +156,12 @@
 }
 
 .cart-item__qty-input {
-  width: 36px;
-  height: 100%;
+  inline-size: var(--space-10);
   text-align: center;
   font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-regular);
   border: none;
-  border-inline: 1px solid var(--color-border-strong);
   background: transparent;
-  outline: none;
   -moz-appearance: textfield;
 
   &::-webkit-outer-spin-button,
@@ -168,94 +170,177 @@
   }
 }
 
-// ─── Price ─────────────────────────────────────────────────────────────────────
+.cart-item__remove {
+  @include type-label;
+  color: var(--color-fg);
+  text-decoration: underline;
+  text-underline-offset: var(--space-1);
+  transition: opacity var(--transition-fast);
 
+  &:hover {
+    color: var(--color-fg);
+    opacity: 0.6;
+  }
+}
+
+// Under the details on narrow rows; its own right-aligned column from `md`.
 .cart-item__price {
-  font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+
+  @include respond-to('md') {
+    grid-column: 3;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-1);
+  }
+}
+
+.cart-item__price-current {
+  @include trim-to-cap;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-regular);
   white-space: nowrap;
-  align-self: center;
+
+  @include respond-to('lg') {
+    font-size: var(--text-xl);
+  }
+}
+
+.cart-item__price-compare {
+  font-size: var(--text-sm);
+  color: var(--color-fg-muted);
+  white-space: nowrap;
 }
 
 // ─── Summary ───────────────────────────────────────────────────────────────────
 
-.cart__summary {
-  padding: var(--space-6);
+// The column stretches to the item list, giving the sticky inner something to
+// run out against — the product page's sticky columns work the same way.
+.cart__summary-inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  // The same top rule as the item list, so the two columns start level.
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
 
   @include respond-to('lg') {
     position: sticky;
-    top: calc(var(--header-height) + var(--space-6));
+    top: calc(var(--header-height) + var(--site-frame));
   }
 }
 
-.cart__summary-row {
+.cart__summary-heading {
+  @include type-label;
+}
+
+.cart__totals {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.cart__totals-row {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding-block: var(--space-3);
-  border-bottom: 1px solid var(--color-border);
-  margin-bottom: var(--space-4);
-}
-
-.cart__summary-label {
+  gap: var(--space-4);
   font-size: var(--text-sm);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wide);
-  font-weight: var(--weight-medium);
 }
 
-.cart__summary-price {
-  font-size: var(--text-base);
-  font-weight: var(--weight-bold);
+.cart__totals-row--total {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+
+  dt {
+    @include type-label;
+  }
+
+  dd {
+    font-size: var(--text-3xl);
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--leading-none);
+
+    @include respond-to('lg') {
+      font-size: var(--text-4xl);
+    }
+  }
 }
 
 .cart__tax-note {
   font-size: var(--text-xs);
-  color: var(--color-fg-muted);
-  margin-bottom: var(--space-6);
-  line-height: var(--leading-relaxed);
   max-width: none;
 }
 
-.cart__checkout {
-  display: flex;
+.cart__checkout,
+.cart__update {
   width: 100%;
-  margin-bottom: var(--space-3);
+}
+
+.cart__assurances {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-block: var(--space-4);
+  border-block: 1px solid var(--color-border);
+  list-style: none;
+}
+
+.cart__assurance {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.cart__assurance-icon {
+  display: flex;
+  flex: 0 0 auto;
+}
+
+.cart__payments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  list-style: none;
+}
+
+.cart__payment-icon {
+  display: block;
+  block-size: var(--space-6);
+  inline-size: auto;
 }
 
 .cart__continue {
-  display: block;
-  text-align: center;
-  font-size: var(--text-xs);
-  color: var(--color-fg-muted);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wide);
-  transition: color var(--transition-fast);
+  @include type-label;
+  align-self: center;
+  color: var(--color-fg);
+  text-decoration: underline;
+  text-underline-offset: var(--space-1);
 
   &:hover {
     color: var(--color-fg);
+    opacity: 0.6;
   }
 }
 
-// ─── Empty state ───────────────────────────────────────────────────────────────
+// ─── Empty ─────────────────────────────────────────────────────────────────────
 
-.cart--empty {
-  text-align: center;
-  padding-block: var(--space-32);
+.cart__empty {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--space-8);
-}
-
-.cart__empty-title {
-  font-size: var(--text-2xl);
-  font-weight: var(--weight-bold);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-tight);
+  align-items: flex-start;
+  gap: var(--space-6);
 }
 
 .cart__empty-text {
-  color: var(--color-fg-muted);
-  max-width: 40ch;
+  font-size: var(--text-xl);
+
+  @include respond-to('lg') {
+    font-size: var(--text-2xl);
+  }
 }

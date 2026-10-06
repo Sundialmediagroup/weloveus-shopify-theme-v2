@@ -1,0 +1,10 @@
+@use 'abstracts/mixins' as *;
+
+// Main content — sections/main-content.liquid. A heading and intro line,
+// start-aligned like every other page; the subheading keeps to the measure.
+
+.main-content__subheading {
+  @include type-display;
+  max-width: var(--measure);
+  margin-top: var(--space-6);
+}

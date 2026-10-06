@@ -1,3 +1,5 @@
+import { observeLists } from './analytics.js';
+
 // Fetches product recommendations when the section approaches the viewport.
 // Shopify only exposes `recommendations.products` to a Section Rendering API
 // request, so the section ships empty and swaps itself in here.
@@ -38,6 +40,7 @@ class ProductRecommendations extends HTMLElement {
       if (!incoming?.querySelector('product-carousel')) return;
 
       this.innerHTML = incoming.innerHTML;
+      observeLists(this);
     } catch {
       // Recommendations are supplementary; failing quietly is correct here
     }

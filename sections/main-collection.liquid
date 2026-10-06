@@ -58,7 +58,7 @@
       {
         "source": "document",
         "where": {
-          "selector_matches": ".collection-sidebar a, .site-header__brands-grid a"
+          "selector_matches": ".collection-sidebar a, .site-header__mega-grid a"
         },
         "eagerness": "moderate"
       }
@@ -124,6 +124,8 @@
         class="collection-products"
         style="--columns-desktop: {{ section.settings.columns_desktop }};"
         data-collection-grid
+        data-item-list="collection"
+        data-item-list-name="{{ collection.title | escape }}"
       >
         {%- for product in collection.products -%}
           {%- liquid

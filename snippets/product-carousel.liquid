@@ -26,6 +26,9 @@
                             which is right for anything below the fold.
     exclude_id     {Number} Product id to skip — the PDP passes the product
                             being viewed so it cannot recommend itself.
+    list_id        {String} Analytics list id (frontend/scripts/analytics.js),
+                            e.g. 'recommendations'. Default 'carousel'.
+    list_name      {String} Analytics list name. Default: the heading.
     exclude_vendor {String} Vendor to skip. The PDP passes the current brand so
                             "More like this" cannot repeat the brand slider
                             sitting directly above it. Ignored when blank.
@@ -82,6 +85,8 @@
 {%- if carousel_items != blank -%}
   <product-carousel
     class="product-carousel"
+    data-item-list="{{ list_id | default: 'carousel' }}"
+    data-item-list-name="{{ list_name | default: heading | default: list_id | escape }}"
     style="--cards-desktop: {{ cards_lg }}; --cards-mobile: {{ cards_sm }}; --overhang: {{ peek }}px;"
     {% if heading != blank %}aria-labelledby="{{ heading_id }}"{% endif %}
   >

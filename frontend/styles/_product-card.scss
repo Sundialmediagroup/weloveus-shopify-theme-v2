@@ -28,11 +28,11 @@
   text-align: center;
   background-color: #2a6e3a;
   color: #ffffff;
-  font-size: 8px;
+  font-size: var(--text-3xs);
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  line-height: 1.4;
+  line-height: var(--leading-snug);
   opacity: 0;
   transform: rotate(12deg) scale(0.7);
   transition:
@@ -83,11 +83,9 @@
 }
 
 .product-card__title {
-  font-family: var(--font-body);
   font-size: var(--text-sm);
   // font-weight: var(--weight-bold);
   color: var(--color-fg);
-  letter-spacing: var(--tracking-medium);
 }
 
 .product-card__price {

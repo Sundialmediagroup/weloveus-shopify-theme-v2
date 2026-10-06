@@ -58,7 +58,7 @@ p {
 }
 
 strong, b {
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-bold);
 }
 
 em, i {
@@ -75,7 +75,7 @@ small {
 // Only style lists inside rich text — bare lists stay unstyled (reset)
 .rte ul,
 .rte ol {
-  padding-left: var(--space-6);
+  padding-inline-start: var(--space-6);
   line-height: var(--leading-relaxed);
 
   & + p,
@@ -119,9 +119,20 @@ small {
     font-style: italic;
   }
 
+  // Inline links are always underlined, so they never rely on colour alone.
+  // The line sits quiet in the text and darkens on hover; nothing reflows.
   a {
+    color: inherit;
     text-decoration: underline;
-    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--color-fg-subtle);
+    text-underline-offset: 0.2em;
+    transition: text-decoration-color var(--transition-fast);
+
+    &:hover {
+      color: inherit;
+      text-decoration-color: currentColor;
+    }
   }
 
   img {
@@ -163,6 +174,7 @@ small {
 }
 
 .skip-to-content {
+  @include type-label;
   position: fixed;
   top: var(--space-4);
   left: var(--space-4);
@@ -170,9 +182,6 @@ small {
   padding: var(--space-3) var(--space-6);
   background-color: var(--color-fg);
   color: var(--color-fg-inverted);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
-  letter-spacing: var(--tracking-wide);
   border-radius: var(--radius-sm);
   transform: translateY(calc(-100% - var(--space-8)));
   transition: transform var(--transition-base);

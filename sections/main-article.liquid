@@ -1,0 +1,163 @@
+{%- comment -%}
+  Blog article.
+
+  The editorial page layout (_editorial.scss), shared with main-page: the
+  blog's name back to the index, the title full width, and the excerpt as a
+  standfirst that starts on the content column's edge. The lead image runs
+  full width beneath, then the post in the reading column with its date,
+  author, tags and — on long posts — an "On this page" list sticky beside it.
+
+  With no excerpt, the post's first paragraph takes the standfirst treatment
+  instead, as it does on pages.
+
+  After the post: every product it links to, as product cards
+  (snippets/editorial-products.liquid), then more stories from the same blog.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign standfirst = article.excerpt | strip_html | strip
+-%}
+
+<article class="editorial">
+
+  <header class="editorial__header">
+    <a class="editorial__kicker" href="{{ blog.url }}">{{ blog.title | escape }}</a>
+    <h1 class="editorial__title">{{ article.title | escape }}</h1>
+    {%- if standfirst != blank -%}
+      <p class="editorial__standfirst">{{ standfirst | escape_once }}</p>
+    {%- endif -%}
+  </header>
+
+  {%- if s.show_image and article.image != blank -%}
+    <figure class="editorial__hero">
+      {{ article.image | image_url: width: 2400 | image_tag:
+        class: 'editorial__hero-img',
+        alt: article.image.alt | default: article.title,
+        loading: 'eager',
+        fetchpriority: 'high',
+        sizes: '100vw',
+        widths: '800, 1200, 1600, 2000, 2400',
+        width: article.image.width,
+        height: article.image.height
+      }}
+    </figure>
+  {%- endif -%}
+
+  <div class="editorial__layout">
+
+    <aside class="editorial__aside">
+      <div class="editorial__aside-inner">
+        <p class="editorial__meta">
+          {{- article.published_at | time_tag: '%B %-d, %Y' -}}
+          {%- if s.show_author and article.author != blank -%}
+            <span>{{ 'templates.article.by' | t: author: article.author }}</span>
+          {%- endif -%}
+        </p>
+
+        {%- if s.show_tags and article.tags.size > 0 -%}
+          <ul class="editorial__tags" aria-label="{{ 'templates.article.tags' | t }}">
+            {%- for tag in article.tags -%}
+              <li><a class="editorial__tag" href="{{ blog.url }}/tagged/{{ tag | handleize }}">{{ tag | escape }}</a></li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+
+        {%- if s.show_contents -%}
+          <nav class="editorial__contents" aria-labelledby="page-contents-heading" data-page-contents hidden>
+            <p class="editorial__contents-heading" id="page-contents-heading">{{ 'templates.page.contents' | t }}</p>
+            <ol class="editorial__contents-list" data-page-contents-list></ol>
+          </nav>
+        {%- endif -%}
+      </div>
+    </aside>
+
+    <div class="editorial__content{% if standfirst == blank %} editorial__content--lead{% endif %} rte rte--lg" data-page-content>
+      {%- render 'editorial-content', content: article.content -%}
+    </div>
+
+  </div>
+
+</article>
+
+{%- if s.show_products -%}
+  {%- assign shop_heading = 'templates.article.shop' | t -%}
+  {%- render 'editorial-products',
+    content: article.content,
+    heading: shop_heading,
+    heading_id: 'article-shop-heading',
+    list_name: article.title
+  -%}
+{%- endif -%}
+
+{%- if s.show_more and blog.articles_count > 1 -%}
+  <section class="article-feed stack editorial__after" aria-labelledby="article-more-heading" style="--article-feed-cols: 3;">
+    <h2 class="main-article__more-heading" id="article-more-heading">
+      {{- 'templates.article.more' | t: blog: blog.title -}}
+    </h2>
+    <ul class="article-feed__list">
+      {%- assign shown = 0 -%}
+      {%- for other in blog.articles -%}
+        {%- if other.id != article.id and shown < 3 -%}
+          {%- assign shown = shown | plus: 1 -%}
+          <li class="article-feed__item">
+            {%- render 'article-card', article: other, lazy: true -%}
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+  </section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Article",
+  "tag": "section",
+  "class": "main-article-section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_image",
+      "label": "Show featured image",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author",
+      "label": "Show author",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tags",
+      "label": "Show tags",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_contents",
+      "label": "Show contents list",
+      "info": "Lists the post's headings beside it, on posts with three or more",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_products",
+      "label": "Show linked products",
+      "info": "Products the post links to, as cards under it",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_more",
+      "label": "Show more stories",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "Article"
+    }
+  ]
+}
+{% endschema %}

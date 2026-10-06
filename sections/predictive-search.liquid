@@ -28,7 +28,7 @@
 -%}
 
 {%- if predictive_search.performed -%}
-  <div class="predictive-search">
+  <div class="predictive-search" data-results-count="{{ results_count }}">
 
     {%- comment -%}
       Read out of here by search.js and copied into the live region in the
@@ -50,7 +50,7 @@
           <ul class="predictive-search__brands">
             {%- for brand in brands -%}
               <li>
-                <a class="predictive-search__brand" href="{{ brand.url }}">{{ brand.title }}</a>
+                <a class="predictive-search__brand" href="{{ brand.url }}" data-track-content="predictive_brand">{{ brand.title }}</a>
               </li>
             {%- endfor -%}
           </ul>
@@ -60,10 +60,10 @@
       {%- if products.size > 0 -%}
         <div class="predictive-search__group">
           <p class="predictive-search__group-title">{{ 'general.search.products' | t }}</p>
-          <ul class="predictive-search__products">
+          <ul class="predictive-search__products" data-item-list="predictive_search" data-item-list-name="Predictive search">
             {%- for product in products -%}
               <li>
-                <a class="predictive-search__product" href="{{ product.url }}">
+                <a class="predictive-search__product" href="{{ product.url }}" data-item {% render 'item-data', product: product %}>
                   <span class="predictive-search__thumb">
                     {%- if product.featured_image != blank -%}
                       {{

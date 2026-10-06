@@ -1,0 +1,23 @@
+// Holdouts — the visitors who don't see a feature while it's being measured.
+//
+// snippets/analytics.liquid lists the held-out features on html[data-holdout]
+// before the body paints. Theme settings → Analytics & experiments sets the
+// share of visitors in each. See frontend/scripts/analytics.js.
+
+[data-holdout~='essie'] .essie-dock {
+  display: none;
+}
+
+[data-holdout~='quick_add'] .product-card__add-sticker {
+  display: none;
+}
+
+// Collapsed rather than removed: the empty section still reports when its
+// place on the page is reached, which is what the holdout is compared on.
+[data-holdout~='shop_the_story'] .editorial-products {
+  margin: 0;
+
+  > * {
+    display: none;
+  }
+}

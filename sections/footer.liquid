@@ -1,4 +1,12 @@
 <footer class="site-footer" role="contentinfo">
+  {%- comment -%}
+    The wordmark at the full width of the page, directly under the brand
+    directory. Decorative — the header logo is the home link.
+  {%- endcomment -%}
+  <div class="site-footer__wordmark">
+    {%- render 'logo', class: 'site-footer__wordmark-svg' -%}
+  </div>
+
   <div class="site-footer__inner">
 
     {%- if section.settings.menu != blank -%}

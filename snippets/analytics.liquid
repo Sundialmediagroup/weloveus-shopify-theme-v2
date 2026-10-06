@@ -1,0 +1,55 @@
+{%- comment -%}
+  Analytics config and experiment assignment. Rendered in <head> by
+  layout/theme.liquid. Event tracking itself lives in
+  frontend/scripts/analytics.js.
+
+  Holdouts: Theme settings → Analytics & experiments sets the share of
+  visitors who don't see each feature. Each visitor draws a number from 0 to 99
+  per feature, once, kept in localStorage; below the setting they're in the
+  holdout. The draw is per feature, so the holdouts are independent and can run
+  side by side.
+
+  This one script is inline, not in the module bundle, because it has to run
+  before the body paints: `html[data-holdout]` is what hides a held-out
+  feature (_experiments.scss), and setting it any later would flash the
+  feature on screen first.
+
+  Raising a percentage moves the visitors whose numbers fall in the new band
+  into the holdout; nobody already held out comes back. Change it between
+  tests, not during one.
+{%- endcomment -%}
+
+<script type="application/json" id="analytics-config">
+  {
+    "template": {{ template.name | json }},
+    "currency": {{ cart.currency.iso_code | json }},
+    "holdouts": {
+      "essie": {{ settings.holdout_essie | default: 0 }},
+      "quick_add": {{ settings.holdout_quick_add | default: 0 }},
+      "shop_the_story": {{ settings.holdout_shop_the_story | default: 0 }}
+    }
+  }
+</script>
+
+<script>
+  (function () {
+    var experiments = {};
+    var held = [];
+    try {
+      var config = JSON.parse(document.getElementById('analytics-config').textContent);
+      var draws = {};
+      try { draws = JSON.parse(localStorage.getItem('wlu.draws')) || {}; } catch (e) {}
+      Object.keys(config.holdouts).forEach(function (feature) {
+        if (typeof draws[feature] !== 'number') draws[feature] = Math.floor(Math.random() * 100);
+        var share = config.holdouts[feature];
+        // `off` rather than `control` while no test runs, so analysis can tell
+        // a visitor who was in a test from one who wasn't.
+        experiments[feature] = share > 0 ? (draws[feature] < share ? 'holdout' : 'control') : 'off';
+        if (experiments[feature] === 'holdout') held.push(feature);
+      });
+      try { localStorage.setItem('wlu.draws', JSON.stringify(draws)); } catch (e) {}
+    } catch (e) {}
+    window.wluExperiments = Object.freeze(experiments);
+    if (held.length) document.documentElement.setAttribute('data-holdout', held.join(' '));
+  })();
+</script>

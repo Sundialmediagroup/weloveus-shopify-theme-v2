@@ -84,17 +84,23 @@
 
 {%- assign total_count = search.results_count | plus: brand_count -%}
 
-<div class="search-results">
+<div
+  class="search-results"
+  {% if search.performed %}data-search-results data-search-term="{{ terms }}" data-results-count="{{ total_count }}"{% endif %}
+>
 
   {%- comment -%}
     The term itself is the page title, the way a collection's name is — an h1
     reading "Results for …" runs to three lines at --text-7xl.
   {%- endcomment -%}
   <header class="search-results__header">
-    <p class="search-results__eyebrow">{{ 'templates.search.title' | t }}</p>
     <h1 class="search-results__title">
       {%- if search.performed -%}
-        {{- terms -}}
+        {%- comment -%}
+          An `_html` key, so the translation itself is not escaped; `terms` was
+          escaped above, which keeps the shopper's input safe.
+        {%- endcomment -%}
+        {{- 'templates.search.searching_for_html' | t: terms: terms -}}
       {%- else -%}
         {{- 'templates.search.prompt' | t -}}
       {%- endif -%}
@@ -141,10 +147,19 @@
 
     {%- if product_items != blank -%}
       <section class="search-results__group" aria-labelledby="search-products-heading">
-        <h2 class="search-results__group-title" id="search-products-heading">
+        {%- comment -%}
+          No visible label: the heading above already says what this is. Kept
+          for screen readers, which use it to name the section.
+        {%- endcomment -%}
+        <h2 class="visually-hidden" id="search-products-heading">
           {{- 'general.search.products' | t -}}
         </h2>
-        <div class="search-results__grid" style="--columns-desktop: {{ columns }};">
+        <div
+          class="search-results__grid"
+          style="--columns-desktop: {{ columns }};"
+          data-item-list="search_results"
+          data-item-list-name="Search results"
+        >
           {{ product_items }}
         </div>
       </section>
@@ -158,20 +173,20 @@
       directly.
     {%- endcomment -%}
     {%- if paginate.pages > 1 -%}
-      <nav class="search-results__pagination" aria-label="{{ 'templates.search.pagination' | t }}">
+      <nav class="pagination" aria-label="{{ 'templates.search.pagination' | t }}">
         {%- if paginate.previous -%}
-          <a class="search-results__page-link" href="{{ paginate.previous.url }}" rel="prev">
+          <a class="pagination__link" href="{{ paginate.previous.url }}" rel="prev">
             {%- render 'icon', name: 'chevron-left' -%}
             {{ 'templates.search.previous' | t }}
           </a>
         {%- endif -%}
 
-        <span class="search-results__page-count">
+        <span class="pagination__count">
           {{- 'templates.search.page_of' | t: current: paginate.current_page, total: paginate.pages -}}
         </span>
 
         {%- if paginate.next -%}
-          <a class="search-results__page-link" href="{{ paginate.next.url }}" rel="next">
+          <a class="pagination__link" href="{{ paginate.next.url }}" rel="next">
             {{ 'templates.search.next' | t }}
             {%- render 'icon', name: 'chevron-right' -%}
           </a>

@@ -23,10 +23,8 @@
 }
 
 .predictive-search__group-title {
+  @include type-label;
   margin-bottom: var(--space-3);
-  font-size: var(--text-2xs);
-  letter-spacing: var(--tracking-widest);
-  text-transform: uppercase;
   color: var(--color-fg-muted);
 }
 
@@ -106,9 +104,7 @@
 }
 
 .predictive-search__vendor {
-  font-size: var(--text-2xs);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
+  @include type-label;
   color: var(--color-fg-muted);
 }
 
@@ -126,9 +122,8 @@
 // ─── Footer link and empty state ───────────────────────────────────────────────
 
 .predictive-search__all {
+  @include type-label;
   align-self: start;
-  font-size: var(--text-sm);
-  letter-spacing: var(--tracking-wide);
   color: var(--color-fg);
   text-decoration: underline;
   text-underline-offset: 0.25em;

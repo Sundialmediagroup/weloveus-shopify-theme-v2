@@ -12,6 +12,13 @@
 // which are HTML-escaped before the markdown pass.
 //
 // The transcript is saved to localStorage so the chat survives page changes.
+//
+// Analytics (analytics.js): opens, messages, products shown, cart actions,
+// checkout clicks and errors. Product cards carry data-item, so clicks on them
+// are select_item events in the `essie` list. Visitors in the Essie holdout
+// never get the chat at all.
+
+import { track, inHoldout, markFeature } from './analytics.js';
 
 const root = document.querySelector('[data-essie]');
 const configEl = document.getElementById('essie-config');
@@ -315,7 +322,19 @@ function productCards(items) {
   items.forEach(item => {
     const href = safeUrl(item.deeplink);
     const card = el(href ? 'a' : 'div', 'essie__card');
-    if (href) card.href = href;
+    if (href) {
+      card.href = href;
+      // Read by analytics.js. The id only matches GA4's when the API sends
+      // both ids; name and brand are always there.
+      const { product_id: productId, variant_id: variantId, vendor } = item.metadata || {};
+      card.dataset.item = '';
+      card.dataset.itemName = item.title || '';
+      if (vendor) card.dataset.itemBrand = vendor;
+      if (productId) card.dataset.productId = String(productId).split('/').pop();
+      if (productId && variantId) {
+        card.dataset.itemId = `shopify_ZZ_${String(productId).split('/').pop()}_${String(variantId).split('/').pop()}`;
+      }
+    }
 
     const src = safeUrl(item.image);
     if (src) {
@@ -385,6 +404,7 @@ function toolResult(data) {
       if (!href) return null;
       const link = el('a', 'essie__checkout', data.label || 'Checkout');
       link.href = href;
+      link.dataset.essieCheckout = '';
       return link;
     }
     case 'cart':
@@ -398,6 +418,19 @@ function toolResult(data) {
   }
   if (Array.isArray(data.items) && data.items.length) return productCards(data.items);
   return null;
+}
+
+// What a reply produced, for analytics. Live replies only — restoring the
+// transcript doesn't call this.
+function trackResult(data) {
+  if (!data || typeof data !== 'object') return;
+  if (data.type === 'cart') {
+    track('essie_cart_view', { items_in_cart: (data.cart?.lines || data.cart?.items || []).length });
+  } else if (data.type === 'action_result') {
+    track('essie_action', { status: data.status || 'unknown' });
+  } else if (Array.isArray(data.items) && data.items.length) {
+    track('essie_products_shown', { results_count: data.items.length });
+  }
 }
 
 // ─── Chat ──────────────────────────────────────────────────────────────────────
@@ -506,6 +539,7 @@ function initEssie() {
       retry.addEventListener('click', () => {
         if (busy) return;
         msg.remove();
+        track('essie_message', { source: 'retry' });
         reply(text);
       });
       box.append(retry);
@@ -579,6 +613,7 @@ function initEssie() {
               if (collectBrands(event.data, brands)) saveBrands(conversationId(), brands);
               const widget = toolResult(event.data);
               if (widget) place(part, widget);
+              trackResult(event.data);
             }
             // More may follow; `done` or the end of the stream clears this.
             if (part.type === 'text' || part.type === 'tool_result') showThinking();
@@ -618,6 +653,7 @@ function initEssie() {
       save();
     } catch (err) {
       console.warn('[essie]', err);
+      track('essie_error', { recoverable: err.recoverable !== false });
       messages.forEach(m => m.node.remove());
       showError(text, err.recoverable !== false);
     } finally {
@@ -627,9 +663,15 @@ function initEssie() {
     }
   }
 
-  function submit(text) {
+  // `source`: typed, chip (a suggested reply) or product_prompt.
+  function submit(text, source = 'typed') {
     text = text.trim();
     if (!text || busy) return;
+
+    track('essie_message', {
+      source,
+      turn: transcript.filter(m => m.role === 'user').length + 1,
+    });
 
     clearChips();
     transcript.push({ role: 'user', parts: [{ type: 'text', text }] });
@@ -679,8 +721,8 @@ function initEssie() {
       const chip = el('button', 'essie__chip', label);
       chip.type = 'button';
       chip.addEventListener('click', () => {
-        open();
-        submit(message || label);
+        open('product_prompt');
+        submit(message || label, 'product_prompt');
       });
       row.append(chip);
     });
@@ -718,7 +760,11 @@ function initEssie() {
     }, PROMPTS_DELAY);
   }
 
-  function open() {
+  function open(source = 'pill') {
+    if (!isOpen()) {
+      track('essie_open', { source });
+      markFeature('essie');
+    }
     hidePrompts();
     root.setAttribute('data-open', '');
     pill.setAttribute('aria-expanded', 'true');
@@ -738,7 +784,7 @@ function initEssie() {
     pill.focus({ preventScroll: true });
   }
 
-  pill.addEventListener('click', open);
+  pill.addEventListener('click', () => open());
   root.querySelector('[data-essie-close]').addEventListener('click', close);
 
   document.addEventListener('keydown', e => {
@@ -756,11 +802,13 @@ function initEssie() {
 
   list.addEventListener('click', e => {
     const chip = e.target.closest('[data-essie-reply]');
-    if (chip) submit(chip.dataset.essieReply);
+    if (chip) submit(chip.dataset.essieReply, 'chip');
+    if (e.target.closest('[data-essie-checkout]')) track('essie_checkout');
   });
 
   newChat.addEventListener('click', () => {
     if (busy) return;
+    track('essie_new_chat');
     const id = load(KEYS.conversation);
     if (id) store(brandsKey(id), null);
     brands = new Map();
@@ -774,4 +822,4 @@ function initEssie() {
   initPrompts();
 }
 
-if (root && config?.apiBase) initEssie();
+if (root && config?.apiBase && !inHoldout('essie')) initEssie();

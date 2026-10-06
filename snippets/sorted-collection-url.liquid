@@ -1,0 +1,23 @@
+{%- comment -%}
+  Outputs a link's URL with the collection sort built in, matching the
+  collection sidebar: main-collection redirects any collection URL that arrives
+  without `sort_by`, and that redirect costs a second full render of the grid.
+
+  Accepts:
+  - url:          {String} The link URL.
+  - default_sort: {String} Sort key for collection URLs.
+  - all_sort:     {String} Sort key for All products. Optional.
+{%- endcomment -%}
+{%- liquid
+  assign href = url
+  if default_sort != blank and href contains '/collections/'
+    unless href contains '?'
+      assign sort = default_sort
+      if url == routes.all_products_collection_url
+        assign sort = all_sort | default: default_sort
+      endif
+      assign href = href | append: '?sort_by=' | append: sort
+    endunless
+  endif
+  echo href
+-%}

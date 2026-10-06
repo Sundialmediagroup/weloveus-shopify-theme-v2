@@ -1,5 +1,6 @@
 {%- liquid
   assign trigger_label = section.settings.brands_trigger | default: 'Brands'
+  assign categories_label = section.settings.categories_trigger | default: 'Categories'
 -%}
 
 {%- comment -%}
@@ -14,19 +15,122 @@
   assign all_products_href = routes.all_products_collection_url | append: '?sort_by=' | append: all_sort
 -%}
 
+{%- comment -%}
+  Same brands and A–Z grouping as the brand-directory snippet: only collections
+  with `custom.type == 'Brand'`, so category collections stay out of the menu.
+{%- endcomment -%}
+{%- assign alphabet = 'A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z' | split: ',' -%}
+
 {%- capture brands_items -%}
-  {%- for collection in collections -%}
-    <li>
-      <a class="site-header__brand-item" href="{{ collection.url }}?sort_by={{ default_sort }}">
-        {{- collection.title -}}
-      </a>
-    </li>
+  {%- for letter in alphabet -%}
+
+    {%- capture letter_items -%}
+      {%- for collection in collections -%}
+        {%- if collection.metafields.custom.type.value == 'Brand' -%}
+          {%- assign first_char = collection.title | upcase | slice: 0 -%}
+          {%- if first_char == letter -%}
+            <li>
+              <a class="site-header__mega-link" href="{{ collection.url }}?sort_by={{ default_sort }}">
+                {{- collection.title -}}
+              </a>
+            </li>
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endcapture -%}
+
+    {%- if letter_items != blank -%}
+      <div class="site-header__mega-group">
+        <p class="site-header__mega-heading">{{ letter }}</p>
+        <ul class="site-header__mega-list">
+          {{ letter_items }}
+        </ul>
+      </div>
+    {%- endif -%}
+
   {%- endfor -%}
 {%- endcapture -%}
 
 {%- assign has_brands = false -%}
 {%- if brands_items != blank -%}
   {%- assign has_brands = true -%}
+{%- endif -%}
+
+{%- comment -%}
+  The same "Category Menu" the collection sidebar renders. Top-level links with
+  children head a group, styled like the sidebar's top level so they read as
+  links; their children list beneath. Top-level links without children share
+  one group of their own at the start rather than each sitting alone.
+{%- endcomment -%}
+{%- assign category_links = linklists['category-menu'].links -%}
+
+{%- capture categories_items -%}
+  {%- capture standalone_items -%}
+    {%- for link in category_links -%}
+      {%- if link.links.size == 0 -%}
+        <li>
+          <a
+            class="site-header__mega-link site-header__mega-link--parent"
+            href="{%- render 'sorted-collection-url', url: link.url, default_sort: default_sort, all_sort: all_sort -%}"
+          >
+            {{- link.title | escape -}}
+          </a>
+        </li>
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endcapture -%}
+
+  {%- if standalone_items != blank -%}
+    <div class="site-header__mega-group">
+      <ul class="site-header__mega-list">
+        {{ standalone_items }}
+      </ul>
+    </div>
+  {%- endif -%}
+
+  {%- for link in category_links -%}
+    {%- if link.links.size > 0 -%}
+      <div class="site-header__mega-group">
+        <a
+          class="site-header__mega-link site-header__mega-link--parent"
+          href="{%- render 'sorted-collection-url', url: link.url, default_sort: default_sort, all_sort: all_sort -%}"
+        >
+          {{- link.title | escape -}}
+        </a>
+        <ul class="site-header__mega-list">
+          {%- for child in link.links -%}
+            <li>
+              <a
+                class="site-header__mega-link"
+                href="{%- render 'sorted-collection-url', url: child.url, default_sort: default_sort, all_sort: all_sort -%}"
+              >
+                {{- child.title | escape -}}
+              </a>
+              {%- if child.links.size > 0 -%}
+                <ul class="site-header__mega-list site-header__mega-list--nested">
+                  {%- for grandchild in child.links -%}
+                    <li>
+                      <a
+                        class="site-header__mega-link"
+                        href="{%- render 'sorted-collection-url', url: grandchild.url, default_sort: default_sort, all_sort: all_sort -%}"
+                      >
+                        {{- grandchild.title | escape -}}
+                      </a>
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- assign has_categories = false -%}
+{%- if categories_items != blank -%}
+  {%- assign has_categories = true -%}
 {%- endif -%}
 
 
@@ -58,9 +162,18 @@
         {%- for link in linklists[section.settings.menu].links -%}
           {%- if has_brands and link.title == trigger_label -%}
             <button
-              class="site-header__nav-link site-header__brands-trigger"
+              class="site-header__nav-link site-header__mega-trigger"
               aria-expanded="false"
-              aria-controls="header-mega"
+              aria-controls="header-mega-brands"
+              type="button"
+            >
+              {{- link.title -}}
+            </button>
+          {%- elsif has_categories and link.title == categories_label -%}
+            <button
+              class="site-header__nav-link site-header__mega-trigger"
+              aria-expanded="false"
+              aria-controls="header-mega-categories"
               type="button"
             >
               {{- link.title -}}
@@ -116,7 +229,10 @@
               looks "David" up as a translation key.
             {%- endcomment -%}
             {%- assign account_label = 'general.accessibility.account' | t -%}
-            {{- customer.first_name | default: account_label -}}
+            {%- assign account_text = customer.first_name | default: account_label -%}
+            <span class="site-header__action-label">
+              {{- account_text -}}
+            </span>
           </a>
         {%- else -%}
           <a
@@ -126,7 +242,10 @@
             aria-haspopup="dialog"
             aria-controls="account-modal"
           >
-            {{- 'general.accessibility.account' | t -}}
+            {%- assign account_text = 'general.accessibility.account' | t -%}
+            <span class="site-header__action-label">
+              {{- account_text -}}
+            </span>
           </a>
         {%- endif -%}
 
@@ -140,7 +259,10 @@
           href="{{ pages.wishlist.url | default: '/pages/wishlist' }}"
           class="site-header__action site-header__wishlist"
         >
-          {{- 'wishlist.nav' | t -}}
+          {%- assign wishlist_text = 'wishlist.nav' | t -%}
+          <span class="site-header__action-label">
+            {{- wishlist_text -}}
+          </span>
           <span class="site-header__wishlist-count" aria-hidden="true" data-wishlist-count {% if wishlist_count == 0 %}hidden{% endif %}>
             {{- wishlist_count -}}
           </span>
@@ -148,7 +270,10 @@
       {%- endif -%}
 
       <a href="{{ routes.cart_url }}" class="site-header__action site-header__cart" aria-label="{{ 'general.accessibility.cart' | t }}">
-        {{- 'general.accessibility.cart' | t -}}
+        {%- assign cart_text = 'general.accessibility.cart' | t -%}
+        <span class="site-header__action-label">
+          {{- cart_text -}}
+        </span>
         {%- if cart.item_count > 0 -%}
           <span class="site-header__cart-count" aria-hidden="true">
             {{- cart.item_count -}}
@@ -183,13 +308,27 @@
     <p class="site-header__cart-panel-text">Added to cart!</p>
   </div>
 
-  {%- if has_brands -%}
-    <div class="site-header__mega" id="header-mega" aria-hidden="true">
-      <div class="site-header__mega-inner">
-        <ul class="site-header__brands-grid">
-          {{ brands_items }}
-        </ul>
-      </div>
+  {%- comment -%}
+    One container for every mega menu: the triggers swap which pane shows, and
+    header.js animates the container to the new pane's height.
+  {%- endcomment -%}
+  {%- if has_brands or has_categories -%}
+    <div class="site-header__mega" id="header-mega">
+      {%- if has_brands -%}
+        <div class="site-header__mega-inner" id="header-mega-brands" aria-hidden="true" hidden>
+          <div class="site-header__mega-grid">
+            {{ brands_items }}
+          </div>
+        </div>
+      {%- endif -%}
+
+      {%- if has_categories -%}
+        <div class="site-header__mega-inner" id="header-mega-categories" aria-hidden="true" hidden>
+          <div class="site-header__mega-grid">
+            {{ categories_items }}
+          </div>
+        </div>
+      {%- endif -%}
     </div>
   {%- endif -%}
 
@@ -211,6 +350,13 @@
       "label": "Brands nav label",
       "default": "Brands",
       "info": "Must match the nav link text exactly — that link becomes the brands mega menu trigger"
+    },
+    {
+      "type": "text",
+      "id": "categories_trigger",
+      "label": "Categories nav label",
+      "default": "Categories",
+      "info": "Must match the nav link text exactly — that link opens a mega menu of the Category Menu"
     }
   ]
 }

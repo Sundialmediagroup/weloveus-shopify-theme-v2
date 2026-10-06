@@ -87,7 +87,6 @@
   overflow: hidden;
   pointer-events: none;
   font-size: var(--search-text, var(--text-sm));
-  letter-spacing: var(--tracking-wide);
   text-align: start;
   opacity: 0.55; // matches the native placeholder in _search-form.scss
 

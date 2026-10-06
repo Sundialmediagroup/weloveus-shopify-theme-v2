@@ -1,4 +1,5 @@
 import { showCartPanel, refreshCartCount } from './cart-feedback.js';
+import { lineItemProperties, syncCartAttributes } from './analytics.js';
 
 // Product detail page controller.
 //
@@ -383,6 +384,7 @@ class ProductPage extends HTMLElement {
         body: JSON.stringify({
           id: this.idInput.value,
           quantity: parseInt(this.querySelector('[data-pdp-qty-input]')?.value, 10) || 1,
+          properties: lineItemProperties(this.dataset.productId, 'pdp'),
         }),
       });
 
@@ -391,6 +393,7 @@ class ProductPage extends HTMLElement {
       if (this.submitText) this.submitText.textContent = this.text.added;
       showCartPanel();
       refreshCartCount();
+      syncCartAttributes();
     } catch {
       if (this.submitText) this.submitText.textContent = this.text.error;
     } finally {

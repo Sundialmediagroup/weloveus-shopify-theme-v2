@@ -166,5 +166,44 @@
         "default": "http://127.0.0.1:8765"
       }
     ]
+  },
+  {
+    "name": "Analytics & experiments",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Holdouts hide a feature from a share of visitors so its effect on conversion and order value can be measured against those who see it. Leave at 0% when no test is running. Change a percentage between tests, not during one."
+      },
+      {
+        "type": "range",
+        "id": "holdout_essie",
+        "label": "Ask Essie holdout",
+        "min": 0,
+        "max": 50,
+        "step": 5,
+        "unit": "%",
+        "default": 0
+      },
+      {
+        "type": "range",
+        "id": "holdout_quick_add",
+        "label": "Quick add holdout",
+        "min": 0,
+        "max": 50,
+        "step": 5,
+        "unit": "%",
+        "default": 0
+      },
+      {
+        "type": "range",
+        "id": "holdout_shop_the_story",
+        "label": "Shop the story holdout",
+        "min": 0,
+        "max": 50,
+        "step": 5,
+        "unit": "%",
+        "default": 0
+      }
+    ]
   }
 ]

@@ -1,0 +1,27 @@
+{%- comment -%}
+  A product's analytics fields as data attributes, read by
+  frontend/scripts/analytics.js to build GA4 `items`. Output inside an opening
+  tag. The element still needs `data-item` to count as a selectable item (a
+  card or suggestion link); the PDP carries these fields without it, so a click
+  anywhere on the page is not taken for a product selection.
+
+  `item_id` copies the format the Google & YouTube app sends with its own
+  ecommerce events (shopify_ZZ_<product>_<variant>). GA4 only credits a
+  purchase to the list an item was selected from when the two ids match.
+
+  Accepts:
+  - product: {Object} Shopify product object (required)
+  - variant: {Object} Variant to describe. Default: the selected or first
+                      available one, which is what a card shows and quick-adds.
+{%- endcomment -%}
+
+{%- liquid
+  assign item_variant = variant | default: product.selected_or_first_available_variant
+  assign item_price = item_variant.price | default: product.price | divided_by: 100.0
+-%}
+data-item-id="shopify_ZZ_{{ product.id }}_{{ item_variant.id }}"
+data-item-name="{{ product.title | escape }}"
+data-item-brand="{{ product.vendor | escape }}"
+data-item-category="{{ product.type | escape }}"
+data-item-price="{{ item_price }}"
+data-product-id="{{ product.id }}"

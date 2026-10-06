@@ -37,7 +37,7 @@
   --color-bg-feature:    var(--color-brand-sand);    // feature card text panels
   --color-bg-highlight:  var(--color-brand-green);   // standout panels; pair with --color-fg-inverted
   --color-bg-inverted:   var(--color-neutral-950);   // black panels; pair with --color-fg-inverted
-  --color-bg-footer:     var(--color-bg-inverted);
+  --color-bg-footer:     var(--color-bg);
   --color-bg-subtle:     var(--color-neutral-50);
   --color-bg-raised:     var(--color-neutral-100);
   --color-scrim:         rgb(0 0 0 / 0.5);   // behind modals and overlays
@@ -120,6 +120,12 @@
   --text-7xl:  4.5rem;     // 72px
   --text-8xl:  6rem;       // 96px
   --text-9xl:  8rem;       // 128px — display only (word-map)
+  --text-3xs:  0.5rem;     // 8px — stickers only
+
+  // Fluid display sizes (see the type-display mixins). Statement: a section's
+  // one big line. Display: standfirsts, pull quotes and media titles.
+  --text-display:   clamp(var(--text-xl), 2.4vw, var(--text-3xl));
+  --text-statement: clamp(var(--text-2xl), 3.2vw, var(--text-5xl));
 
   // Line heights
   --leading-none:    1;
@@ -206,6 +212,10 @@
   --site-frame:    var(--space-3);    // 12px on phones, 20px from `md` (below)
   --grid-cols:     12;
   --grid-gap:      var(--site-frame); // carousels and card grids — follows the frame
+  --measure:      38rem;             // 608px — reading column: ~66 characters of body copy at --text-lg
+  --menu-gap:     var(--space-6);    // between header and footer menu items
+  --bar-row:      var(--space-10);   // 40px — row inside the header and footer bars, so they match
+  --essie-bar-height: 3.5rem;         // 56px — the Ask Essie bar; the brand directory clears it
 
   // Populated by JS after first paint
   --header-height: 0px;

@@ -1,70 +1,17 @@
 @use 'abstracts/mixins' as *;
 
 // Article card — snippets/article-card.liquid.
-// A feed entry: date column at the inline start, title run into the excerpt,
-// image below. The rule on top separates entries; the feed draws the last one.
+//
+// The blog's lead story (_main-blog.scss) at card size: the same image
+// treatment, the same label date, a regular-weight title and the same relaxed
+// body copy, so a feed and its lead read as one set.
 
 .article-card {
   position: relative;
-  display: grid;
-  grid-template-columns: var(--article-card-date-width, 5.5rem) minmax(0, 1fr); // 88px
-  gap: var(--space-4);
-  padding-block: var(--space-6);
-  border-block-start: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
   color: var(--color-fg);
-
-  @include respond-to('lg') {
-    gap: var(--space-6);
-  }
-}
-
-.article-card__date {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  letter-spacing: var(--tracking-wider);
-  line-height: var(--leading-snug);
-  text-transform: uppercase;
-  color: var(--color-fg-muted);
-}
-
-.article-card__body {
-  --stack-gap: var(--space-6);
-}
-
-.article-card__text {
-  font-size: var(--text-base);
-  line-height: var(--leading-snug);
-  max-width: none; // typography.scss caps `p` at 68ch — the column already does
-
-  @include respond-to('lg') {
-    font-size: var(--text-lg);
-  }
-}
-
-.article-card__title {
-  font-weight: var(--weight-bold);
-}
-
-.article-card__link {
-  color: inherit;
-  text-decoration: none;
-
-  // Stretched over the whole card: one tab stop, one accessible name.
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: var(--z-raised);
-  }
-
-  &:focus-visible {
-    outline: none;
-
-    &::after {
-      outline: 2px solid currentColor;
-      outline-offset: -2px;
-    }
-  }
 }
 
 .article-card__media {
@@ -78,7 +25,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform var(--duration-slow) var(--ease-out);
 }
 
 .article-card__placeholder {
@@ -95,13 +41,61 @@
   }
 }
 
-.article-card:has(.article-card__link):hover {
-  .article-card__title {
-    text-decoration: underline;
-    text-underline-offset: 0.15em;
+.article-card__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.article-card__date {
+  @include type-label;
+}
+
+.article-card__title {
+  font-size: var(--text-xl);
+  line-height: var(--leading-tight);
+  overflow-wrap: break-word;
+
+  @include respond-to('lg') {
+    font-size: var(--text-2xl);
+  }
+}
+
+.article-card__link {
+  @include underline-on-hover;
+  color: inherit;
+  text-underline-offset: 0.15em;
+
+  &:hover {
+    color: inherit;
   }
 
-  .article-card__image {
-    transform: scale(1.03);
+  // Stretched over the whole card: one tab stop, one accessible name.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-raised);
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    &::after {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+    }
+  }
+}
+
+// Clamped so a row of cards keeps an even foot.
+.article-card__excerpt {
+  @include line-clamp(3);
+}
+
+.article-card:has(.article-card__link):hover {
+  .article-card__link {
+    text-decoration-color: currentColor;
   }
 }

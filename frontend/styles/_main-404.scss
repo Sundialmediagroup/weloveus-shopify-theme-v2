@@ -1,0 +1,33 @@
+@use 'abstracts/mixins' as *;
+
+// Not found — sections/main-404.liquid. The editorial header (title over a
+// subtle rule), start-aligned like every other page.
+
+.main-404 {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-6);
+}
+
+.main-404__header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+  align-self: stretch;
+  padding-bottom: var(--space-8);
+  border-bottom: 1px solid var(--color-border);
+
+  @include respond-to('lg') {
+    padding-bottom: var(--space-12);
+  }
+}
+
+.main-404__code {
+  @include type-label;
+}
+
+.main-404__text {
+  font-size: var(--text-lg);
+}

@@ -51,6 +51,7 @@
 .featured-section__eyebrow,
 .featured-section__heading {
   @include trim-to-cap;
+  @include type-statement;
 }
 
 .featured-section__heading {

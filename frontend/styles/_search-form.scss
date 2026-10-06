@@ -22,11 +22,10 @@
     border-color: var(--search-border-hover, var(--color-fg));
   }
 
-  // The ring sits on the pill, not the bare input, so the whole control reads
-  // as focused. `:focus-visible` inside `:has` keeps it off mouse clicks.
-  &:has(.search-form__input:focus-visible) {
+  // Focus is the pill's border darkening, not the bare input's outline, so the
+  // whole control reads as focused. No glow.
+  &:has(.search-form__input:focus) {
     border-color: var(--color-fg);
-    box-shadow: 0 0 0 3px rgb(0 0 0 / 0.08);
   }
 }
 
@@ -36,7 +35,6 @@
   padding-block: var(--search-pad, var(--space-2));
   font-family: inherit;
   font-size: var(--search-text, var(--text-sm));
-  letter-spacing: var(--tracking-wide);
   color: inherit;
   background: none;
   border: 0;
@@ -78,10 +76,10 @@
 
 // ─── Header bar ────────────────────────────────────────────────────────────────
 
-// Tinted rather than outlined: a hard border against the gold nav competes with
-// the logo, a wash of the page background reads as an inset field.
+// The header's own colour, so the field reads as part of the bar; the faint
+// border alone marks it out. A hard border competes with the logo.
 .search-form--header {
-  --search-bg: color-mix(in srgb, var(--color-bg) 35%, transparent);
+  --search-bg: var(--color-bg-header);
   --search-border: color-mix(in srgb, var(--color-fg) 15%, transparent);
   --search-border-hover: color-mix(in srgb, var(--color-fg) 35%, transparent);
 }

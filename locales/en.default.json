@@ -116,6 +116,7 @@
     "search": {
       "title": "Search",
       "prompt": "What are you looking for?",
+      "searching_for_html": "Searching for ‘{{ terms }}’",
       "results_count": {
         "one": "{{ count }} result",
         "other": "{{ count }} results"
@@ -125,6 +126,25 @@
       "page_of": "Page {{ current }} of {{ total }}",
       "previous": "Previous",
       "next": "Next"
+    },
+    "page": {
+      "contents": "On this page",
+      "shop": "Shop this page",
+      "published_html": "Published {{ date }}"
+    },
+    "blog": {
+      "all": "All",
+      "filter": "Filter stories by tag",
+      "read": "Read the story",
+      "empty": "No stories here yet.",
+      "pagination": "Story pages"
+    },
+    "article": {
+      "by": "By {{ author }}",
+      "tags": "Tags",
+      "more": "More from {{ blog }}",
+      "shop": "Shop the story",
+      "shop_all": "Shop all {{ count }}"
     }
   },
   "wishlist": {
@@ -179,5 +199,29 @@
     "prompt_similar_message": "Show me other products like the {{ title }}",
     "prompt_how": "How do I use it?",
     "prompt_how_message": "How do I use the {{ title }}?"
+  },
+  "cart": {
+    "title": "Your cart",
+    "count": {
+      "one": "{{ count }} item",
+      "other": "{{ count }} items"
+    },
+    "each": "{{ price }} each",
+    "quantity": "Quantity for {{ title }}",
+    "decrease": "Decrease quantity of {{ title }}",
+    "increase": "Increase quantity of {{ title }}",
+    "remove": "Remove",
+    "remove_item": "Remove {{ title }}",
+    "summary": "Order summary",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "tax_note": "Taxes and shipping calculated at checkout",
+    "checkout": "Checkout",
+    "update": "Update cart",
+    "continue": "Continue shopping",
+    "payment_methods": "Accepted payment methods",
+    "empty": "Your cart is empty. Find something you love.",
+    "updated": "Cart updated",
+    "error": "Couldn't update your cart — try again"
   }
 }

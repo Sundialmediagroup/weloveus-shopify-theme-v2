@@ -32,7 +32,13 @@
   assign image_alt = card_image.alt | default: product.title | escape
 -%}
 
-<a class="product-card" href="{{ product.url }}" aria-label="{{ product.title | escape }}">
+<a
+  class="product-card"
+  href="{{ product.url }}"
+  aria-label="{{ product.title | escape }}"
+  data-item
+  {% render 'item-data', product: product %}
+>
 
   <div class="product-card__media" style="--card-ratio: {{ image_ratio }};">
     {%- comment -%}

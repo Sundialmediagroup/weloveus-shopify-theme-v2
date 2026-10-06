@@ -1,47 +1,22 @@
-<style>
-  .main-404 {
-    text-align: center;
-    padding-block: var(--space-32);
-  }
+{%- comment -%}
+  Not found. The page header every other page has — title over a subtle rule,
+  start-aligned — then a line of explanation and the way home.
+{%- endcomment -%}
 
-  .main-404__code {
-    font-size: var(--text-7xl);
-    font-family: var(--font-heading);
-    letter-spacing: var(--tracking-tighter);
-    line-height: var(--leading-none);
-    color: var(--color-border-strong);
-  }
-
-  .main-404__heading {
-    margin-top: var(--space-6);
-    font-size: var(--text-2xl);
-  }
-
-  .main-404__text {
-    margin-top: var(--space-4);
-    color: var(--color-fg-muted);
-  }
-
-  .main-404__cta {
-    margin-top: var(--space-10);
-  }
-</style>
-
-<section class="main-404 section">
-  <div class="container">
-    <p class="main-404__code" aria-hidden="true">404</p>
-    <h1 class="main-404__heading">{{ 'templates.404.title' | t }}</h1>
-    <p class="main-404__text">{{ 'templates.404.subtext' | t }}</p>
-    <div class="main-404__cta">
-      <a href="{{ routes.root_url }}" class="btn btn--primary">
-        {{- 'templates.404.homepage' | t -}}
-      </a>
-    </div>
-  </div>
-</section>
+<div class="main-404">
+  <header class="main-404__header">
+    <p class="main-404__code">404</p>
+    <h1>{{ 'templates.404.title' | t }}</h1>
+  </header>
+  <p class="main-404__text">{{ 'templates.404.subtext' | t }}</p>
+  <a href="{{ routes.root_url }}" class="btn btn--primary btn--lg main-404__cta">
+    {{- 'templates.404.homepage' | t -}}
+  </a>
+</div>
 
 {% schema %}
 {
-  "name": "404"
+  "name": "404",
+  "tag": "section"
 }
 {% endschema %}

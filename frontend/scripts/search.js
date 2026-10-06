@@ -4,6 +4,8 @@
 // this script absent — or a request in flight when Enter is pressed — the page
 // still searches. Nothing here is required for search to work.
 
+import { track } from './analytics.js'
+
 const form = document.querySelector('[data-predictive-form]')
 const input = form?.querySelector('[data-predictive-input]')
 const panel = document.querySelector('[data-predictive-results]')
@@ -16,6 +18,11 @@ if (form && input && panel && header) {
   const MIN_LENGTH = 2
   const DEBOUNCE_MS = 200
   const RESULT_LIMIT = 6
+  // Reported once the shopper stops typing, not for every prefix on the way.
+  const TRACK_AFTER_MS = 1500
+
+  let trackTimer
+  let lastTracked = ''
 
   // Built from the form's own action so a locale-prefixed storefront
   // (/en-gb/search) keeps working — the endpoint is always <search url>/suggest.
@@ -76,6 +83,16 @@ if (form && input && panel && header) {
       panel.innerHTML = results.outerHTML
       announce(panel.querySelector('[data-predictive-count]')?.textContent.trim() ?? '')
       open()
+
+      clearTimeout(trackTimer)
+      trackTimer = setTimeout(() => {
+        if (query === lastTracked) return
+        lastTracked = query
+        track('predictive_search', {
+          search_term: query,
+          results_count: Number(results.dataset.resultsCount) || 0,
+        })
+      }, TRACK_AFTER_MS)
     } catch {
       // Aborted, offline, or a bad response — the form still submits.
     }

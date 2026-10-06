@@ -1,0 +1,117 @@
+{%- comment -%}
+  "Shop the story": the products a page or article features, as the theme's
+  own product cards in the standard product grid — the collection page's
+  columns, cards, quick add and prices — so a shopper can scan the whole edit
+  at once and go on to the full collection.
+
+  Two sources, in this order:
+  1. A Shopify Buy Button collection embed in the content (stripped from the
+     body by snippets/editorial-content.liquid). Its collection id is read out
+     of the script and matched against the store's collections; its products
+     fill the grid and "Shop all" links to it.
+  2. Links to `/products/` in the copy, in the order they appear, each once.
+     Shopify image URLs on older stores also contain `/products/` but end in a
+     file name, so anything with a dot is skipped; anything that doesn't
+     resolve to a product drops out on its own.
+
+  Accepts:
+  - content:    {String} Rich text HTML to scan (required)
+  - heading:    {String} Heading above the grid (required)
+  - heading_id: {String} Id for the heading (required)
+  - list_name:  {String} Analytics list name — the story's title, so revenue
+                         can be read per story. Default: the heading.
+  - limit:      {Number} Most cards to show. Default 12 — three rows at `lg`.
+                         Linked products are `all_products` lookups, which
+                         Shopify caps at 20 a page.
+{%- endcomment -%}
+
+{%- liquid
+  assign shop_limit = limit | default: 12
+  assign seen = ','
+  assign shown = 0
+  assign shop_collection = blank
+
+  if content contains "createComponent('collection'"
+    assign embed_id = content | split: "createComponent('collection'" | last | split: 'id:' | slice: 1 | first | split: ',' | first | remove: "'" | remove: '"' | remove: '[' | remove: ']' | strip
+  endif
+-%}
+
+{%- comment -%}
+  Collections have no lookup by id, so the embed's is matched by walking
+  them. A bare `for` over `collections` stops at 50; paginating raises that to
+  250, Shopify's maximum (the store has about 200).
+{%- endcomment -%}
+{%- if embed_id != blank -%}
+  {%- paginate collections by 250 -%}
+    {%- for c in collections -%}
+      {%- assign c_id = c.id | append: '' -%}
+      {%- if c_id == embed_id -%}
+        {%- assign shop_collection = c -%}
+        {%- break -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endpaginate -%}
+{%- endif -%}
+
+{%- liquid
+  assign default_sort = settings.collection_default_sort | default: 'best-selling'
+-%}
+
+{%- capture shop_items -%}
+  {%- if shop_collection != blank -%}
+    {%- for shop_product in shop_collection.products limit: shop_limit -%}
+      {%- assign seen = seen | append: shop_product.handle | append: ',' -%}
+      {%- assign shown = shown | plus: 1 -%}
+      {%- render 'product-card', product: shop_product, lazy: true -%}
+    {%- endfor -%}
+  {%- endif -%}
+
+  {%- assign chunks = content | split: '/products/' -%}
+  {%- for chunk in chunks offset: 1 -%}
+    {%- if shown >= shop_limit -%}{%- break -%}{%- endif -%}
+    {%- liquid
+      assign handle = chunk | split: '"' | first | split: "'" | first | split: '?' | first | split: '#' | first | split: '/' | first | split: '<' | first | split: ' ' | first | strip | downcase
+      assign key = ',' | append: handle | append: ','
+      assign skip = false
+      if handle == blank
+        assign skip = true
+      elsif handle contains '.'
+        assign skip = true
+      elsif seen contains key
+        assign skip = true
+      endif
+    -%}
+    {%- unless skip -%}
+      {%- assign seen = seen | append: handle | append: ',' -%}
+      {%- assign shop_product = all_products[handle] -%}
+      {%- if shop_product != blank -%}
+        {%- assign shown = shown | plus: 1 -%}
+        {%- render 'product-card', product: shop_product, lazy: true -%}
+      {%- endif -%}
+    {%- endunless -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- if shown > 0 -%}
+  <section
+    class="editorial-products editorial__after"
+    aria-labelledby="{{ heading_id }}"
+    data-feature="shop_the_story"
+  >
+    <header class="editorial-products__header">
+      <h2 class="editorial-products__heading" id="{{ heading_id }}">{{ heading }}</h2>
+      {%- if shop_collection != blank -%}
+        <a
+          class="editorial-products__all"
+          href="{%- render 'sorted-collection-url', url: shop_collection.url, default_sort: default_sort -%}"
+        >
+          {{- 'templates.article.shop_all' | t: count: shop_collection.products_count -}}
+        </a>
+      {%- endif -%}
+    </header>
+
+    <div class="product-grid__grid" data-item-list="shop_the_story" data-item-list-name="{{ list_name | default: heading | escape }}">
+      {{ shop_items }}
+    </div>
+  </section>
+{%- endif -%}

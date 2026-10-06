@@ -38,7 +38,9 @@ export async function refreshCartCount() {
   const badge = document.querySelector('.site-header__cart-count');
 
   if (badge) {
-    badge.textContent = cart.item_count;
+    // The cart page can empty the cart without a reload.
+    if (cart.item_count === 0) badge.remove();
+    else badge.textContent = cart.item_count;
     return;
   }
 

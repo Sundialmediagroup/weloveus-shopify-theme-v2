@@ -1,0 +1,34 @@
+{%- comment -%}
+  Outputs page or article rich text with Shopify Buy Button embeds taken out.
+
+  Older posts carry Buy Button code pasted into the body: a script that loads
+  an iframe of products with its own buttons, type and cart, none of it the
+  theme's, and a cart separate from the store's. The script is dropped here
+  and the products it pointed at are shown as the theme's own product cards
+  under the post (snippets/editorial-products.liquid). Its empty mount node
+  stays and collapses to nothing. Any other script is left alone.
+
+  Accepts:
+  - content: {String} Rich text HTML (required)
+{%- endcomment -%}
+
+{%- liquid
+  if content contains 'ShopifyBuy'
+    assign parts = content | split: '<script'
+    echo parts.first
+    for part in parts offset: 1
+      if part contains 'ShopifyBuy'
+        # Liquid's split drops a trailing empty piece, so a script that ends
+        # the content leaves one piece — its own body — which must not print.
+        assign pieces = part | split: '</script>'
+        if pieces.size > 1
+          echo pieces.last
+        endif
+      else
+        echo '<script' | append: part
+      endif
+    endfor
+  else
+    echo content
+  endif
+-%}

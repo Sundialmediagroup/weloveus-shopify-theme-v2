@@ -1,36 +1,12 @@
-<style>
-  .main-content {
-    padding-block: var(--space-24);
-    text-align: center;
-  }
+<div class="main-content">
+  {%- if section.settings.heading != blank -%}
+    <h1 class="main-content__heading">{{ section.settings.heading }}</h1>
+  {%- endif -%}
 
-  .main-content__heading {
-    font-size: var(--text-5xl);
-    letter-spacing: var(--tracking-tighter);
-  }
-
-  .main-content__subheading {
-    margin-top: var(--space-6);
-    font-size: var(--text-lg);
-    color: var(--color-fg-muted);
-    max-width: 60ch;
-    margin-inline: auto;
-  }
-</style>
-
-<section class="main-content section">
-  <div class="container">
-
-    {%- if section.settings.heading != blank -%}
-      <h1 class="main-content__heading">{{ section.settings.heading }}</h1>
-    {%- endif -%}
-
-    {%- if section.settings.subheading != blank -%}
-      <p class="main-content__subheading">{{ section.settings.subheading }}</p>
-    {%- endif -%}
-
-  </div>
-</section>
+  {%- if section.settings.subheading != blank -%}
+    <p class="main-content__subheading">{{ section.settings.subheading }}</p>
+  {%- endif -%}
+</div>
 
 {% schema %}
 {
