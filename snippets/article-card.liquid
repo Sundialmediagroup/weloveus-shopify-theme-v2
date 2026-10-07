@@ -89,7 +89,7 @@
 
     <h3 class="article-card__title">
       {%- if article != blank -%}
-        <a class="article-card__link" href="{{ article.url }}">{{ card_title | escape }}</a>
+        <a class="article-card__link" href="{{ article.url }}" data-card="article-card">{{ card_title | escape }}</a>
       {%- else -%}
         {{- card_title | escape -}}
       {%- endif -%}

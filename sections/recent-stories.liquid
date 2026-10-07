@@ -99,8 +99,7 @@
                 <a
                   class="recent-stories__link"
                   href="{{ story.url }}"
-                  data-track-content="recent_story"
-                  data-track-content-id="{{ story.handle }}"
+                  data-card="story-card"
                 >
                   {{- story.title | escape -}}
                 </a>
@@ -142,6 +141,7 @@
 {% schema %}
 {
   "name": "Recent stories",
+  "class": "section-type--recent-stories",
   "tag": "section",
   "max_blocks": 3,
   "settings": [

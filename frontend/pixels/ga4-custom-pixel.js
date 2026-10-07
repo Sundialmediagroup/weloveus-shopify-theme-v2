@@ -20,6 +20,7 @@ const THEME_EVENTS = new Set([
   'view_item_list',
   'select_item',
   'select_content',
+  'section_click',
   'quick_add',
   'add_to_wishlist',
   'remove_from_wishlist',

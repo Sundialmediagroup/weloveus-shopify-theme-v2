@@ -68,7 +68,7 @@
       <div class="feature-card__text">
         <h3 class="feature-card__title">
           {%- if card_url != blank -%}
-            <a class="feature-card__link" href="{{ card_url }}">{{ card_title | escape }}</a>
+            <a class="feature-card__link" href="{{ card_url }}" data-card="feature-card">{{ card_title | escape }}</a>
           {%- else -%}
             {{- card_title | escape -}}
           {%- endif -%}

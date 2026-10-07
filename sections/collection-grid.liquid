@@ -8,6 +8,7 @@
       {%- assign label = block.settings.label | default: coll.title -%}
       <a
         class="collection-grid__item"
+        data-card="collection-card"
         href="{{ coll.url | default: routes.collections_url }}"
         {{ block.shopify_attributes }}
       >
@@ -20,6 +21,7 @@
 {% schema %}
 {
   "name": "Collection Grid",
+  "class": "section-type--collection-grid",
   "tag": "section",
   "blocks": [
     {

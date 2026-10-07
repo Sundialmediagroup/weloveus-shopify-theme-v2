@@ -327,6 +327,11 @@ sends page views and ecommerce events — never send those again from the theme.
   `{% render 'item-data', product: product %}`. That's all a new list needs.
 - A feature that can be held out gets `data-feature="<id>"`, a setting under
   Analytics & experiments, and a rule in `_experiments.scss`.
+- Clicks inside sections are sent as `section_click`, the v1 theme's event, so
+  its reports continue. Every new section's schema gets
+  `"class": "section-type--<file name>"`, and every new card's link gets
+  `data-card="<type>"` (`product-card`, `feature-card`, …). Other links need
+  nothing.
 - Every `/cart/add.js` call passes `properties: lineItemProperties(...)` and
   then calls `syncCartAttributes()`, so the order records where the product came
   from.

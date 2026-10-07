@@ -21,6 +21,8 @@
 //   [data-item-list="<id>"][data-item-list-name]  a list of products
 //   [data-item] + snippets/item-data.liquid       one selectable product
 //   [data-feature="<id>"]                         sends feature_view on sight
+//   [data-card="<type>"]                          a card, for section_click
+//   "class": "section-type--<file>" in a section's schema  its section_type
 //
 // Debug: localStorage.setItem('wlu.debug', '1') logs every event.
 
@@ -221,6 +223,49 @@ document.addEventListener('click', e => {
   track('select_item', { ...list, items: [itemFrom(el, { index: indexIn(el) })] })
   rememberSource(el.dataset.productId, list.item_list_id)
   markFeature(list.item_list_id)
+})
+
+// Clicks inside the page's sections, as `section_click` with the parameters
+// the v1 theme sent (assets/analytics.js there), so reports built on it carry
+// on across the relaunch. A product card click sends this and select_item:
+// this one answers "which section, how far down the page", select_item ties
+// the click to revenue.
+//
+// Sections are the template's own (`shopify-section-template--…`), not the
+// header and footer groups, counted from the top for section_position. Their
+// type comes from the `section-type--<file>` class each section's schema puts
+// on its wrapper. A card is anything marked [data-card="<type>"]; any other
+// link in a section is reported as element_type `link`.
+const TEMPLATE_SECTIONS = '[id^="shopify-section-template"]'
+
+document.addEventListener('click', e => {
+  const link = e.target.closest('a[href]')
+  const section = link?.closest(TEMPLATE_SECTIONS)
+  if (!section) return
+
+  const type = [...section.classList].find(c => c.startsWith('section-type--'))
+  const params = {
+    section_id: section.id.replace('shopify-section-', ''),
+    section_type: type ? type.slice('section-type--'.length) : 'unknown',
+    section_position: [...document.querySelectorAll(TEMPLATE_SECTIONS)].indexOf(section) + 1,
+    destination_url: link.getAttribute('href'),
+  }
+
+  const card = link.closest('[data-card]')
+  if (card) {
+    track('section_click', {
+      ...params,
+      element_type: 'card',
+      card_type: card.dataset.card,
+      card_index: [...section.querySelectorAll('[data-card]')].indexOf(card) + 1,
+    })
+  } else {
+    track('section_click', {
+      ...params,
+      element_type: 'link',
+      link_text: link.textContent.trim().replace(/\s+/g, ' ').slice(0, 100),
+    })
+  }
 })
 
 // Searches, by where they were typed. The app reports the results page; this
