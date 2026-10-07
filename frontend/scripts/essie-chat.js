@@ -98,8 +98,12 @@ function forgetPreviousShopper() {
 
 // ─── API ───────────────────────────────────────────────────────────────────────
 
+// A site path (`/apps/weloveus`) is Shopify's app proxy, which already maps
+// to the API's proxy routes; a full URL is a local e360-api, which needs the
+// route prefix.
 const apiBase = (config?.apiBase || '').replace(/\/+$/, '');
-const api = path => `${apiBase}/api/v1/web/weloveus${path}`;
+const viaAppProxy = apiBase.startsWith('/');
+const api = path => (viaAppProxy ? `${apiBase}${path}` : `${apiBase}/api/v1/web/weloveus${path}`);
 
 let tokenRequest = null;
 
@@ -146,7 +150,9 @@ function conversationId() {
 // shopper's (orders included), so `onShopperChanged` wipes the transcript
 // before the message goes out again on a new conversation.
 async function postMessage(text, retried = {}, onShopperChanged = () => {}) {
-  const body = { conversation_id: conversationId(), message: text };
+  const token = await visitorToken();
+  // The token also rides in the body: the app proxy may drop custom headers.
+  const body = { conversation_id: conversationId(), message: text, visitor_token: token };
   if (config.customerId) body.customer_id = config.customerId;
 
   const res = await fetch(api('/chat'), {
@@ -154,7 +160,7 @@ async function postMessage(text, retried = {}, onShopperChanged = () => {}) {
     headers: {
       'Content-Type': 'application/json',
       Accept: 'text/event-stream',
-      'X-Visitor-Token': await visitorToken(),
+      'X-Visitor-Token': token,
     },
     body: JSON.stringify(body),
   });
