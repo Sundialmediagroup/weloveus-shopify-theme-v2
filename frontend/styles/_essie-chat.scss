@@ -24,14 +24,20 @@
 }
 
 .essie {
-  --essie-bg:        rgb(20 20 20 / 0.55);
+  --essie-bg:        rgb(70 65 60 / 0.6);  // warm grey, #46413C
+  --essie-bg-open:   rgb(70 65 60);        // solid while chatting, so the page doesn't show through the messages
   --essie-fg:        var(--color-neutral-0);
   --essie-fg-muted:  rgb(255 255 255 / 0.65);
   --essie-line:      rgb(255 255 255 / 0.16);
   --essie-surface:   rgb(255 255 255 / 0.12);
-  --essie-radius:    22px;
+  --essie-bubble:      var(--color-neutral-0);    // Essie's messages
+  --essie-bubble-user: var(--color-brand-sand);   // the shopper's
+  --essie-bubble-fg:   var(--color-neutral-950);
   --essie-bar:       var(--essie-bar-height);  // 56px search bar
   --essie-tile:      2.5rem;  // 40px monogram and send button
+  // Concentric with the round monogram: its radius plus the bar's padding
+  // around it. That's half the bar, so the closed bar is a pill.
+  --essie-radius:    calc(var(--essie-tile) / 2 + var(--space-2));
   --essie-width:     min(22rem, 100vw - var(--space-6));
   --essie-height:    calc(min(70dvh, 44rem) - var(--essie-bar)); // open panel, above the bar
   --essie-duration:  var(--duration-slow);
@@ -58,7 +64,9 @@
   // Closing: slide down, then narrow.
   --essie-panel-transition: height var(--essie-duration) var(--ease-in-out);
 
-  transition: width var(--essie-widen) var(--ease-in-out) var(--essie-duration);
+  transition:
+    width var(--essie-widen) var(--ease-in-out) var(--essie-duration),
+    background-color var(--essie-duration) var(--ease-in-out);
 
   // Opening: widen, then slide up. The open chat is fixed to the viewport
   // rather than docked, so it always has the full height to open into.
@@ -68,7 +76,10 @@
     --essie-panel-transition: height var(--essie-duration) var(--ease-in-out) var(--essie-widen);
 
     position: fixed;
-    transition: width var(--essie-widen) var(--ease-in-out);
+    background-color: var(--essie-bg-open);
+    transition:
+      width var(--essie-widen) var(--ease-in-out),
+      background-color var(--essie-duration) var(--ease-in-out);
   }
 
   // Set by essie-dock.js for the one-off slide between docked and fixed: the
@@ -76,12 +87,14 @@
   &.is-moving {
     transition:
       width var(--essie-widen) var(--ease-in-out) var(--essie-duration),
+      background-color var(--essie-duration) var(--ease-in-out),
       translate var(--essie-duration) var(--ease-in-out);
   }
 
   &[data-open].is-moving {
     transition:
       width var(--essie-widen) var(--ease-in-out),
+      background-color var(--essie-duration) var(--ease-in-out),
       translate var(--essie-duration) var(--ease-in-out);
   }
 
@@ -402,12 +415,12 @@
   max-width: 85%;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-2xl);
-  background-color: var(--essie-surface);
+  background-color: var(--essie-bubble);
+  color: var(--essie-bubble-fg);
   overflow-wrap: anywhere;
 
   .essie__msg--user & {
-    background-color: var(--color-neutral-0);
-    color: var(--color-neutral-950);
+    background-color: var(--essie-bubble-user);
   }
 }
 
@@ -427,8 +440,12 @@
 }
 
 // Waiting on Essie: three dots rising in turn, in a bubble like her replies.
-// While a tool runs, a label with a slow sheen sits beside them.
+// While a tool runs, a label with a slow sheen sits beside them. Dark on the
+// white bubble, so the dots and sheen take the bubble's colours.
 .essie__thinking {
+  --essie-fg:       var(--essie-bubble-fg);
+  --essie-fg-muted: rgb(10 10 10 / 0.45);
+
   display: inline-flex;
   align-items: center;
   align-self: flex-start;
@@ -436,7 +453,7 @@
   min-height: 2.25rem;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-2xl);
-  background-color: var(--essie-surface);
+  background-color: var(--essie-bubble);
   animation: essie-appear 240ms var(--ease-out) both;
 }
 
@@ -476,6 +493,25 @@
 // then it shouldn't add a gap above the dots.
 .essie__msg:empty {
   display: none;
+}
+
+// Between an earlier chat and the new one (essie-chat.js, CHAT_IDLE): a
+// hairline either side of a small muted label.
+.essie__divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-block: var(--space-3);
+  color: var(--essie-fg-muted);
+  font-size: var(--text-xs);
+  text-align: center;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    border-top: 1px solid var(--essie-line);
+  }
 }
 
 @keyframes essie-appear {
@@ -554,6 +590,18 @@
 
   &:hover {
     background-color: var(--color-neutral-200);
+  }
+}
+
+// Sign in: the checkout button's shape, outlined, so the offer reads as an
+// option rather than the next step.
+.essie__sign-in {
+  border: 1px solid var(--essie-fg-muted);
+  background-color: transparent;
+  color: var(--essie-fg);
+
+  &:hover {
+    background-color: var(--essie-surface);
   }
 }
 

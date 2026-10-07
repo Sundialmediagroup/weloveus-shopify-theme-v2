@@ -12,6 +12,10 @@
 // which are HTML-escaped before the markdown pass.
 //
 // The transcript is saved to localStorage so the chat survives page changes.
+// A chat left idle for CHAT_IDLE gets a "Previous conversation" divider and a
+// fresh greeting under it when it is next shown, so returning shoppers can
+// tell the old chat from the new. The conversation id is kept, so Essie still
+// has the context if they carry on.
 //
 // Analytics (analytics.js): opens, messages, products shown, cart actions,
 // checkout clicks and errors. Product cards carry data-item, so clicks on them
@@ -19,6 +23,7 @@
 // never get the chat at all.
 
 import { track, inHoldout, markFeature } from './analytics.js';
+import { openAccountModal } from './account-modal.js';
 
 const root = document.querySelector('[data-essie]');
 const configEl = document.getElementById('essie-config');
@@ -26,8 +31,10 @@ const config = configEl ? decodeStrings(JSON.parse(configEl.textContent)) : null
 
 // Liquid's `t` filter HTML-escapes translations ("I'm" → "I&#39;m"), but these
 // strings reach the DOM as text, so turn the entities back into characters.
-// DOMParser documents are inert — nothing in them runs or loads.
+// DOMParser documents are inert — nothing in them runs or loads. URLs are left
+// alone: "&region_country=" would come back as "®ion_country=".
 function decodeStrings(value) {
+  if (typeof value === 'string' && /^(https?:)?\//.test(value)) return value;
   if (typeof value === 'string') {
     return value.includes('&')
       ? new DOMParser().parseFromString(value, 'text/html').documentElement.textContent
@@ -45,9 +52,12 @@ const KEYS = {
   conversation: 'essie.conversationId',
   transcript: 'essie.transcript',
   shopper: 'essie.shopper',
+  lastActive: 'essie.lastActive',
 };
 const MAX_SAVED_MESSAGES = 60;
+const CHAT_IDLE = 30 * 60 * 1000; // 30 minutes, as a GA4 session
 const PROMPTS_DISMISSED = 'essie.promptsDismissed'; // sessionStorage
+const REOPEN = 'essie.reopen'; // sessionStorage: signing in from the chat reloads the page
 const PROMPTS_DELAY = 1500;
 const brandsKey = id => `essie.brands.${id}`;
 
@@ -79,14 +89,28 @@ function saveBrands(id, brands) {
 }
 
 // A chat belongs to whoever was signed in when it started. When that changes
-// on this browser — sign in, sign out, another account — drop the saved chat
-// before it is shown, rather than wait for the API's 409 on the next message.
-// A saved chat with no recorded shopper predates this check, so it goes too.
+// on this browser — sign out, another account — drop the saved chat before it
+// is shown, rather than wait for the API's 409 on the next message. A saved
+// chat with no recorded shopper predates this check, so it goes too.
+//
+// A guest signing in is the same person, so they keep what's on screen: the
+// chat stays, marked "You're signed in", and the next message starts a new
+// conversation on the API under their account.
 function forgetPreviousShopper() {
   const shopper = config.customerId ? `customer:${config.customerId}` : 'guest';
   const previous = load(KEYS.shopper);
 
-  if (previous !== shopper && (previous !== null || load(KEYS.conversation) || load(KEYS.transcript))) {
+  if (previous === 'guest' && config.customerId) {
+    const id = load(KEYS.conversation);
+    if (id) store(brandsKey(id), null);
+    store(KEYS.conversation, null);
+    let transcript = [];
+    try { transcript = JSON.parse(load(KEYS.transcript)) || []; } catch { /* nothing to keep */ }
+    if (transcript.length) {
+      transcript.push({ role: 'divider', signedIn: true, at: Date.now() });
+      store(KEYS.transcript, JSON.stringify(transcript));
+    }
+  } else if (previous !== shopper && (previous !== null || load(KEYS.conversation) || load(KEYS.transcript))) {
     const id = load(KEYS.conversation);
     if (id) store(brandsKey(id), null);
     store(KEYS.conversation, null);
@@ -100,8 +124,11 @@ function forgetPreviousShopper() {
 
 // A site path (`/apps/weloveus`) is Shopify's app proxy, which already maps
 // to the API's proxy routes; a full URL is a local e360-api, which needs the
-// route prefix.
-const apiBase = (config?.apiBase || '').replace(/\/+$/, '');
+// route prefix. The `shopify theme dev` preview (127.0.0.1 / localhost) always
+// talks to the local e360-api, so no theme setting has to change for local dev.
+const LOCAL_API = 'http://127.0.0.1:8765';
+const isLocalPreview = ['127.0.0.1', 'localhost'].includes(location.hostname);
+const apiBase = (isLocalPreview ? LOCAL_API : config?.apiBase || '').replace(/\/+$/, '');
 const viaAppProxy = apiBase.startsWith('/');
 const api = path => (viaAppProxy ? `${apiBase}${path}` : `${apiBase}/api/v1/web/weloveus${path}`);
 
@@ -446,6 +473,8 @@ function toolResult(data) {
       link.dataset.essieCheckout = '';
       return link;
     }
+    case 'sign_in':
+      return signInButton();
     case 'cart':
       return cartSummary(data.cart);
     case 'action_result': {
@@ -457,6 +486,29 @@ function toolResult(data) {
   }
   if (Array.isArray(data.items) && data.items.length) return productCards(data.items);
   return null;
+}
+
+// A product result minus the cards in `shown`, which it then joins. Done on
+// the data rather than the cards, so the saved transcript matches the screen.
+function withoutShown(data, shown) {
+  if (!Array.isArray(data?.items)) return data;
+  const items = data.items.filter(item => !item?.id || !shown.has(item.id));
+  items.forEach(item => item?.id && shown.add(item.id));
+  return { ...data, items };
+}
+
+// Opens the account modal over the page (Shop sign-in), so the shopper never
+// leaves the chat; the link is the fallback where the modal isn't available.
+// Signing in reloads the page, and Essie opens again where they left off.
+// The theme's own login route, not the API's URL, so it works on any domain.
+function signInButton() {
+  if (config.customerId) return null;
+  const link = el('a', 'essie__checkout essie__sign-in', config.textSignIn);
+  const url = new URL(config.loginUrl, window.location.origin);
+  url.searchParams.set('return_url', window.location.pathname + window.location.search);
+  link.href = url.toString();
+  link.dataset.essieSignIn = '';
+  return link;
 }
 
 // What a reply produced, for analytics. Live replies only — restoring the
@@ -508,6 +560,21 @@ function initEssie() {
   function save() {
     transcript = transcript.slice(-MAX_SAVED_MESSAGES);
     store(KEYS.transcript, JSON.stringify(transcript));
+    store(KEYS.lastActive, String(Date.now()));
+  }
+
+  // Closes off a chat that has sat idle: a divider entry goes after it, and
+  // what follows reads as a new conversation. Saved in the transcript, so the
+  // divider stays put once the shopper carries on. A saved chat with no
+  // recorded time predates this check and counts as idle. True if added.
+  function markPreviousConversation() {
+    const last = transcript[transcript.length - 1];
+    if (!last || last.role === 'divider') return false;
+    const at = Number(load(KEYS.lastActive)) || null;
+    if (at && Date.now() - at < CHAT_IDLE) return false;
+    transcript.push({ role: 'divider', at });
+    save();
+    return true;
   }
 
   // Follow new content only if the shopper hasn't scrolled up to read.
@@ -551,7 +618,24 @@ function initEssie() {
     if (row) msg.append(row);
   }
 
+  // "Previous conversation · 3 Oct", or the time if it was earlier today.
+  function renderDivider(at, signedIn = false) {
+    const node = el('p', 'essie__divider');
+    let label = signedIn ? config.textSignedIn : config.textPreviousChat;
+    if (at && !signedIn) {
+      const date = new Date(at);
+      const lang = document.documentElement.lang || undefined;
+      const sameDay = date.toDateString() === new Date().toDateString();
+      label += ` · ${sameDay
+        ? date.toLocaleTimeString(lang, { hour: 'numeric', minute: '2-digit' })
+        : date.toLocaleDateString(lang, { day: 'numeric', month: 'short' })}`;
+    }
+    node.append(el('span', null, label));
+    list.insertBefore(node, thinking.isConnected ? thinking : null);
+  }
+
   function renderSaved(message, isLast) {
+    if (message.role === 'divider') return renderDivider(message.at, message.signedIn);
     const msg = messageEl(message.role);
     message.parts.forEach(part => {
       if (part.type === 'text') msg.append(textPart(part.text));
@@ -565,8 +649,9 @@ function initEssie() {
 
   function renderAll() {
     list.replaceChildren();
-    if (!transcript.length) renderGreeting();
     transcript.forEach((m, i) => renderSaved(m, i === transcript.length - 1));
+    // A new chat, or the start of one after a previous conversation.
+    if (!transcript.length || transcript[transcript.length - 1].role === 'divider') renderGreeting();
     scrollToEnd(true);
   }
 
@@ -598,6 +683,9 @@ function initEssie() {
     const parts = new Map();
     const messages = [];
     let current = null;
+    // Product ids already on screen in this reply. A second search often brings
+    // back some of the first one's results; each product shows once.
+    const shownItems = new Set();
 
     const startMessage = () => {
       current = { node: messageEl('assistant'), parts: [], linked: false };
@@ -656,11 +744,11 @@ function initEssie() {
             const part = parts.get(event.part_id);
             if (!part) break;
             if (part.type === 'tool_result') {
-              part.data = event.data;
+              part.data = withoutShown(event.data, shownItems);
               if (collectBrands(event.data, brands)) saveBrands(conversationId(), brands);
-              const widget = toolResult(event.data);
+              const widget = toolResult(part.data);
               if (widget) place(part, widget);
-              trackResult(event.data);
+              trackResult(part.data);
             }
             // More may follow; `done` or the end of the stream clears this.
             if (part.type === 'text' || part.type === 'tool_result') showThinking();
@@ -816,6 +904,8 @@ function initEssie() {
     root.setAttribute('data-open', '');
     pill.setAttribute('aria-expanded', 'true');
     form.inert = false;
+    // A page left open past the idle limit closes the chat off too.
+    if (!busy && markPreviousConversation()) rendered = false;
     // Built once; a reply still streaming while the panel was closed carries on.
     if (!rendered) renderAll();
     rendered = true;
@@ -851,6 +941,11 @@ function initEssie() {
     const chip = e.target.closest('[data-essie-reply]');
     if (chip) submit(chip.dataset.essieReply, 'chip');
     if (e.target.closest('[data-essie-checkout]')) track('essie_checkout');
+    if (e.target.closest('[data-essie-sign-in]')) {
+      track('essie_sign_in');
+      try { sessionStorage.setItem(REOPEN, '1'); } catch { /* opens closed */ }
+      if (openAccountModal()) e.preventDefault();
+    }
   });
 
   newChat.addEventListener('click', () => {
@@ -867,6 +962,14 @@ function initEssie() {
   });
 
   initPrompts();
+
+  // Back from signing in through the chat: pick up where they were.
+  let reopen = false;
+  try {
+    reopen = Boolean(sessionStorage.getItem(REOPEN));
+    sessionStorage.removeItem(REOPEN);
+  } catch { /* stays closed */ }
+  if (reopen && config.customerId) open('sign_in');
 }
 
 if (root && config?.apiBase && !inHoldout('essie')) initEssie();

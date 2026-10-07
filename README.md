@@ -41,7 +41,7 @@ Essie chat → **API base URL**.
 
 | Where | API base URL | Requests go to |
 |---|---|---|
-| Local | `http://127.0.0.1:8765` (e360-api running locally) | `{base}/api/v1/web/weloveus/visitors`, `/chat` |
+| Local | `http://127.0.0.1:8765` (automatic on the local preview) | `{base}/api/v1/web/weloveus/visitors`, `/chat` |
 | Live | `/apps/weloveus` | `weloveus.shop/apps/weloveus/visitors`, `/chat` |
 
 On the live site the browser never calls e360-api directly. Shopify's **app
@@ -84,8 +84,8 @@ off or Essie shows its error state.
    path (`/apps/weloveus/chat`) and keeps the `/api/v1/web/weloveus` prefix
    for a full local URL.
 6. API base URL defaults to `/apps/weloveus`, so live and preview themes need
-   no setting. For local development, set Theme settings → Essie chat → API
-   base URL to `http://127.0.0.1:8765` on your dev theme.
+   no setting. The local preview (`127.0.0.1:9292`) ignores it and always
+   calls e360-api at `http://127.0.0.1:8765`.
 7. Push the theme and test as a guest and signed in: a reply streams, products
    show, add to cart works, and signing in or out starts a fresh chat.
 
