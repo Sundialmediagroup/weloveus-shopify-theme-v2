@@ -162,8 +162,8 @@
         "type": "text",
         "id": "essie_api_base",
         "label": "API base URL",
-        "info": "Base URL of the e360 API, without a trailing slash.",
-        "default": "http://127.0.0.1:8765"
+        "info": "/apps/weloveus on the shop (Shopify's app proxy). For local development, the e360 API's URL, e.g. http://127.0.0.1:8765. No trailing slash.",
+        "default": "/apps/weloveus"
       }
     ]
   },

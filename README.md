@@ -83,8 +83,9 @@ off or Essie shows its error state.
 5. Make sure `essie-chat.js` builds proxy URLs when the base URL is a site
    path (`/apps/weloveus/chat`) and keeps the `/api/v1/web/weloveus` prefix
    for a full local URL.
-6. On the live theme, set Theme settings → Essie chat → API base URL to
-   `/apps/weloveus`. Leave local and dev themes on `http://127.0.0.1:8765`.
+6. API base URL defaults to `/apps/weloveus`, so live and preview themes need
+   no setting. For local development, set Theme settings → Essie chat → API
+   base URL to `http://127.0.0.1:8765` on your dev theme.
 7. Push the theme and test as a guest and signed in: a reply streams, products
    show, add to cart works, and signing in or out starts a fresh chat.
 
