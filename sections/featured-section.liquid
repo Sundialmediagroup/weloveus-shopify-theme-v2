@@ -4,24 +4,14 @@
 >
   <div class="featured-section__inner">
 
-    {%- comment -%}
-      With a label, it takes a narrow column at the inline start and the heading
-      and body sit beside it; without one, the text has the full width.
-    {%- endcomment -%}
-    <div class="featured-section__content{% if section.settings.eyebrow != blank %} featured-section__content--split{% endif %}">
-      {%- if section.settings.eyebrow != blank -%}
-        <p class="featured-section__eyebrow">{{ section.settings.eyebrow }}</p>
+    <div class="featured-section__content">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="featured-section__heading">{{ section.settings.heading }}</h2>
       {%- endif -%}
 
-      <div class="featured-section__text">
-        {%- if section.settings.heading != blank -%}
-          <h2 class="featured-section__heading">{{ section.settings.heading }}</h2>
-        {%- endif -%}
-
-        {%- if section.settings.body != blank -%}
-          <p class="featured-section__body">{{ section.settings.body }}</p>
-        {%- endif -%}
-      </div>
+      {%- if section.settings.body != blank -%}
+        <p class="featured-section__body">{{ section.settings.body }}</p>
+      {%- endif -%}
     </div>
 
     {%- if section.settings.image != blank -%}
@@ -60,12 +50,6 @@
       "type": "image_picker",
       "id": "image",
       "label": "Image"
-    },
-    {
-      "type": "text",
-      "id": "eyebrow",
-      "label": "Label",
-      "default": "Featured"
     },
     {
       "type": "text",

@@ -135,7 +135,6 @@
         "background_color": "#8b2a2a",
         "text_color": "#ffffff",
         "image": "shopify://shop_images/0D9A8550.png",
-        "eyebrow": "Featured",
         "heading": "Shop The Father's Day Collection Today. It's gonna be great!",
         "body": "The art, films, and more that have informed the work of the creative director whose resume includes Hailey Bieber’s Rhode, Khaite, and Hermés."
       }
@@ -177,9 +176,16 @@
         "background_color": "#688b2a",
         "text_color": "#ffffff",
         "image": "shopify://shop_images/0D9A8550.png",
-        "eyebrow": "Featured",
         "heading": "Find Your Style",
         "body": "Browse our curated collections and discover the perfect pieces for you. You're gonna love it!"
+      }
+    },
+    "recent-stories": {
+      "type": "recent-stories",
+      "settings": {
+        "blog": "news",
+        "label": "Story",
+        "image_ratio": "3 / 4"
       }
     },
     "product-carousel-4": {
@@ -206,6 +212,7 @@
     "product-grid",
     "product-carousel-3",
     "featured-section-2",
+    "recent-stories",
     "product-carousel-4"
   ]
 }

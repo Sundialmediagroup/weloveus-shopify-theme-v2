@@ -59,6 +59,9 @@
     "article_feed": {
       "view_all": "View all stories"
     },
+    "recent_stories": {
+      "name": "Recent stories"
+    },
     "article_card": {
       "placeholder_title": "Your story title.",
       "placeholder_excerpt": "The first lines of the post run on from the title here, so the card reads as one short paragraph."

@@ -1,0 +1,113 @@
+@use 'abstracts/mixins' as *;
+
+// Recent stories — sections/recent-stories.liquid. Three article cards: the
+// image, then the label in its own column with the title beside it. Outer
+// spacing is the global bottom-only section rule; the gap between cards is
+// --grid-gap, as in every other card grid.
+
+.recent-stories__list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-12) var(--grid-gap);
+
+  @include respond-to('lg') {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.recent-stories__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  color: var(--color-fg);
+}
+
+.recent-stories__media {
+  overflow: hidden;
+  aspect-ratio: var(--recent-stories-ratio, 3 / 4);
+  background-color: var(--color-bg-subtle);
+}
+
+.recent-stories__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.recent-stories__placeholder {
+  fill: var(--color-fg-subtle);
+}
+
+// The label takes a column of its own, so a two-line title wraps under
+// itself, not under the label. Both are
+// trimmed to their capital height so the label's top lines up with the
+// title's, whatever their sizes.
+.recent-stories__body {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  column-gap: var(--space-4);
+
+  @include respond-to('lg') {
+    column-gap: var(--space-6);
+  }
+}
+
+.recent-stories__label {
+  @include trim-to-cap;
+  @include type-label;
+}
+
+.recent-stories__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+// The article card's title (_article-card.scss), so the home page and the
+// blog read as one set.
+.recent-stories__title {
+  @include trim-to-cap;
+  font-size: var(--text-xl);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-tight);
+  overflow-wrap: break-word;
+  text-wrap: balance;
+
+  @include respond-to('lg') {
+    font-size: var(--text-2xl);
+  }
+}
+
+.recent-stories__link {
+  @include underline-on-hover;
+  color: inherit;
+  text-underline-offset: 0.15em;
+
+  &:hover {
+    color: inherit;
+  }
+
+  // Stretched over the whole card: one tab stop, one accessible name.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-raised);
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    &::after {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+    }
+  }
+}
+
+.recent-stories__card:hover .recent-stories__link {
+  text-decoration-color: currentColor;
+}

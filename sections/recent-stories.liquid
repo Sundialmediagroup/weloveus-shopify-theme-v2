@@ -1,0 +1,201 @@
+{%- comment -%}
+  Recent stories: three articles side by side, each an image with a label
+  and title beneath. One column on mobile, three from `lg`.
+
+  The slots fill from the chosen blog's latest posts. A Story block pins an
+  article to the slot in its position (the first block to the first slot, and
+  so on) and can carry its own label; a block with no article leaves its slot
+  to the feed. A pinned article is never shown twice.
+
+  With no blog and no pinned stories, the theme editor shows placeholder cards
+  and the live site renders nothing.
+
+  Accepts (via section settings):
+  - blog:        {Blog}
+  - label:       {String} Label beside each title. Default "Story".
+  - image_ratio: {String} CSS aspect-ratio.
+  Blocks (story, up to 3):
+  - article: {Article} Pinned to this slot.
+  - label:   {String}  Label for this slot. Default: the section's.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign feed_blog = blogs[s.blog]
+  assign slot_count = 3
+  assign region_name = s.label
+  if s.label == blank
+    assign region_name = 'sections.recent_stories.name' | t
+  endif
+
+  # Ids of the pinned articles, so the feed skips them.
+  assign pinned = ','
+  for block in section.blocks
+    if block.settings.article != blank
+      assign pinned = pinned | append: block.settings.article.id | append: ','
+    endif
+  endfor
+
+  assign has_feed = false
+  if feed_blog != blank and feed_blog.articles_count > 0
+    assign has_feed = true
+  endif
+-%}
+
+{%- capture cards -%}
+  {%- assign fill_index = 0 -%}
+  {%- for slot in (1..slot_count) -%}
+    {%- liquid
+      assign slot_block = section.blocks[forloop.index0]
+      assign story = blank
+      assign story_label = s.label
+
+      if slot_block != blank
+        if slot_block.settings.label != blank
+          assign story_label = slot_block.settings.label
+        endif
+        if slot_block.settings.article != blank
+          assign story = slot_block.settings.article
+        endif
+      endif
+
+      # Not pinned: the next feed article that isn't pinned elsewhere.
+      if story == blank and has_feed
+        assign fill_index = fill_index | plus: 1
+        assign seen = 0
+        for candidate in feed_blog.articles limit: 12
+          assign key = ',' | append: candidate.id | append: ','
+          unless pinned contains key
+            assign seen = seen | plus: 1
+            if seen == fill_index
+              assign story = candidate
+              break
+            endif
+          endunless
+        endfor
+      endif
+    -%}
+
+    {%- if story != blank -%}
+      {%- assign story_alt = story.image.alt | default: story.title -%}
+      <li class="recent-stories__item">
+        <article class="recent-stories__card">
+          <div class="recent-stories__media">
+            {%- if story.image != blank -%}
+              {{- story.image | image_url: width: 1200 | image_tag:
+                class: 'recent-stories__image',
+                alt: story_alt,
+                loading: 'lazy',
+                sizes: '(min-width: 990px) 33vw, 100vw',
+                widths: '400, 600, 800, 1000, 1200'
+              -}}
+            {%- endif -%}
+          </div>
+
+          <div class="recent-stories__body">
+            <p class="recent-stories__label">{{ story_label | escape }}</p>
+            <div class="recent-stories__text">
+              <h3 class="recent-stories__title">
+                <a
+                  class="recent-stories__link"
+                  href="{{ story.url }}"
+                  data-track-content="recent_story"
+                  data-track-content-id="{{ story.handle }}"
+                >
+                  {{- story.title | escape -}}
+                </a>
+              </h3>
+            </div>
+          </div>
+        </article>
+      </li>
+    {%- elsif request.design_mode -%}
+      <li class="recent-stories__item">
+        <article class="recent-stories__card">
+          <div class="recent-stories__media">
+            {{- 'lifestyle-2' | placeholder_svg_tag: 'recent-stories__image recent-stories__placeholder' -}}
+          </div>
+          <div class="recent-stories__body">
+            <p class="recent-stories__label">{{ story_label | escape }}</p>
+            <div class="recent-stories__text">
+              <h3 class="recent-stories__title">{{ 'sections.article_card.placeholder_title' | t }}</h3>
+            </div>
+          </div>
+        </article>
+      </li>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- if cards != blank -%}
+  <section
+    class="recent-stories"
+    style="--recent-stories-ratio: {{ s.image_ratio }};"
+    aria-label="{{ region_name | escape }}"
+  >
+    <ul class="recent-stories__list">
+      {{ cards }}
+    </ul>
+  </section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Recent stories",
+  "tag": "section",
+  "max_blocks": 3,
+  "settings": [
+    {
+      "type": "blog",
+      "id": "blog",
+      "label": "Blog",
+      "info": "Slots without a pinned story show this blog's latest posts."
+    },
+    {
+      "type": "text",
+      "id": "label",
+      "label": "Label",
+      "default": "Story"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image shape",
+      "options": [
+        { "value": "3 / 4", "label": "Portrait" },
+        { "value": "1 / 1", "label": "Square" },
+        { "value": "4 / 3", "label": "Landscape" }
+      ],
+      "default": "3 / 4"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "story",
+      "name": "Story",
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Pins a story to this position: the first block is the first card, and so on. Leave the article empty to keep the latest post in that place."
+        },
+        {
+          "type": "article",
+          "id": "article",
+          "label": "Article"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "info": "Leave blank to use the section's label."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Recent stories"
+    }
+  ]
+}
+{% endschema %}
