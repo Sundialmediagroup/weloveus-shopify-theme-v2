@@ -27,6 +27,15 @@
       "customerId": {% if customer %}{{ customer.id | append: '' | json }}{% else %}null{% endif %},
       "greeting": {% if customer.first_name != blank %}{{ 'essie.greeting_customer' | t: name: customer.first_name | json }}{% else %}{{ 'essie.greeting' | t | json }}{% endif %},
       "loginUrl": {{ routes.account_login_url | json }},
+      "product": {%- if request.page_type == 'product' and product -%}
+        {
+          "product_id": {{ product.id | append: '' | json }},
+          "title": {{ product.title | json }},
+          "vendor": {{ product.vendor | json }}
+        }
+      {%- else -%}
+        null
+      {%- endif %},
       "starters": [
         {{ 'essie.starter_gift' | t | json }},
         {{ 'essie.starter_body_care' | t | json }},

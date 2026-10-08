@@ -170,6 +170,15 @@ function conversationId() {
   return id;
 }
 
+// On a product page, the product, so "this" and "add it to my bag" mean
+// something. The variant is read at send time: the shopper may have picked
+// another size or colour since the page loaded.
+function productOnScreen() {
+  if (!config.product) return null;
+  const variantId = document.querySelector('[data-pdp-variant-id]')?.value;
+  return { ...config.product, ...(variantId ? { variant_id: String(variantId) } : {}) };
+}
+
 // POSTs a message; on 401 re-issues the token, on 403/404 starts a new
 // conversation — each retried once. A 409 `conversation_identity_changed`
 // means the shopper signed in, out or as someone else since this chat began:
@@ -181,6 +190,8 @@ async function postMessage(text, retried = {}, onShopperChanged = () => {}) {
   // The token also rides in the body: the app proxy may drop custom headers.
   const body = { conversation_id: conversationId(), message: text, visitor_token: token };
   if (config.customerId) body.customer_id = config.customerId;
+  const page = productOnScreen();
+  if (page) body.page = page;
 
   const res = await fetch(api('/chat'), {
     method: 'POST',
