@@ -10,3 +10,6 @@ package-lock.json
 templates/gift_card.liquid
 DESIGN.md
 snippets/vite-tag.liquid
+analytics/*
+reports/*
+.env

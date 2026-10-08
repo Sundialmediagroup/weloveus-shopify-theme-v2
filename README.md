@@ -97,3 +97,24 @@ sources and holdout groups as cart attributes. Conventions are in DESIGN.md §10
 the pixel to paste into Shopify admin → Settings → Customer events is
 `frontend/pixels/ga4-custom-pixel.js`. Holdout percentages are under Theme
 settings → Analytics & experiments; leave them at 0% when no test is running.
+
+### Daily and weekly reports
+
+`npm run report` writes two reports: `reports/daily/<date>.md` (yesterday,
+against the same day a week before) and `reports/weekly/<year>-W<week>.md`
+(last Monday–Sunday, against the week before); `-- daily` or `-- weekly` runs
+one. Each has users (new and returning), sessions, orders, revenue,
+conversion rate and average order value, which page features lead to
+purchases (over 7 days for the daily, 28 for the weekly), and Essie: her
+activity, the journey from opening her to buying, and how often shoppers who
+message her go on to buy. It reads GA4 with
+Google application default credentials, or the service account key named by
+`GOOGLE_APPLICATION_CREDENTIALS` (Viewer on the property is enough), which
+can go in a git-ignored `.env`.
+`reports/` is git-ignored: this repo is public, so don't commit reports.
+
+On Dave's Mac they run on a schedule: the daily at 12:00 every day, the weekly
+at 12:00 on Mondays, through launchd (`~/Library/LaunchAgents/com.weloveus.report-*.plist`,
+calling `analytics/run-report.sh`). Each run posts a notification and logs to
+`reports/logs/`. Noon gives GA4 time to finish processing the day before.
+A run missed while the Mac was asleep happens when it wakes.

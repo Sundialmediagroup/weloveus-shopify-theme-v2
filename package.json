@@ -9,9 +9,11 @@
     "start": "concurrently -n vite,shopify -c cyan,magenta \"vite build --watch\" \"shopify theme dev\"",
     "build": "vite build",
     "theme:push": "./scripts/theme-push.sh",
-    "theme:check": "shopify theme check"
+    "theme:check": "shopify theme check",
+    "report": "node --env-file-if-exists=.env analytics/report.mjs"
   },
   "devDependencies": {
+    "@google-analytics/data": "^7.2.1",
     "concurrently": "^9.0.0",
     "sass": "^1.77.0",
     "vite": "^5.4.0",
