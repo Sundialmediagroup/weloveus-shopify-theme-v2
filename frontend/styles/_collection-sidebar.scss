@@ -37,7 +37,9 @@
     text-decoration: underline;
   }
 
-  &[aria-current='page'] {
+  // `true` is the product type filter in force (collection-sidebar-types).
+  &[aria-current='page'],
+  &[aria-current='true'] {
     color: var(--color-fg);
     text-decoration: underline;
   }

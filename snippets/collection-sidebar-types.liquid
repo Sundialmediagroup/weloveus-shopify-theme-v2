@@ -1,0 +1,64 @@
+{%- comment -%}
+  The product types in the current collection, as one more level under the
+  sidebar link for it. collection-sidebar renders it only under the link for the
+  page being viewed, and only when that link has no children of its own.
+
+  Each type is Shopify's product type filter (`filter.p.product_type`), so it
+  covers the whole collection rather than the cards already on screen, and the
+  filtered page keeps working with sorting and "Load more". The filter must be
+  turned on in the Search & Discovery app; without it, nothing renders.
+
+  One type at a time: picking a type replaces the one shown, and picking the
+  shown type again clears it. Hidden when the collection has only one type.
+
+  Accepts:
+  - sort: {String} The sort key to keep in the links (the page's current one).
+{%- endcomment -%}
+
+{%- liquid
+  assign type_filter = null
+  for filter in collection.filters
+    if filter.param_name == 'filter.p.product_type'
+      assign type_filter = filter
+      break
+    endif
+  endfor
+
+  # A value can sit at zero when another filter is applied through the URL.
+  # (`where` can't drop it: 0 is truthy in Liquid.)
+  assign type_count = 0
+  for value in type_filter.values
+    if value.count > 0
+      assign type_count = type_count | plus: 1
+    endif
+  endfor
+-%}
+
+{%- if type_count > 1 -%}
+  <ul class="collection-sidebar__list collection-sidebar__list--nested">
+    {%- for value in type_filter.values -%}
+      {%- if value.count > 0 -%}
+        {%- liquid
+          if value.active
+            assign type_href = value.url_to_remove
+          else
+            # `value.value` arrives HTML-escaped ("Balms, Butters &amp; Oils");
+            # encoded as-is, the filter matches nothing.
+            assign type_param = value.value | replace: '&#39;', "'" | replace: '&quot;', '"' | replace: '&lt;', '<' | replace: '&gt;', '>' | replace: '&amp;', '&' | url_encode
+            assign type_href = collection.url | append: '?sort_by=' | append: sort | append: '&' | append: value.param_name | append: '=' | append: type_param
+          endif
+        -%}
+        <li class="collection-sidebar__item">
+          <a
+            class="collection-sidebar__link collection-sidebar__link--type"
+            href="{{ type_href }}"
+            data-category="{{ value.label | escape }}"
+            {% if value.active %}aria-current="true"{% endif %}
+          >
+            {{- value.label | escape -}}
+          </a>
+        </li>
+      {%- endif -%}
+    {%- endfor -%}
+  </ul>
+{%- endif -%}

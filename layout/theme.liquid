@@ -16,7 +16,25 @@
       >
     {%- endif -%}
 
+    {%- comment -%}
+      A collection narrowed to one product type from the sidebar leads with
+      the type, as its heading does (main-collection).
+    {%- endcomment -%}
+    {%- liquid
+      assign title_type = blank
+      if collection
+        for filter in collection.filters
+          if filter.param_name == 'filter.p.product_type'
+            for value in filter.active_values
+              assign title_type = value.label
+              break
+            endfor
+          endif
+        endfor
+      endif
+    -%}
     <title>
+      {%- if title_type != blank %}{{ title_type | escape }} &ndash; {% endif -%}
       {{ page_title -}}
       {%- if current_page != 1 %} &ndash; {{ 'general.meta.page' | t: page: current_page }}{% endif -%}
       {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}

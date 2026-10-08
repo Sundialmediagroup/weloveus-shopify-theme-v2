@@ -112,7 +112,22 @@
     <div class="collection-layout__main">
 
       <header class="collection-header">
-        <h1>{{ collection.title }}</h1>
+        {%- comment -%}
+          With a product type picked in the sidebar (collection-sidebar-types),
+          the heading names the type: the page is now showing only that.
+        {%- endcomment -%}
+        {%- liquid
+          assign heading = collection.title
+          for filter in collection.filters
+            if filter.param_name == 'filter.p.product_type'
+              for value in filter.active_values
+                assign heading = value.label
+                break
+              endfor
+            endif
+          endfor
+        -%}
+        <h1>{{ heading | escape }}</h1>
         {%- if collection.description != blank -%}
           <div class="collection-header__meta">
             <p class="collection-header__description">{{ collection.description }}</p>

@@ -9,6 +9,10 @@
   link or sits beneath it — so the tree is usable navigation with no JavaScript.
   Every link carries `data-category` as the hook for grid filtering.
 
+  Under the link for the page being viewed, when it has no children of its
+  own, the collection's product types follow as one more level of filters
+  (collection-sidebar-types).
+
   The nav is named by its visible heading via aria-labelledby.
 
   Accepts:
@@ -24,6 +28,9 @@
 {%- liquid
   assign menu_handle = 'category-menu'
   assign menu_links = linklists[menu_handle].links
+
+  # Product types keep whatever sort the shopper is on.
+  assign type_sort = collection.sort_by | default: collection.default_sort_by
 -%}
 
 {%- if menu_links.size > 0 -%}
@@ -69,6 +76,9 @@
           >
             {{- link.title | escape -}}
           </a>
+          {%- if link.current and link.links.size == 0 -%}
+            {%- render 'collection-sidebar-types', sort: type_sort -%}
+          {%- endif -%}
 
           {%- if l1_open and link.links.size > 0 -%}
             <ul class="collection-sidebar__list collection-sidebar__list--nested">
@@ -99,6 +109,9 @@
                   >
                     {{- child.title | escape -}}
                   </a>
+                  {%- if child.current and child.links.size == 0 -%}
+                    {%- render 'collection-sidebar-types', sort: type_sort -%}
+                  {%- endif -%}
 
                   {%- if l2_open and child.links.size > 0 -%}
                     <ul class="collection-sidebar__list collection-sidebar__list--nested">
@@ -124,6 +137,9 @@
                           >
                             {{- grandchild.title | escape -}}
                           </a>
+                          {%- if grandchild.current and grandchild.links.size == 0 -%}
+                            {%- render 'collection-sidebar-types', sort: type_sort -%}
+                          {%- endif -%}
                         </li>
                       {%- endfor -%}
                     </ul>
