@@ -47,12 +47,10 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-4);
+  // Follows the card's width rather than a breakpoint: 16px on a narrow card,
+  // up to 24px on a wide one.
+  padding: clamp(var(--space-4), 5cqi, var(--space-6));
   background-color: var(--feature-card-bg, var(--color-bg-feature));
-
-  @include respond-to('lg') {
-    padding: var(--space-6);
-  }
 }
 
 .feature-card__text {
@@ -61,9 +59,9 @@
 }
 
 .feature-card__title {
-  // Display size that scales with the viewport, not the h3 element scale — the
-  // panel is a fraction of the page wide.
-  font-size: clamp(var(--text-base), 1.5vw, var(--text-lg));
+  // Scales with the card, not the viewport or the h3 element scale: the same
+  // card can be a whole phone screen or a quarter of a desktop one.
+  font-size: clamp(var(--text-base), 4cqi, var(--text-lg));
   overflow-wrap: anywhere; // one long brand word must not widen the panel
 }
 

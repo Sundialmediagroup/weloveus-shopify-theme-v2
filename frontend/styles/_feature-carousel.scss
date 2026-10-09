@@ -1,4 +1,23 @@
+@use 'abstracts/mixins' as *;
+
 // Feature carousel — sections/feature-carousel.liquid.
 // Track, arrows and peek come from _product-carousel.scss; cards from
 // _feature-card.scss. Section spacing is the global bottom-only padding on
 // `#main-content .shopify-section` (_layout.scss), so nothing is added here.
+
+// "Cards in view — desktop" is the most shown at full width. Below that, fewer:
+// half of a feature card is its title panel, and four to a row on a 1000px
+// screen leaves a title a few letters a line.
+.feature-carousel .product-carousel {
+  @include respond-to('lg') {
+    --cards-in-view: min(var(--cards-desktop, 2), 2);
+  }
+
+  @include respond-to('xl') {
+    --cards-in-view: min(var(--cards-desktop, 2), 3);
+  }
+
+  @include respond-to('2xl') {
+    --cards-in-view: var(--cards-desktop, 2);
+  }
+}
