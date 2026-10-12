@@ -3,6 +3,7 @@
 
   The markup was duplicated across the carousel, recommendations and PDP
   sections; it lives here so all of them scroll, peek and label identically.
+  The peek is fixed in _product-carousel.scss (--overhang), not a setting.
 
   Nothing at all renders unless at least one card survives the exclusions —
   heading and arrows included. They used to be emitted before the loop ran, so
@@ -21,7 +22,6 @@
     limit          {Number} Max cards. Defaults to every product given.
     cards_desktop  {Number} Cards in view at `lg`. Default 4.
     cards_mobile   {Number} Cards in view below `lg`. Default 2.
-    overhang       {Number} Pixels of the next card left visible. Default 60.
     eager          {Number} How many leading images to load eagerly. Default 0,
                             which is right for anything below the fold.
     exclude_id     {Number} Product id to skip — the PDP passes the product
@@ -41,7 +41,6 @@
   assign carousel_eager = eager | default: 0
   assign cards_lg = cards_desktop | default: 4
   assign cards_sm = cards_mobile | default: 2
-  assign peek = overhang | default: 60
 -%}
 
 {%- comment -%}
@@ -87,7 +86,7 @@
     class="product-carousel"
     data-item-list="{{ list_id | default: 'carousel' }}"
     data-item-list-name="{{ list_name | default: heading | default: list_id | escape }}"
-    style="--cards-desktop: {{ cards_lg }}; --cards-mobile: {{ cards_sm }}; --overhang: {{ peek }}px;"
+    style="--cards-desktop: {{ cards_lg }}; --cards-mobile: {{ cards_sm }};"
     {% if heading != blank %}aria-labelledby="{{ heading_id }}"{% endif %}
   >
 

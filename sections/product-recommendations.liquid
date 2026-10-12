@@ -31,8 +31,7 @@
       exclude_vendor: product.vendor,
       limit: section.settings.products_to_show,
       cards_desktop: section.settings.cards_desktop,
-      cards_mobile: section.settings.cards_mobile,
-      overhang: section.settings.overhang
+      cards_mobile: section.settings.cards_mobile
     -%}
   {%- endif -%}
 </product-recommendations>
@@ -86,16 +85,6 @@
       "step": 1,
       "default": 2,
       "label": "Cards in view — mobile"
-    },
-    {
-      "type": "range",
-      "id": "overhang",
-      "min": 40,
-      "max": 200,
-      "step": 10,
-      "default": 60,
-      "label": "Peek amount (px)",
-      "info": "How much of the next card is visible at the right edge"
     }
   ]
 }

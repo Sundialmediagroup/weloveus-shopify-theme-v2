@@ -11,6 +11,32 @@
   "sections": {
     "text_banner_3VYwnE": {
       "type": "text-banner",
+      "blocks": {
+        "promo_fYnqjb": {
+          "type": "promo",
+          "settings": {
+            "collection": "akilis-picks-copy-1",
+            "title": "",
+            "url": "",
+            "cta": "",
+            "background_color": ""
+          }
+        },
+        "promo_CmaFxR": {
+          "type": "promo",
+          "settings": {
+            "collection": "breannas-picks-copy",
+            "title": "",
+            "url": "",
+            "cta": "",
+            "background_color": ""
+          }
+        }
+      },
+      "block_order": [
+        "promo_fYnqjb",
+        "promo_CmaFxR"
+      ],
       "name": "Text Banner",
       "settings": {
         "text": "Where Community Meets Commerce. This platform transforms love into economic action by investing in the creators and founders who shape our world.\n\nA marketplace of over 125 Black-owned brands, backed by ESSENCE.",
@@ -65,7 +91,8 @@
         "feature_bPz4w6": {
           "type": "feature",
           "settings": {
-            "collection": "puzzles-of-color",
+            "collection": "pecandy-co",
+            "image": "shopify://shop_images/DSC_0610.jpg",
             "title": "",
             "url": "",
             "background_color": ""
@@ -83,19 +110,17 @@
       "settings": {
         "heading": "Founders We Love",
         "cards_desktop": 4,
-        "cards_mobile": "1",
-        "overhang": 80
+        "cards_mobile": "1"
       }
     },
     "product-carousel": {
       "type": "product-carousel",
       "settings": {
-        "heading": "Homecoming Season",
-        "collection": "homecoming-season",
+        "heading": "Spotlight: Nicole Zïzi Studio",
+        "collection": "nicole-zizi-studio",
         "products_to_show": 12,
-        "cards_desktop": 3,
-        "cards_mobile": 1,
-        "overhang": 80
+        "cards_desktop": 4,
+        "cards_mobile": 1
       }
     },
     "word_map_JM8c34": {
@@ -121,12 +146,11 @@
     "product-carousel-2": {
       "type": "product-carousel",
       "settings": {
-        "heading": "Nicole Zïzi Studio",
-        "collection": "nicole-zizi-studio",
+        "heading": "Giftsets & Bundles",
+        "collection": "gift-sets-bundles",
         "products_to_show": 12,
         "cards_desktop": 5,
-        "cards_mobile": 1,
-        "overhang": 80
+        "cards_mobile": 1
       }
     },
     "featured-section": {
@@ -146,8 +170,7 @@
         "collection": "food-beverage",
         "products_to_show": 12,
         "cards_desktop": 5,
-        "cards_mobile": 1,
-        "overhang": 80
+        "cards_mobile": 1
       }
     },
     "product-grid": {
@@ -166,8 +189,7 @@
         "collection": "home-living",
         "products_to_show": 12,
         "cards_desktop": 5,
-        "cards_mobile": 1,
-        "overhang": 80
+        "cards_mobile": 1
       }
     },
     "featured-section-2": {
@@ -195,8 +217,7 @@
         "collection": "coffees-teas-treats",
         "products_to_show": 12,
         "cards_desktop": 5,
-        "cards_mobile": 1,
-        "overhang": 80
+        "cards_mobile": 1
       }
     }
   },

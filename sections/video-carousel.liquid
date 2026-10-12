@@ -14,7 +14,6 @@
   - heading:          {String} Optional heading above the track.
   - player_id:        {String} Dailymotion player ID from Partner HQ.
   - height:           {String} 'small' | 'medium' | 'large' — the slide height.
-  - overhang:         {Number} Peek, in px; also caps a horizontal slide's width.
   - background_color: {Color}  Optional. Defaults to --color-bg-inverted (black).
   Blocks:
   - video: video_url {String} Dailymotion URL or bare ID; title {String};
@@ -79,8 +78,7 @@
     items: video_items,
     heading: s.heading,
     heading_id: heading_id,
-    list_id: 'video_carousel',
-    overhang: s.overhang
+    list_id: 'video_carousel'
   -%}
 </div>
 
@@ -114,17 +112,6 @@
       ],
       "default": "medium",
       "info": "Every video is this tall. Each one's width follows its own shape."
-    },
-    {
-      "type": "range",
-      "id": "overhang",
-      "min": 40,
-      "max": 200,
-      "step": 10,
-      "default": 80,
-      "unit": "px",
-      "label": "Peek amount",
-      "info": "How much of the next video stays visible at the right edge"
     },
     {
       "type": "color",

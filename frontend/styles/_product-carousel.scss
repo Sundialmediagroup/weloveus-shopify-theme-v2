@@ -6,6 +6,9 @@
   --carousel-gap: var(--grid-gap);
   // cards-in-view resolves to mobile count by default, desktop overrides below
   --cards-in-view: var(--cards-mobile, 1);
+  // How much of the next card shows at the inline end. One value for every
+  // carousel; the video carousel also caps a horizontal slide's width with it.
+  --overhang: 80px;
 
   display: block;
   overflow: hidden; // clips the track — partial next card is visible by design
@@ -77,7 +80,7 @@
   // + --overhang of the next card = 100% of the container.
   // Formula: (100% - N × gap - overhang) / N
   flex: 0 0 calc(
-    (100% - var(--cards-in-view) * var(--carousel-gap) - var(--overhang, 80px))
+    (100% - var(--cards-in-view) * var(--carousel-gap) - var(--overhang))
     / var(--cards-in-view)
   );
   scroll-snap-align: start;

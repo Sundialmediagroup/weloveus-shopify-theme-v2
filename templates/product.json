@@ -57,8 +57,7 @@
       "settings": {
         "products_to_show": 8,
         "cards_desktop": 4,
-        "cards_mobile": 2,
-        "overhang": 60
+        "cards_mobile": 2
       }
     },
     "recommendations": {
@@ -68,8 +67,7 @@
         "intent": "related",
         "products_to_show": 8,
         "cards_desktop": 4,
-        "cards_mobile": 2,
-        "overhang": 60
+        "cards_mobile": 2
       }
     }
   },

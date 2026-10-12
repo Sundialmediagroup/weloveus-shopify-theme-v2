@@ -71,7 +71,7 @@
 
   inline-size: min(
     calc(var(--video-carousel-height, 24rem) * 16 / 9),
-    calc(100cqi - var(--overhang, 80px))
+    calc(100cqi - var(--overhang))
   );
 }
 
