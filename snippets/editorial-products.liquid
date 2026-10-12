@@ -115,3 +115,13 @@
     </div>
   </section>
 {%- endif -%}
+
+{%- comment -%}
+  An embed whose collection isn't published to the Online Store can't be read
+  here, so its products silently go missing. Say so in the theme editor only.
+{%- endcomment -%}
+{%- if request.design_mode and embed_id != blank and shop_collection == blank -%}
+  <p class="editorial-products__notice editorial__after" role="note">
+    {{- 'templates.article.shop_missing' | t: id: embed_id -}}
+  </p>
+{%- endif -%}

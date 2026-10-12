@@ -339,6 +339,14 @@
   }
 }
 
+// Theme editor only (editorial-products.liquid): the embed's collection can't
+// be found.
+.editorial-products__notice {
+  padding: var(--space-4) var(--space-6);
+  border: 1px dashed currentColor;
+  font-size: var(--text-sm);
+}
+
 .editorial-products__all {
   @include underline-on-hover;
   @include type-label;

@@ -7,7 +7,10 @@
       "nav_main": "Main navigation",
       "nav_footer": "Footer navigation",
       "account": "Account",
-      "cart": "Cart"
+      "cart": "Cart",
+      "menu": "Menu",
+      "menu_close": "Close menu",
+      "search_close": "Close search"
     },
     "search": {
       "label": "Search",
@@ -148,7 +151,8 @@
       "tags": "Tags",
       "more": "More from {{ blog }}",
       "shop": "Shop the story",
-      "shop_all": "Shop all {{ count }}"
+      "shop_all": "Shop all {{ count }}",
+      "shop_missing": "Theme editor only: this post embeds Buy Button collection {{ id }}, which isn't published to the Online Store, so its products can't be shown. Publish the collection to the Online Store sales channel."
     }
   },
   "wishlist": {

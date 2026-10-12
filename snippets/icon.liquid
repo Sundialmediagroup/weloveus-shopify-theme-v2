@@ -3,7 +3,8 @@
 
   Accepts:
   - name: {String} Icon name. One of: truck, return, lock, check, chevron,
-                   chevron-left, chevron-right, close, search, heart.
+                   chevron-left, chevron-right, close, search, heart, menu,
+                   user, bag.
 
   Icons inherit currentColor and are decorative — the caller is responsible for
   labelling (aria-hidden on a wrapper, or an adjacent text label).
@@ -59,6 +60,23 @@
     {%- comment -%} Filled via CSS when the parent toggle is aria-pressed. {%- endcomment -%}
     <svg class="icon icon--heart" viewBox="0 0 20 20" fill="none" width="18" height="18" aria-hidden="true" focusable="false">
       <path d="M10 16.5s-6.25-3.9-6.25-8.4A3.35 3.35 0 0 1 10 6.05a3.35 3.35 0 0 1 6.25 2.05c0 4.5-6.25 8.4-6.25 8.4Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+    </svg>
+
+  {%- when 'menu' -%}
+    <svg class="icon icon--menu" viewBox="0 0 20 20" fill="none" width="20" height="20" aria-hidden="true" focusable="false">
+      <path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+
+  {%- when 'user' -%}
+    <svg class="icon icon--user" viewBox="0 0 20 20" fill="none" width="20" height="20" aria-hidden="true" focusable="false">
+      <circle cx="10" cy="7" r="3.25" stroke="currentColor" stroke-width="1.2"/>
+      <path d="M3.75 17c.6-3.1 3.1-5 6.25-5s5.65 1.9 6.25 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+
+  {%- when 'bag' -%}
+    <svg class="icon icon--bag" viewBox="0 0 20 20" fill="none" width="20" height="20" aria-hidden="true" focusable="false">
+      <path d="M4.25 6.75h11.5l-.85 10.5H5.1l-.85-10.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+      <path d="M7.25 6.75V5.5a2.75 2.75 0 0 1 5.5 0v1.25" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
     </svg>
 
   {%- when 'close' -%}

@@ -22,48 +22,89 @@
   background-color: var(--color-bg-header);
 }
 
+// One row at every width. Two equal outer columns put the logo in the exact
+// centre, however long the nav or the actions are: the menu button (below
+// `lg`) or the nav on the left, search and actions on the right.
 .site-header__inner {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
-  // Wraps so the search bar can drop to a row of its own below `lg`. The row
-  // gap is the smaller of the two — it only ever applies to that second row.
-  flex-wrap: wrap;
-  gap: var(--space-3) var(--space-6);
+  gap: var(--space-3);
   // Shared with the footer's menu bar, so the two bars are the same height.
   min-block-size: var(--bar-row);
   max-width: var(--page-width);
   margin-inline: auto;
   padding-inline: var(--page-gutter);
 
-  // Two equal outer columns put the logo in the exact centre, however long the
-  // nav or the actions are.
   @include respond-to('lg') {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: var(--space-6);
   }
 }
 
 .site-header__logo {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.site-header__end {
+  grid-column: 3;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: clamp(var(--space-2), 3vw, var(--space-3));
+  min-width: 0;
+
   @include respond-to('lg') {
-    grid-column: 2;
-    grid-row: 1;
+    gap: var(--space-6);
   }
 }
 
-// Below `lg` its children take part in the inner flex row directly, so the
-// search keeps its own full-width row.
-.site-header__end {
-  display: contents;
+// ─── Icon buttons (below `lg`) ─────────────────────────────────────────────────
+
+// Menu, search, close: a 40px tap target around a 20px icon, pulled back by
+// the difference so the icon itself lines up with the gutter.
+.site-header__icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-10);
+  height: var(--space-10);
+  margin: calc(var(--space-2) * -1);
+  flex-shrink: 0;
+  color: var(--color-fg);
+  background: none;
+  border: 0;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-fg);
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.site-header__menu-toggle {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
+
+  // The drawer needs JS to open.
+  .no-js & {
+    display: none;
+  }
 
   @include respond-to('lg') {
-    grid-column: 3;
-    grid-row: 1;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: var(--space-6);
-    min-width: 0;
+    display: none;
+  }
+}
+
+.site-header__search-toggle {
+  @include respond-to('lg') {
+    display: none;
   }
 }
 
@@ -89,9 +130,15 @@
 
 .site-header__logo-svg {
   display: block;
-  height: 25px; // the wordmark's native size
+  // Scaled down to share the row with the icons: 20px from a 390px phone,
+  // down to 16px at 320px.
+  height: clamp(16px, 5.7vw - 2px, 20px);
   width: auto;
   color: var(--color-fg);
+
+  @include respond-to('md') {
+    height: 25px; // the wordmark's native size
+  }
 }
 
 .site-header__nav {
@@ -121,6 +168,28 @@
   }
 }
 
+// Below `lg` the account and cart are icons; the label stays as their
+// accessible name. The wishlist moves into the menu drawer.
+.site-header__action-icon {
+  display: flex;
+
+  @include respond-to('lg') {
+    display: none;
+  }
+}
+
+.site-header__action-label {
+  @include respond-below('lg') {
+    @include visually-hidden;
+  }
+}
+
+.site-header__actions .site-header__wishlist {
+  @include respond-below('lg') {
+    display: none;
+  }
+}
+
 // The action links carry a badge beside the label; only the label underlines,
 // whenever anywhere on the link is hovered.
 .site-header__action:hover .site-header__action-label {
@@ -139,21 +208,40 @@
 
 // ─── Search bar ────────────────────────────────────────────────────────────────
 
-// A row of its own below `lg`, where there is no room beside the logo and no
-// category nav either. Inline between the nav and the account links above it,
-// sized to shrink first when the menu is long.
+// Below `lg` the magnifier lays the bar over the whole header row, with a
+// close button beside it (header.js). From `lg` it sits inline before the
+// account links, sized to shrink first when the menu is long.
 .site-header__search {
-  order: 3;
-  flex: 1 0 100%;
+  @include respond-below('lg') {
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-raised);
+    display: none;
+    align-items: center;
+    gap: var(--space-4);
+    padding-inline: calc(var(--site-frame) + var(--page-gutter));
+    background-color: var(--color-bg-header);
+
+    .site-header--search-active & {
+      display: flex;
+    }
+  }
 
   @include respond-to('lg') {
-    order: 0;
     flex: 0 1 13rem;
     min-width: 0;
   }
 
   @include respond-to('xl') {
     flex-basis: 18rem;
+  }
+}
+
+.site-header__search-close {
+  margin-inline-start: 0;
+
+  @include respond-to('lg') {
+    display: none;
   }
 }
 
@@ -174,6 +262,11 @@
   pointer-events: none;
   transition: max-height var(--duration-slow) var(--ease-out);
 
+  // Suggestions appear at once on phones, under the search overlay.
+  @include respond-below('lg') {
+    transition: none;
+  }
+
   .site-header--search-open & {
     max-height: min(70vh, 520px);
     pointer-events: auto;
@@ -183,8 +276,12 @@
 .site-header__actions {
   display: flex;
   align-items: center;
-  gap: var(--menu-gap);
+  gap: clamp(var(--space-2), 3vw, var(--space-3));
   flex-shrink: 0;
+
+  @include respond-to('lg') {
+    gap: var(--menu-gap);
+  }
 }
 
 // Flex on every action, not just the ones with a badge: as a plain inline box
@@ -244,6 +341,10 @@
   overflow: hidden;
   pointer-events: none;
   transition: max-height 0.18s var(--ease-out);
+
+  @include respond-below('lg') {
+    transition: none; // instant on phones, like the menu and search
+  }
   // padding: var(--space-6);
 
   .site-header--cart-open & {
@@ -358,4 +459,114 @@
 
 .site-header__mega-group > .site-header__mega-link--parent {
   margin-bottom: var(--space-1);
+}
+
+// ─── Menu drawer (below `lg`) ──────────────────────────────────────────────────
+
+// A native <dialog> (header.js) at the inline start, over a scrim. Shows and
+// hides at once, no slide: on a phone the menu should feel instant.
+.header-drawer {
+  // The reset's `* { margin: 0 }` already pins it to the start; the UA's
+  // max sizes would stop it running full height.
+  inset-inline-end: auto;
+  width: min(100% - var(--space-12), 24rem);
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  padding: 0;
+  border: none;
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  &::backdrop {
+    background-color: var(--color-scrim);
+  }
+
+  @include respond-to('lg') {
+    display: none;
+  }
+}
+
+.header-drawer__panel {
+  // The close bar's height: the open section's heading sticks just under it.
+  --drawer-top: calc(var(--bar-row) + var(--space-2) * 2);
+
+  padding: 0 calc(var(--site-frame) + var(--page-gutter)) var(--space-10);
+}
+
+// Lines the close button up with the menu button it replaces, and stays at the
+// top however far a long section scrolls, so the menu can always be closed.
+.header-drawer__top {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  min-block-size: var(--drawer-top);
+  background-color: var(--color-bg);
+}
+
+.header-drawer__list {
+  list-style: none;
+  border-top: 1px solid var(--color-border);
+}
+
+// Set apart by space alone; a second top rule read as an empty row.
+.header-drawer__list--secondary {
+  margin-top: var(--space-6);
+  border-top: 0;
+}
+
+.header-drawer__item {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.header-drawer__link {
+  @include type-label;
+  scroll-margin-top: var(--drawer-top); // clear of the sticky close bar
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-block-size: var(--space-12);
+  color: var(--color-fg);
+  cursor: pointer;
+  list-style: none;
+
+  &:hover {
+    color: var(--color-fg);
+  }
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+}
+
+// An open section's heading sticks under the close bar until the section
+// scrolls past, so it's always clear where you are, and one tap folds it.
+.header-drawer__group[open] > .header-drawer__link {
+  position: sticky;
+  top: var(--drawer-top);
+  z-index: 1;
+  background-color: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-3);
+
+  .icon {
+    rotate: 180deg;
+  }
+}
+
+// The mega menus' groups in one column, flush with the drawer's own edges:
+// two columns ran A–L down the first and M–Z down the second, so reaching the
+// bottom meant scrolling back up for the rest.
+.header-drawer__sub.site-header__mega-grid {
+  columns: 1;
+  padding: 0 0 var(--space-4);
+}
+
+// While the drawer or the search overlay is open (header.js).
+.is-scroll-locked {
+  overflow: hidden;
 }

@@ -138,6 +138,24 @@
 
   <div class="site-header__inner">
 
+    {%- comment -%}
+      Below `lg` only: opens the menu drawer (the <dialog> after the header).
+      Hidden without JS, which the drawer needs to open.
+    {%- endcomment -%}
+    {%- if section.settings.menu != blank -%}
+      <button
+        class="site-header__icon-button site-header__menu-toggle"
+        type="button"
+        aria-label="{{ 'general.accessibility.menu' | t }}"
+        aria-haspopup="dialog"
+        aria-controls="header-drawer"
+        aria-expanded="false"
+        data-drawer-open
+      >
+        {%- render 'icon', name: 'menu' -%}
+      </button>
+    {%- endif -%}
+
     <div class="site-header__logo">
       {%- if settings.logo != blank -%}
         <a href="{{ routes.root_url }}" class="site-header__logo-link">
@@ -192,22 +210,38 @@
     {%- endif -%}
 
     {%- comment -%}
-      Full-width row of its own below `lg` (see _header.scss) rather than a
-      magnifier that opens something: search is the fastest route into a
-      catalogue this size, and the category nav is desktop-only.
-    {%- endcomment -%}
-    {%- comment -%}
-      Search and actions share one wrapper so, from `lg`, they fill the right
-      column of a 1fr / auto / 1fr grid that holds the logo dead centre. Below
-      `lg` the wrapper is `display: contents` and they lay out as before.
+      Search and actions share one wrapper, the right column of a 1fr / auto /
+      1fr grid that holds the logo dead centre.
+
+      Below `lg` search is a magnifier that lays the bar over the header row
+      (see _header.scss and header.js). The magnifier is a link to the search
+      page, so without JS it still gets there.
     {%- endcomment -%}
     <div class="site-header__end">
-    <div class="site-header__search">
+    <a
+      class="site-header__icon-button site-header__search-toggle"
+      href="{{ routes.search_url }}"
+      aria-label="{{ 'general.search.label' | t }}"
+      data-search-toggle
+    >
+      {%- render 'icon', name: 'search' -%}
+    </a>
+
+    <div class="site-header__search" id="header-search-bar">
       {%- render 'search-form',
         input_id: 'header-search',
         modifier: 'header',
         predictive: true
       -%}
+
+      <button
+        class="site-header__icon-button site-header__search-close"
+        type="button"
+        aria-label="{{ 'general.accessibility.search_close' | t }}"
+        data-search-close
+      >
+        {%- render 'icon', name: 'close' -%}
+      </button>
     </div>
 
     <div class="site-header__actions">
@@ -230,6 +264,7 @@
             {%- endcomment -%}
             {%- assign account_label = 'general.accessibility.account' | t -%}
             {%- assign account_text = customer.first_name | default: account_label -%}
+            <span class="site-header__action-icon">{%- render 'icon', name: 'user' -%}</span>
             <span class="site-header__action-label">
               {{- account_text -}}
             </span>
@@ -243,6 +278,7 @@
             aria-controls="account-modal"
           >
             {%- assign account_text = 'general.accessibility.account' | t -%}
+            <span class="site-header__action-icon">{%- render 'icon', name: 'user' -%}</span>
             <span class="site-header__action-label">
               {{- account_text -}}
             </span>
@@ -271,6 +307,7 @@
 
       <a href="{{ routes.cart_url }}" class="site-header__action site-header__cart" aria-label="{{ 'general.accessibility.cart' | t }}">
         {%- assign cart_text = 'general.accessibility.cart' | t -%}
+        <span class="site-header__action-icon">{%- render 'icon', name: 'bag' -%}</span>
         <span class="site-header__action-label">
           {{- cart_text -}}
         </span>
@@ -333,6 +370,73 @@
   {%- endif -%}
 
 </header>
+
+{%- comment -%}
+  The menu below `lg`: the same links as the nav, with Brands and Categories as
+  disclosures holding the mega menus' lists. A native <dialog> (header.js), so
+  showModal() traps focus, Esc closes it and the page behind is inert.
+{%- endcomment -%}
+{%- if section.settings.menu != blank -%}
+  <dialog class="header-drawer" id="header-drawer" aria-label="{{ 'general.accessibility.menu' | t }}" data-header-drawer>
+    <div class="header-drawer__panel">
+      <div class="header-drawer__top">
+        <button
+          class="site-header__icon-button header-drawer__close"
+          type="button"
+          aria-label="{{ 'general.accessibility.menu_close' | t }}"
+          data-drawer-close
+        >
+          {%- render 'icon', name: 'close' -%}
+        </button>
+      </div>
+
+      <nav aria-label="{{ 'general.accessibility.nav_main' | t }}">
+        <ul class="header-drawer__list">
+          {%- for link in linklists[section.settings.menu].links -%}
+            <li class="header-drawer__item">
+              {%- if has_brands and link.title == trigger_label -%}
+                <details class="header-drawer__group" name="header-drawer-group">
+                  <summary class="header-drawer__link">
+                    {{- link.title -}}
+                    {%- render 'icon', name: 'chevron' -%}
+                  </summary>
+                  <div class="header-drawer__sub site-header__mega-grid">{{ brands_items }}</div>
+                </details>
+              {%- elsif has_categories and link.title == categories_label -%}
+                <details class="header-drawer__group" name="header-drawer-group">
+                  <summary class="header-drawer__link">
+                    {{- link.title -}}
+                    {%- render 'icon', name: 'chevron' -%}
+                  </summary>
+                  <div class="header-drawer__sub site-header__mega-grid">{{ categories_items }}</div>
+                </details>
+              {%- else -%}
+                <a
+                  class="header-drawer__link"
+                  href="{% if link.url == routes.all_products_collection_url %}{{ all_products_href }}{% else %}{{ link.url }}{% endif %}"
+                  {% if link.url == request.path %}aria-current="page"{% endif %}
+                >
+                  {{- link.title -}}
+                </a>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      </nav>
+
+      {%- comment -%} No room for the wishlist in the header row below `lg`. {%- endcomment -%}
+      {%- if shop.customer_accounts_enabled -%}
+        <ul class="header-drawer__list header-drawer__list--secondary">
+          <li class="header-drawer__item">
+            <a class="header-drawer__link" href="{{ pages.wishlist.url | default: '/pages/wishlist' }}">
+              {{- 'wishlist.nav' | t -}}
+            </a>
+          </li>
+        </ul>
+      {%- endif -%}
+    </div>
+  </dialog>
+{%- endif -%}
 
 {% schema %}
 {
