@@ -1,41 +1,65 @@
 @use 'abstracts/mixins' as *;
 
+// Text banner — sections/text-banner.liquid.
+// Two levels: `__main` is the text and image (one link when the banner has a
+// URL), and `.text-banner` sets it beside the promo cards, when there are any.
+// Kept apart so a promo's own link never sits inside the banner's.
+
 .text-banner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--grid-gap);
+  background-color: var(--tb-bg, var(--color-bg));
+  color: var(--tb-color, var(--color-fg));
+  // No top padding — the banner sits flush against whatever precedes it.
+  // Bottom spacing is the global section padding (_layout.scss).
+  padding-block-start: 0;
+}
+
+// Promos (snippets/promo-cards.liquid, styled in _promo-cards.scss) go under
+// the banner, and beside the image from `xl`.
+.text-banner--promos {
+  @include respond-to('xl') {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
+  }
+}
+
+// ─── Text and image ────────────────────────────────────────────────────────────
+
+.text-banner__main {
   // Text left, image right from `md`; stacked, text first, below it.
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6);
-  align-items: start;
-  background-color: var(--tb-bg, var(--color-bg));
-  color: var(--tb-color, var(--color-fg));
-  // No top padding — the banner sits flush against whatever precedes it.
-  // Bottom padding stays so the statement isn't crowded by the next section.
-  padding-block-start: 0;
-  // padding-block-end: var(--space-8);
-  // padding-inline: var(--site-frame);
+  color: inherit;
 
   @include respond-to('md') {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-8);
   }
-
-  @include respond-to('lg') {
-    // padding-block-end: var(--space-12);
-  }
 }
 
 .text-banner__text {
   @include type-statement;
-  // Fixed by the system, and bound to the type scale: --text-xl on mobile
-  // (a step above body copy), scaling fluidly up to --text-4xl on desktop.
+  // Three quarters of the statement size the featured section uses: this one
+  // runs to a paragraph or two, not a single line.
+  font-size: calc(var(--text-statement) * 0.75);
   text-align: start;
   overflow-wrap: break-word;
   display: block;
   margin: 0;
   max-width: none; // typography.scss caps `p` at 68ch — not for display type
+
+  // Trimmed to the capitals at the top and the baseline at the bottom, so the
+  // first line starts level with the image and the last ends level with it.
+  @include trim-to-cap;
+
+  @supports (text-box: trim-both cap alphabetic) {
+    text-box: trim-both cap alphabetic;
+  }
 }
 
-.text-banner--link {
+.text-banner__main--link {
   text-decoration: none;
   transition: opacity var(--transition-base);
 
@@ -49,22 +73,39 @@
   }
 }
 
-.text-banner__media:empty {
-  display: none; // no image yet: keep the stacked layout tight on mobile
+.text-banner__media {
+  position: relative;
+  overflow: hidden;
+  // Stacked, the image keeps its own shape.
+  aspect-ratio: 16 / 9;
 
+  // Side by side, the image is cropped to the row: the text's height, or this
+  // floor when the text is shorter — about 500px at 1440, scaling with the
+  // viewport.
   @include respond-to('md') {
-    display: block; // …but hold the right half open from `md`
+    aspect-ratio: auto;
+    min-block-size: clamp(16rem, 35vw, 32rem);
+  }
+
+  &:empty {
+    display: none; // no image yet: keep the stacked layout tight on mobile
+
+    @include respond-to('md') {
+      display: block; // …but hold the right half open from `md`
+    }
   }
 }
 
 .text-banner__image,
 .text-banner__placeholder {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
 }
 
 .text-banner__placeholder {
-  aspect-ratio: 4 / 3;
   background-color: var(--color-bg-raised);
 }

@@ -1,6 +1,43 @@
 @use 'abstracts/mixins' as *;
 
-.featured-section {
+// Promos (snippets/promo-cards.liquid, _promo-cards.scss) sit outside the
+// colour block, on the page background: under it, left ones first, until
+// `xl`; then a column each side of it, as tall as the block.
+.featured-section--promos-left,
+.featured-section--promos-right {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--grid-gap);
+}
+
+// First when everything stacks; between the columns from `xl`.
+.featured-section__panel {
+  order: -1;
+
+  @include respond-to('xl') {
+    order: 0;
+  }
+}
+
+@include respond-to('xl') {
+  .featured-section--promos-left {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+  }
+
+  .featured-section--promos-right {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
+  }
+
+  // Both sides: the block gives up a little so each promo keeps a quarter.
+  .featured-section--promos-left.featured-section--promos-right {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
+  }
+}
+
+.featured-section__panel {
+  // A query container: with promos either side it is half the page wide, and
+  // the heading sizes to it rather than to the viewport (below).
+  container-type: inline-size;
   background-color: var(--featured-bg, var(--color-fg));
   color: var(--featured-color, var(--color-bg));
 }
@@ -38,6 +75,10 @@
 .featured-section__heading {
   @include trim-to-cap;
   @include type-statement;
+  // The statement size (--text-statement), measured against the colour block
+  // instead of the viewport: the same at full width, smaller when promos
+  // narrow the block.
+  font-size: clamp(var(--text-2xl), 3.3cqi, var(--text-5xl));
   font-family: var(--font-body);
   max-width: 22ch;
   text-wrap: balance;
@@ -58,13 +99,24 @@
 
 .featured-section__media {
   margin: 0;
+
+  // Stretched to the row, so when the text runs taller than the image (a
+  // narrow block, between promos) the image grows with it, not a gap below.
+  @include respond-to('lg') {
+    align-self: stretch;
+  }
 }
 
-// Landscape at every size; the image sets the section's height on desktop.
+// Landscape at every size, and at least that tall on desktop, where it sets
+// the section's height unless the text is taller.
 .featured-section__img {
   display: block;
   width: 100%;
   height: auto;
   aspect-ratio: var(--featured-ratio, 3 / 2);
   object-fit: cover;
+
+  @include respond-to('lg') {
+    height: 100%;
+  }
 }

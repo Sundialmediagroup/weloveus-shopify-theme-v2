@@ -82,7 +82,7 @@ Full list in `frontend/styles/_tokens.scss`. The scales:
 
 **Spacing rhythm.** Section padding is `--space-16` mobile / `--space-24` at `lg`
 (`.section`). Page sections inside `#main-content` additionally get
-`padding-bottom: --space-6` → `--space-12` at `lg`. Prefer `--space-3`/`4`/`6`
+`padding-bottom: --space-12` → `--space-24` at `lg`. Prefer `--space-3`/`4`/`6`
 for component internals.
 
 **Two runtime tokens** are populated outside Sass:

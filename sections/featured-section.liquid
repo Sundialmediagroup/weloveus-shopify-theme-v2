@@ -1,32 +1,65 @@
-<div
-  class="featured-section"
-  style="--featured-bg: {{ section.settings.background_color }}; --featured-color: {{ section.settings.text_color }};"
->
-  <div class="featured-section__inner">
+{%- comment -%}
+  Colour block: heading and body text, then the image. Up to two promo blocks
+  (snippets/promo-cards.liquid) on each side of it, on the page background —
+  each block's "Side" picks which. Columns either side of the block from `xl`;
+  under it below that.
+{%- endcomment -%}
 
-    <div class="featured-section__content">
-      {%- if section.settings.heading != blank -%}
-        <h2 class="featured-section__heading">{{ section.settings.heading }}</h2>
-      {%- endif -%}
+{%- liquid
+  # Two a side at most: a column holds two, one above the other.
+  assign promos_left = '' | split: ''
+  assign promos_right = '' | split: ''
+  for block in section.blocks
+    assign one = section.blocks | where: 'id', block.id
+    if block.settings.side == 'right'
+      if promos_right.size < 2
+        assign promos_right = promos_right | concat: one
+      endif
+    elsif promos_left.size < 2
+      assign promos_left = promos_left | concat: one
+    endif
+  endfor
+-%}
 
-      {%- if section.settings.body != blank -%}
-        <p class="featured-section__body">{{ section.settings.body }}</p>
-      {%- endif -%}
-    </div>
+<div class="featured-section{% if promos_left.size > 0 %} featured-section--promos-left{% endif %}{% if promos_right.size > 0 %} featured-section--promos-right{% endif %}">
+  {%- if promos_left.size > 0 -%}
+    {%- render 'promo-cards', blocks: promos_left, class: 'featured-section__promos featured-section__promos--left' -%}
+  {%- endif -%}
 
-    {%- if section.settings.image != blank -%}
-      {%- assign img_alt = section.settings.heading | escape -%}
-      <div class="featured-section__media">
-        {{ section.settings.image | image_url: width: 1200 | image_tag:
-          class: 'featured-section__img',
-          alt: img_alt,
-          loading: 'lazy',
-          widths: '600, 800, 1000, 1200'
-        }}
+  <div
+    class="featured-section__panel"
+    style="--featured-bg: {{ section.settings.background_color }}; --featured-color: {{ section.settings.text_color }};"
+  >
+    <div class="featured-section__inner">
+
+      <div class="featured-section__content">
+        {%- if section.settings.heading != blank -%}
+          <h2 class="featured-section__heading">{{ section.settings.heading }}</h2>
+        {%- endif -%}
+
+        {%- if section.settings.body != blank -%}
+          <p class="featured-section__body">{{ section.settings.body }}</p>
+        {%- endif -%}
       </div>
-    {%- endif -%}
 
+      {%- if section.settings.image != blank -%}
+        {%- assign img_alt = section.settings.heading | escape -%}
+        <div class="featured-section__media">
+          {{ section.settings.image | image_url: width: 1200 | image_tag:
+            class: 'featured-section__img',
+            alt: img_alt,
+            loading: 'lazy',
+            widths: '600, 800, 1000, 1200'
+          }}
+        </div>
+      {%- endif -%}
+
+    </div>
   </div>
+
+  {%- if promos_right.size > 0 -%}
+    {%- render 'promo-cards', blocks: promos_right, class: 'featured-section__promos featured-section__promos--right' -%}
+  {%- endif -%}
 </div>
 
 {% schema %}
@@ -62,6 +95,60 @@
       "type": "textarea",
       "id": "body",
       "label": "Body text"
+    }
+  ],
+  "max_blocks": 4,
+  "blocks": [
+    {
+      "type": "promo",
+      "name": "Promo",
+      "settings": [
+        {
+          "type": "select",
+          "id": "side",
+          "label": "Side",
+          "options": [
+            { "value": "left", "label": "Left" },
+            { "value": "right", "label": "Right" }
+          ],
+          "default": "left",
+          "info": "Two a side at most; any more on a side are not shown."
+        },
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection",
+          "info": "Optional. Fills the image, link and title from the collection — anything set below overrides it."
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title override",
+          "info": "Leave blank to use the collection name."
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "Link"
+        },
+        {
+          "type": "text",
+          "id": "cta",
+          "label": "Button text",
+          "info": "Leave blank for “Shop now”."
+        },
+        {
+          "type": "color",
+          "id": "background_color",
+          "label": "Text background",
+          "info": "Leave blank for none."
+        }
+      ]
     }
   ],
   "presets": [

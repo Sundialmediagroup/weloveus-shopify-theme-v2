@@ -1,6 +1,7 @@
 {%- comment -%}
-  Statement banner: text in the left half, an image in the right half. Below
-  `md` the two stack, text first.
+  Statement banner: text, then an image beside it, and up to two promo cards
+  stacked at the far end. The image is cropped to the text's height, so the two
+  start and end together. Below `md` everything stacks, text first.
 
   Type size is fixed by the design system, not the merchant — it sits on the
   type scale a step above body copy (--text-xl) and scales fluidly up to
@@ -10,15 +11,23 @@
   - text:             {String} Statement copy. Line breaks are preserved.
   - background_color: {Color}
   - text_color:       {Color}
-  - url:              {String} Optional. Makes the whole banner clickable.
-  - image:            {Image}  Optional. Right half; a placeholder stands in for
-                      it in the theme editor, and the half stays empty on the
-                      live site until one is chosen.
+  - url:              {String} Optional. Makes the text and image clickable.
+  - image:            {Image}  Optional. Beside the text; a placeholder stands
+                      in for it in the theme editor, and the space stays empty
+                      on the live site until one is chosen.
+
+  Blocks:
+  - promo (up to 2): snippets/promo-cards.liquid. With none, the banner is
+    text and image only.
 {%- endcomment -%}
 
 {%- liquid
   assign s = section.settings
   assign banner_text = s.text | escape | newline_to_br
+  assign has_promos = false
+  if section.blocks.size > 0
+    assign has_promos = true
+  endif
 -%}
 
 {%- if s.text != blank -%}
@@ -39,17 +48,23 @@
     </div>
   {%- endcapture -%}
 
-  {%- if s.url != blank -%}
-    <a class="text-banner text-banner--link" href="{{ s.url }}" style="{{ banner_style }}">
-      <span class="text-banner__text">{{ banner_text }}</span>
-      {{- banner_media -}}
-    </a>
-  {%- else -%}
-    <div class="text-banner" style="{{ banner_style }}">
-      <h2 class="text-banner__text">{{ banner_text }}</h2>
-      {{- banner_media -}}
-    </div>
-  {%- endif -%}
+  <div class="text-banner{% if has_promos %} text-banner--promos{% endif %}" style="{{ banner_style }}">
+    {%- if s.url != blank -%}
+      <a class="text-banner__main text-banner__main--link" href="{{ s.url }}">
+        <span class="text-banner__text">{{ banner_text }}</span>
+        {{- banner_media -}}
+      </a>
+    {%- else -%}
+      <div class="text-banner__main">
+        <h2 class="text-banner__text">{{ banner_text }}</h2>
+        {{- banner_media -}}
+      </div>
+    {%- endif -%}
+
+    {%- if has_promos -%}
+      {%- render 'promo-cards', blocks: section.blocks, class: 'text-banner__promos' -%}
+    {%- endif -%}
+  </div>
 {%- endif -%}
 
 {% schema %}
@@ -81,13 +96,56 @@
       "type": "url",
       "id": "url",
       "label": "Link",
-      "info": "Optional. Makes the whole banner clickable."
+      "info": "Optional. Makes the text and image clickable."
     },
     {
       "type": "image_picker",
       "id": "image",
       "label": "Image",
-      "info": "Shown in the right half of the banner."
+      "info": "Shown beside the text, cropped to its height."
+    }
+  ],
+  "max_blocks": 2,
+  "blocks": [
+    {
+      "type": "promo",
+      "name": "Promo",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection",
+          "info": "Optional. Fills the image, link and title from the collection — anything set below overrides it."
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title override",
+          "info": "Leave blank to use the collection name."
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "Link"
+        },
+        {
+          "type": "text",
+          "id": "cta",
+          "label": "Button text",
+          "info": "Leave blank for “Shop now”."
+        },
+        {
+          "type": "color",
+          "id": "background_color",
+          "label": "Text background",
+          "info": "Leave blank for none."
+        }
+      ]
     }
   ],
   "presets": [

@@ -54,7 +54,8 @@
       "title": "All Brands"
     },
     "feature_card": {
-      "placeholder_title": "Choose a collection"
+      "placeholder_title": "Choose a collection",
+      "cta": "Shop now"
     },
     "article_feed": {
       "view_all": "View all stories"

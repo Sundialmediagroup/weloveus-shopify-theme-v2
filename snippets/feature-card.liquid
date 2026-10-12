@@ -14,6 +14,9 @@
   - title:      {String}  Required unless `collection` is given.
   - url:        {String}  Optional. Makes the card a link.
   - background: {String}  Colour for the text panel. Default: --color-bg-feature.
+  - cta:        {String}  Optional. The promo layout (text-banner): no panel
+                colour, the title at the top and this label with the arrow at
+                the bottom, instead of the arrow beside the title.
   - lazy:       {Boolean} Lazy-load the image. Default: true
 {%- endcomment -%}
 
@@ -45,7 +48,7 @@
 
 {%- if card_title != blank -%}
   <article
-    class="feature-card{% if card_url != blank %} feature-card--link{% endif %}"
+    class="feature-card{% if card_url != blank %} feature-card--link{% endif %}{% if cta != blank %} feature-card--cta{% endif %}"
     {% if background != blank %}style="--feature-card-bg: {{ background }};"{% endif %}
   >
     <div class="feature-card__media">
@@ -75,7 +78,14 @@
         </h3>
       </div>
 
-      {%- if card_url != blank -%}
+      {%- if cta != blank -%}
+        <span class="feature-card__cta">
+          {{- cta | escape -}}
+          {%- if card_url != blank -%}
+            <span class="feature-card__arrow">{%- render 'icon', name: 'arrow-right' -%}</span>
+          {%- endif -%}
+        </span>
+      {%- elsif card_url != blank -%}
         <span class="feature-card__arrow">{%- render 'icon', name: 'arrow-right' -%}</span>
       {%- endif -%}
     </div>

@@ -8,10 +8,10 @@
 }
 
 #main-content .shopify-section {
-  padding-bottom: var(--space-6);
+  padding-bottom: var(--space-12);
 
   @include respond-to('lg') {
-    padding-bottom: var(--space-12);
+    padding-bottom: var(--space-24);
   }
 }
 

@@ -1,0 +1,25 @@
+@use 'abstracts/mixins' as *;
+
+// Promo cards — snippets/promo-cards.liquid, in the text banner and the
+// featured section. Stacked on phones, two across from `md`, and from `xl` a
+// column of their own beside the section's image, one above the other sharing
+// its height. Narrower than `xl`, a column leaves each title a few words wide.
+
+.promo-cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--grid-gap);
+
+  @include respond-to('md') {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @include respond-to('xl') {
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: minmax(0, 1fr);
+  }
+}
+
+.promo-cards__item .feature-card {
+  block-size: 100%;
+}

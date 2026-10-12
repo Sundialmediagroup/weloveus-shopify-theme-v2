@@ -1,0 +1,39 @@
+{%- comment -%}
+  A section's promo blocks as feature cards in their promo layout: no panel,
+  title at the top, CTA at the bottom (snippets/feature-card.liquid). Used by
+  the text banner and the featured section; each places and sizes the list.
+
+  Block settings: collection, image, title, url, cta, background_color.
+
+  Accepts:
+  - blocks: {Array}  The section's promo blocks.
+  - class:  {String} Class for the list, for the section's layout.
+{%- endcomment -%}
+
+<div class="promo-cards {{ class }}">
+  {%- for block in blocks -%}
+    {%- liquid
+      assign block_collection = collections[block.settings.collection]
+      assign block_title = block.settings.title
+      # A new block has no collection or title yet and would render nothing to
+      # click in the editor; there, it gets a placeholder.
+      if request.design_mode and block_title == blank and block_collection == blank
+        assign block_title = 'sections.feature_card.placeholder_title' | t
+      endif
+      assign block_cta = block.settings.cta
+      if block_cta == blank
+        assign block_cta = 'sections.feature_card.cta' | t
+      endif
+    -%}
+    <div class="promo-cards__item" {{ block.shopify_attributes }}>
+      {%- render 'feature-card',
+        collection: block_collection,
+        image: block.settings.image,
+        title: block_title,
+        url: block.settings.url,
+        background: block.settings.background_color,
+        cta: block_cta
+      -%}
+    </div>
+  {%- endfor -%}
+</div>

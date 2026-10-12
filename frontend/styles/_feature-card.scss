@@ -106,3 +106,38 @@
 [dir='rtl'] .feature-card--link:hover .feature-card__arrow {
   transform: translateX(calc(var(--space-1) * -1));
 }
+
+// ─── Promo layout (`cta`) ──────────────────────────────────────────────────────
+// Text-banner promos: no panel colour, the title level with the top of the
+// image and the CTA level with its bottom.
+
+.feature-card--cta {
+  .feature-card__body {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;
+    // Only a gap from the image: with no panel, top and bottom padding would
+    // drop the text out of line with it.
+    padding-block: 0;
+    padding-inline-end: 0;
+    background-color: var(--feature-card-bg, transparent);
+  }
+
+  .feature-card__text {
+    flex: 0 0 auto;
+  }
+
+  .feature-card__title {
+    @include trim-to-cap;
+  }
+}
+
+.feature-card__cta {
+  @include type-label;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  // The label's line box sits a little above the image's bottom edge; trim it
+  // to the baseline so the two finish together.
+  text-box: trim-end cap alphabetic;
+}
