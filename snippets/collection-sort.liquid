@@ -39,6 +39,8 @@
         <a
           class="collection-sort__link"
           href="{{ sort_url }}"
+          data-track-content="collection_sort"
+          data-track-content-id="{{ value }}"
           {% if value == current_sort %}aria-current="true"{% endif %}
         >
           {{- label -}}

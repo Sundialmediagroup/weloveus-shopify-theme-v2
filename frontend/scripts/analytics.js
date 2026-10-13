@@ -21,6 +21,9 @@
 //   [data-item-list="<id>"][data-item-list-name]  a list of products
 //   [data-item] + snippets/item-data.liquid       one selectable product
 //   [data-feature="<id>"]                         sends feature_view on sight
+//   [data-track-content="<type>"][data-track-content-id]  select_content on
+//                                                 click; inside a [data-feature],
+//                                                 also marks that feature used
 //   [data-card="<type>"]                          a card, for section_click
 //   "class": "section-type--<file>" in a section's schema  its section_type
 //
@@ -282,14 +285,17 @@ document.addEventListener('submit', e => {
   markFeature(`search_${form.dataset.searchForm}`)
 })
 
-// Navigation inside a feature: brand suggestions, contents links.
+// Navigation inside a feature: brand suggestions, contents links, the
+// collection page's category menu, sort and drill-down chips.
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-track-content]')
   if (!el) return
   track('select_content', {
     content_type: el.dataset.trackContent,
-    content_id: el.dataset.trackContentId || el.textContent.trim().slice(0, 100),
+    content_id: el.dataset.trackContentId || el.textContent.trim().replace(/\s+/g, ' ').slice(0, 100),
   })
+  const feature = el.closest('[data-feature]')?.dataset.feature
+  if (feature) markFeature(feature)
 })
 
 // The search results page: the count, so searches that find nothing show up.

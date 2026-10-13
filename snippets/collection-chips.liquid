@@ -1,0 +1,119 @@
+{%- comment -%}
+  Below `lg`, a row of chips under the collection dropdowns: the next level
+  down from the page being viewed, so the shopper can drill in one tap at a
+  time without reopening the category menu.
+
+  What the row holds, from the "Category Menu" navigation menu (the same one
+  collection-sidebar uses):
+  - On a category with children: a "‹ parent" chip back up (when it has a
+    parent), then its children.
+  - On a category without children: the chip back up, then the collection's
+    product types (collection-sidebar-types). With no types to offer, its
+    sibling categories, this one marked current.
+  - On a page that isn't in the menu (All products, say): the top level.
+
+  Accepts:
+  - default_sort: {String} Sort key to build into collection links. See
+    collection-sidebar.
+  - all_sort:     {String} Sort key for links to All products. Optional.
+{%- endcomment -%}
+
+{%- liquid
+  assign menu_links = linklists['category-menu'].links
+  assign type_sort = collection.sort_by | default: collection.default_sort_by
+
+  assign current_link = nil
+  assign parent_link = nil
+  for l1 in menu_links
+    if l1.current
+      assign current_link = l1
+    endif
+    for l2 in l1.links
+      if l2.current
+        assign current_link = l2
+        assign parent_link = l1
+      endif
+      for l3 in l2.links
+        if l3.current
+          assign current_link = l3
+          assign parent_link = l2
+        endif
+      endfor
+    endfor
+  endfor
+
+  assign chip_links = menu_links
+  assign types_html = ''
+  if current_link
+    if current_link.links.size > 0
+      assign chip_links = current_link.links
+    else
+      capture types_html
+        render 'collection-sidebar-types', sort: type_sort, chips: true
+      endcapture
+      if parent_link
+        assign chip_links = parent_link.links
+      else
+        assign chip_links = menu_links
+      endif
+    endif
+  endif
+-%}
+
+{%- if menu_links.size > 0 -%}
+  <nav class="collection-chips" data-feature="collection_chips" aria-label="{{ 'sections.collection.chips_label' | t }}">
+    <ul class="collection-chips__list" data-collection-chips>
+      {%- if parent_link -%}
+        {%- liquid
+          assign back_href = parent_link.url
+          if default_sort != blank and back_href contains '/collections/'
+            unless back_href contains '?'
+              assign back_href = back_href | append: '?sort_by=' | append: default_sort
+            endunless
+          endif
+        -%}
+        <li class="collection-chips__item">
+          <a
+            class="collection-chips__chip collection-chips__chip--back"
+            href="{{ back_href }}"
+            data-track-content="collection_chip_up"
+            data-track-content-id="{{ parent_link.title | escape }}"
+          >
+            {%- render 'icon', name: 'chevron-left' -%}
+            {{- parent_link.title | escape -}}
+          </a>
+        </li>
+      {%- endif -%}
+
+      {%- if types_html != blank -%}
+        {{- types_html -}}
+      {%- else -%}
+        {%- for link in chip_links -%}
+          {%- liquid
+            assign chip_href = link.url
+            if default_sort != blank and chip_href contains '/collections/'
+              unless chip_href contains '?'
+                assign chip_sort = default_sort
+                if link.url == routes.all_products_collection_url
+                  assign chip_sort = all_sort | default: default_sort
+                endif
+                assign chip_href = chip_href | append: '?sort_by=' | append: chip_sort
+              endunless
+            endif
+          -%}
+          <li class="collection-chips__item">
+            <a
+              class="collection-chips__chip"
+              href="{{ chip_href }}"
+              data-track-content="collection_chip"
+              data-category="{{ link.title | escape }}"
+              {% if link.current %}aria-current="page"{% endif %}
+            >
+              {{- link.title | escape -}}
+            </a>
+          </li>
+        {%- endfor -%}
+      {%- endif -%}
+    </ul>
+  </nav>
+{%- endif -%}

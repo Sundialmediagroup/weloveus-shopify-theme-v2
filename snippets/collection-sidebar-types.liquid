@@ -11,8 +11,12 @@
   One type at a time: picking a type replaces the one shown, and picking the
   shown type again clears it. Hidden when the collection has only one type.
 
+  Also renders the same links as chips for collection-chips, with only the
+  items (the chip row supplies the list).
+
   Accepts:
-  - sort: {String} The sort key to keep in the links (the page's current one).
+  - sort:  {String} The sort key to keep in the links (the page's current one).
+  - chips: {Boolean} Render as collection-chips items. Optional.
 {%- endcomment -%}
 
 {%- liquid
@@ -35,7 +39,7 @@
 -%}
 
 {%- if type_count > 1 -%}
-  <ul class="collection-sidebar__list collection-sidebar__list--nested">
+  {%- unless chips -%}<ul class="collection-sidebar__list collection-sidebar__list--nested">{%- endunless -%}
     {%- for value in type_filter.values -%}
       {%- if value.count > 0 -%}
         {%- liquid
@@ -48,11 +52,12 @@
             assign type_href = collection.url | append: '?sort_by=' | append: sort | append: '&' | append: value.param_name | append: '=' | append: type_param
           endif
         -%}
-        <li class="collection-sidebar__item">
+        <li class="{% if chips %}collection-chips__item{% else %}collection-sidebar__item{% endif %}">
           <a
-            class="collection-sidebar__link collection-sidebar__link--type"
+            class="{% if chips %}collection-chips__chip{% else %}collection-sidebar__link collection-sidebar__link--type{% endif %}"
             href="{{ type_href }}"
             data-category="{{ value.label | escape }}"
+            data-track-content="{% if chips %}collection_chip{% else %}collection_menu{% endif %}"
             {% if value.active %}aria-current="true"{% endif %}
           >
             {{- value.label | escape -}}
@@ -60,5 +65,5 @@
         </li>
       {%- endif -%}
     {%- endfor -%}
-  </ul>
+  {%- unless chips -%}</ul>{%- endunless -%}
 {%- endif -%}

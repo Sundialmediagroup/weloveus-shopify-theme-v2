@@ -58,7 +58,7 @@
       {
         "source": "document",
         "where": {
-          "selector_matches": ".collection-sidebar a, .site-header__mega-grid a"
+          "selector_matches": ".collection-sidebar a, .collection-chips a, .site-header__mega-grid a"
         },
         "eagerness": "moderate"
       }
@@ -88,11 +88,62 @@
     {%- capture sidebar_html -%}
       {%- render 'collection-sidebar', default_sort: default_sort, all_sort: all_sort -%}
     {%- endcapture -%}
+    {%- comment -%}
+      Each closed dropdown shows what's in force under its label, so the
+      shopper can see their choice without reopening it: the deepest category
+      menu link for this page (or the product type picked under it), and the
+      sort order.
+    {%- endcomment -%}
+    {%- liquid
+      assign current_category = ''
+      for l1 in linklists['category-menu'].links
+        if l1.current
+          assign current_category = l1.title
+        endif
+        for l2 in l1.links
+          if l2.current
+            assign current_category = l2.title
+          endif
+          for l3 in l2.links
+            if l3.current
+              assign current_category = l3.title
+            endif
+          endfor
+        endfor
+      endfor
+      for filter in collection.filters
+        if filter.param_name == 'filter.p.product_type'
+          for value in filter.active_values
+            assign current_category = value.label
+            break
+          endfor
+        endif
+      endfor
+
+      assign current_sort = collection.sort_by | default: collection.default_sort_by
+      case current_sort
+        when 'created-descending'
+          assign current_sort_label = 'sections.collection.sort.latest' | t
+        when 'best-selling'
+          assign current_sort_label = 'sections.collection.sort.trending' | t
+        when 'price-ascending'
+          assign current_sort_label = 'sections.collection.sort.price_low' | t
+        when 'price-descending'
+          assign current_sort_label = 'sections.collection.sort.price_high' | t
+        else
+          assign current_sort_label = ''
+      endcase
+    -%}
     <div class="collection-aside">
       {%- if sidebar_html != blank -%}
         <details class="collection-filter" name="collection-filter">
           <summary class="collection-filter__summary">
-            <span>{{ 'sections.collection.sidebar_label' | t }}</span>
+            <span class="collection-filter__text">
+              <span class="collection-filter__label">{{ 'sections.collection.sidebar_label' | t }}</span>
+              {%- if current_category != blank -%}
+                <span class="collection-filter__value">{{ current_category | escape }}</span>
+              {%- endif -%}
+            </span>
             {%- render 'icon', name: 'chevron' -%}
           </summary>
           <div class="collection-filter__panel">{{ sidebar_html }}</div>
@@ -100,7 +151,12 @@
       {%- endif -%}
       <details class="collection-filter" name="collection-filter">
         <summary class="collection-filter__summary">
-          <span>{{ 'sections.collection.sort_label' | t }}</span>
+          <span class="collection-filter__text">
+            <span class="collection-filter__label">{{ 'sections.collection.sort_label' | t }}</span>
+            {%- if current_sort_label != blank -%}
+              <span class="collection-filter__value">{{ current_sort_label }}</span>
+            {%- endif -%}
+          </span>
           {%- render 'icon', name: 'chevron' -%}
         </summary>
         <div class="collection-filter__panel">
@@ -108,6 +164,8 @@
         </div>
       </details>
     </div>
+
+    {%- render 'collection-chips', default_sort: default_sort, all_sort: all_sort -%}
 
     <div class="collection-layout__main">
 

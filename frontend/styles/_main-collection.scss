@@ -59,8 +59,8 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  block-size: var(--space-10);
-  padding-inline: var(--space-3) var(--space-2);
+  min-block-size: var(--space-10);
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
   font-size: var(--text-sm);
   border: 1px solid var(--color-border-strong);
   cursor: pointer;
@@ -89,6 +89,24 @@
   }
 }
 
+// Label over the choice in force; the label alone when there's none.
+.collection-filter__text {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+}
+
+.collection-filter__label:has(+ .collection-filter__value) {
+  @include type-label;
+  color: var(--color-fg-muted);
+}
+
+.collection-filter__value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 // Positioned against .collection-aside, not its own <details>, so it spans
 // both dropdowns rather than just the one that opened it.
 .collection-filter__panel {
@@ -112,6 +130,11 @@
     .collection-sort {
       margin-top: 0;
     }
+
+    // The underline alone is easy to miss in a list this size.
+    [aria-current] {
+      font-weight: var(--weight-medium);
+    }
   }
 
   @include respond-to('lg') {
@@ -131,6 +154,70 @@
     content-visibility: visible;
     display: contents;
   }
+}
+
+// ─── Drill-down chips ──────────────────────────────────────────────────────────
+// Below `lg` only: the next level down from this page, one tap away (see
+// collection-chips). From `lg` the sidebar shows the whole tree instead.
+
+.collection-aside:has(+ .collection-chips) {
+  margin-bottom: var(--space-3);
+
+  @include respond-to('lg') {
+    margin-bottom: 0;
+  }
+}
+
+.collection-chips {
+  margin-bottom: var(--space-6);
+
+  @include respond-to('lg') {
+    display: none;
+  }
+}
+
+// One row that scrolls sideways rather than wrapping into a wall of chips.
+.collection-chips__list {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.collection-chips__item {
+  flex: 0 0 auto;
+}
+
+.collection-chips__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-block-size: var(--space-10);
+  padding-inline: var(--space-4);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  color: var(--color-fg);
+  text-decoration: none;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 999px;
+
+  &[aria-current] {
+    color: var(--color-accent-fg);
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+}
+
+// Back up a level.
+.collection-chips__chip--back {
+  padding-inline-start: var(--space-3);
+  color: var(--color-fg-muted);
+  border-style: dashed;
 }
 
 // ─── Grid ──────────────────────────────────────────────────────────────────────

@@ -72,6 +72,7 @@
             class="collection-sidebar__link collection-sidebar__link--l1"
             href="{{ l1_href }}"
             data-category="{{ link.title | escape }}"
+            data-track-content="collection_menu"
             {% if link.current %}aria-current="page"{% endif %}
           >
             {{- link.title | escape -}}
@@ -105,6 +106,7 @@
                     class="collection-sidebar__link collection-sidebar__link--l2"
                     href="{{ l2_href }}"
                     data-category="{{ child.title | escape }}"
+                    data-track-content="collection_menu"
                     {% if child.current %}aria-current="page"{% endif %}
                   >
                     {{- child.title | escape -}}
@@ -133,6 +135,7 @@
                             class="collection-sidebar__link collection-sidebar__link--l3"
                             href="{{ l3_href }}"
                             data-category="{{ grandchild.title | escape }}"
+                            data-track-content="collection_menu"
                             {% if grandchild.current %}aria-current="page"{% endif %}
                           >
                             {{- grandchild.title | escape -}}

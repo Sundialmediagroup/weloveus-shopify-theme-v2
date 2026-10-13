@@ -12,6 +12,17 @@
 // the scroll position) is kept in sessionStorage, and a back/forward visit
 // that misses the bfcache reloads those pages and scrolls back.
 
+// Drill-down chips: a chip marked current may sit past the edge of the row;
+// scroll the row (only the row, not the page) to bring it into view.
+const chips = document.querySelector('[data-collection-chips]');
+const currentChip = chips?.querySelector('[aria-current]');
+if (currentChip) {
+  const item = currentChip.parentElement;
+  if (item.offsetLeft + item.offsetWidth > chips.clientWidth) {
+    chips.scrollLeft = item.offsetLeft - (chips.clientWidth - item.offsetWidth) / 2;
+  }
+}
+
 const grid = document.querySelector('[data-collection-grid]');
 const more = document.querySelector('[data-collection-more]');
 
