@@ -1,140 +1,151 @@
 {%- comment -%}
-  Colour block: heading and body text, then the image. Up to two promo blocks
-  (snippets/promo-cards.liquid) on each side of it, on the page background —
-  each block's "Side" picks which. Columns either side of the block from `xl`;
-  under it below that.
+  Two horizontal cards across the full width, side by side from `md` and
+  stacked below it. Each card has the image on one half and its own colour
+  panel on the other, holding the title, an optional line of text and the CTA,
+  one under the other. The whole card is one link.
+
+  Each card links to a collection or a product (the product wins when both are
+  set). The image, link and title come from that, and anything set on the
+  block overrides it. On a collection link, the URL carries the default sort,
+  as the header's brand links do: main-collection redirects a collection URL
+  without `sort_by`, which costs a second render.
+
+  The theme editor shows a placeholder title and image for a new card, so it
+  can be clicked and set up. A card with nothing to show is left out of the
+  live site.
 {%- endcomment -%}
 
 {%- liquid
-  # Two a side at most: a column holds two, one above the other.
-  assign promos_left = '' | split: ''
-  assign promos_right = '' | split: ''
-  for block in section.blocks
-    assign one = section.blocks | where: 'id', block.id
-    if block.settings.side == 'right'
-      if promos_right.size < 2
-        assign promos_right = promos_right | concat: one
-      endif
-    elsif promos_left.size < 2
-      assign promos_left = promos_left | concat: one
-    endif
-  endfor
+  assign default_sort = settings.collection_default_sort | default: 'best-selling'
 -%}
 
-<div class="featured-section{% if promos_left.size > 0 %} featured-section--promos-left{% endif %}{% if promos_right.size > 0 %} featured-section--promos-right{% endif %}">
-  {%- if promos_left.size > 0 -%}
-    {%- render 'promo-cards', blocks: promos_left, class: 'featured-section__promos featured-section__promos--left' -%}
-  {%- endif -%}
+{%- if section.blocks.size > 0 -%}
+  <div class="featured-section">
+    {%- for block in section.blocks -%}
+      {%- liquid
+        assign s = block.settings
+        assign card_product = s.product
+        assign card_collection = s.collection
 
-  <div
-    class="featured-section__panel"
-    style="--featured-bg: {{ section.settings.background_color }}; --featured-color: {{ section.settings.text_color }};"
-  >
-    <div class="featured-section__inner">
+        assign card_image = s.image
+        assign card_title = s.title
+        assign card_url = s.url
+        if card_product != blank
+          assign card_image = card_image | default: card_product.featured_image
+          assign card_title = card_title | default: card_product.title
+          if card_url == blank
+            assign card_url = card_product.url
+          endif
+        elsif card_collection != blank
+          assign card_image = card_image | default: card_collection.featured_image
+          assign card_title = card_title | default: card_collection.title
+          if card_url == blank
+            assign card_url = card_collection.url | append: '?sort_by=' | append: default_sort
+          endif
+        endif
 
-      <div class="featured-section__content">
-        {%- if section.settings.heading != blank -%}
-          <h2 class="featured-section__heading">{{ section.settings.heading }}</h2>
-        {%- endif -%}
+        if request.design_mode and card_title == blank
+          assign card_title = 'sections.featured_section.placeholder_title' | t
+        endif
 
-        {%- if section.settings.body != blank -%}
-          <p class="featured-section__body">{{ section.settings.body }}</p>
-        {%- endif -%}
-      </div>
+        assign card_cta = s.cta
+        if card_cta == blank
+          assign card_cta = 'sections.feature_card.cta' | t
+        endif
+      -%}
 
-      {%- if section.settings.image != blank -%}
-        {%- assign img_alt = section.settings.heading | escape -%}
-        <div class="featured-section__media">
-          {{ section.settings.image | image_url: width: 1200 | image_tag:
-            class: 'featured-section__img',
-            alt: img_alt,
-            loading: 'lazy',
-            widths: '600, 800, 1000, 1200'
-          }}
-        </div>
+      {%- if card_title != blank -%}
+        <article
+          class="featured-card{% if card_url != blank %} featured-card--link{% endif %}"
+          style="{% if s.background_color != blank %}--featured-card-bg: {{ s.background_color }};{% endif %}{% if s.text_color != blank %} --featured-card-color: {{ s.text_color }};{% endif %}"
+          {{ block.shopify_attributes }}
+        >
+          <div class="featured-card__media">
+            {%- if card_image != blank -%}
+              {{- card_image | image_url: width: 1200 | image_tag:
+                class: 'featured-card__image',
+                alt: card_image.alt | default: card_title,
+                loading: 'lazy',
+                sizes: '(min-width: 768px) 25vw, 50vw',
+                widths: '300, 450, 600, 900, 1200'
+              -}}
+            {%- else -%}
+              {{- 'image' | placeholder_svg_tag: 'featured-card__image featured-card__placeholder' -}}
+            {%- endif -%}
+          </div>
+
+          <div class="featured-card__body">
+            <div class="featured-card__text">
+              <h2 class="featured-card__title">
+                {%- if card_url != blank -%}
+                  <a class="featured-card__link" href="{{ card_url }}" data-card="featured-card">{{ card_title | escape }}</a>
+                {%- else -%}
+                  {{- card_title | escape -}}
+                {%- endif -%}
+              </h2>
+
+              {%- if s.text != blank -%}
+                <p class="featured-card__copy">{{ s.text | escape }}</p>
+              {%- endif -%}
+            </div>
+
+            {%- if card_url != blank -%}
+              <span class="featured-card__cta">
+                {{- card_cta | escape -}}
+                <span class="featured-card__arrow">{%- render 'icon', name: 'arrow-right' -%}</span>
+              </span>
+            {%- endif -%}
+          </div>
+        </article>
       {%- endif -%}
-
-    </div>
+    {%- endfor -%}
   </div>
-
-  {%- if promos_right.size > 0 -%}
-    {%- render 'promo-cards', blocks: promos_right, class: 'featured-section__promos featured-section__promos--right' -%}
-  {%- endif -%}
-</div>
+{%- endif -%}
 
 {% schema %}
 {
   "name": "Featured Section",
   "class": "section-type--featured-section",
   "tag": "section",
-  "settings": [
-    {
-      "type": "color",
-      "id": "background_color",
-      "label": "Background colour",
-      "default": "#8b2a2a"
-    },
-    {
-      "type": "color",
-      "id": "text_color",
-      "label": "Text colour",
-      "default": "#ffffff"
-    },
-    {
-      "type": "image_picker",
-      "id": "image",
-      "label": "Image"
-    },
-    {
-      "type": "text",
-      "id": "heading",
-      "label": "Heading",
-      "default": "Shop Our Collection"
-    },
-    {
-      "type": "textarea",
-      "id": "body",
-      "label": "Body text"
-    }
-  ],
-  "max_blocks": 4,
+  "max_blocks": 2,
   "blocks": [
     {
-      "type": "promo",
-      "name": "Promo",
+      "type": "card",
+      "name": "Card",
       "settings": [
-        {
-          "type": "select",
-          "id": "side",
-          "label": "Side",
-          "options": [
-            { "value": "left", "label": "Left" },
-            { "value": "right", "label": "Right" }
-          ],
-          "default": "left",
-          "info": "Two a side at most; any more on a side are not shown."
-        },
         {
           "type": "collection",
           "id": "collection",
           "label": "Collection",
-          "info": "Optional. Fills the image, link and title from the collection — anything set below overrides it."
+          "info": "Fills the image, link and title. Anything set below overrides it."
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product",
+          "info": "Used instead of the collection when both are set."
         },
         {
           "type": "image_picker",
           "id": "image",
-          "label": "Image"
+          "label": "Image override"
         },
         {
           "type": "text",
           "id": "title",
           "label": "Title override",
-          "info": "Leave blank to use the collection name."
+          "info": "Leave blank to use the collection or product name."
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Text",
+          "info": "Optional. A line or two under the title."
         },
         {
           "type": "url",
           "id": "url",
-          "label": "Link"
+          "label": "Link override"
         },
         {
           "type": "text",
@@ -145,15 +156,25 @@
         {
           "type": "color",
           "id": "background_color",
-          "label": "Text background",
-          "info": "Leave blank for none."
+          "label": "Panel colour",
+          "default": "#8b2a2a"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text colour",
+          "default": "#ffffff"
         }
       ]
     }
   ],
   "presets": [
     {
-      "name": "Featured Section"
+      "name": "Featured Section",
+      "blocks": [
+        { "type": "card" },
+        { "type": "card" }
+      ]
     }
   ]
 }

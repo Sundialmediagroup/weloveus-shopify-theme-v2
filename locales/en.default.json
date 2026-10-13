@@ -57,6 +57,9 @@
     "brand_directory": {
       "title": "All Brands"
     },
+    "featured_section": {
+      "placeholder_title": "Choose a collection or product"
+    },
     "feature_card": {
       "placeholder_title": "Choose a collection",
       "cta": "Shop now"

@@ -1,122 +1,141 @@
 @use 'abstracts/mixins' as *;
 
-// Promos (snippets/promo-cards.liquid, _promo-cards.scss) sit outside the
-// colour block, on the page background: under it, left ones first, until
-// `xl`; then a column each side of it, as tall as the block.
-.featured-section--promos-left,
-.featured-section--promos-right {
+// Featured section — sections/featured-section.liquid.
+// Two horizontal cards across the full width: side by side from `md`, stacked
+// below it. A single card takes the whole row.
+
+.featured-section {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--grid-gap);
-}
 
-// First when everything stacks; between the columns from `xl`.
-.featured-section__panel {
-  order: -1;
-
-  @include respond-to('xl') {
-    order: 0;
+  @include respond-to('md') {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
   }
 }
 
-@include respond-to('xl') {
-  .featured-section--promos-left {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
-  }
+// ─── Card ──────────────────────────────────────────────────────────────────────
+// Image on one half, colour panel on the other. Square corners and a flat
+// panel, like the feature and product cards.
 
-  .featured-section--promos-right {
-    grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
-  }
-
-  // Both sides: the block gives up a little so each promo keeps a quarter.
-  .featured-section--promos-left.featured-section--promos-right {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
-  }
-}
-
-.featured-section__panel {
-  // A query container: with promos either side it is half the page wide, and
-  // the heading sizes to it rather than to the viewport (below).
+.featured-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  // Sized from the card's own width (cqi), not the viewport: the same card is
+  // a whole phone screen or half a desktop one.
   container-type: inline-size;
-  background-color: var(--featured-bg, var(--color-fg));
-  color: var(--featured-color, var(--color-bg));
+  background-color: var(--featured-card-bg, var(--color-bg-feature));
+  color: var(--featured-card-color, var(--color-fg));
 }
 
-// Full width of the page, with --site-frame on all four sides: the text and
-// the image both sit the frame's width in from the edge of the colour.
-.featured-section__inner {
-  padding: var(--site-frame);
-
-  @include respond-to('lg') {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: start;
-    gap: var(--site-frame);
-  }
+.featured-card__media,
+.featured-card__body {
+  // Landscape: the card is a little over twice as wide as it is tall, so each
+  // half is close to square. A minimum, so long text can still grow it.
+  min-block-size: max(12rem, 100cqi / 2.2);
 }
 
-// ─── Text ──────────────────────────────────────────────────────────────────────
+.featured-card__media {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-bg-subtle);
+}
 
-.featured-section__content {
+.featured-card__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.featured-card__placeholder {
+  fill: var(--color-fg-subtle);
+}
+
+// Title and text at the top, the CTA level with the bottom.
+.featured-card__body {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  padding-block: var(--space-6) var(--space-10);
-
-  @include respond-to('lg') {
-    gap: var(--space-5);
-    padding-block: var(--space-10) 0;
-    padding-inline-end: var(--space-12);
-  }
+  justify-content: space-between;
+  gap: var(--space-6);
+  padding: clamp(var(--space-4), 5cqi, var(--space-8));
 }
 
-// Trimmed to its capital height, so the space above the text is the padding
-// alone, not the padding plus the line's leading.
-.featured-section__heading {
+.featured-card__text {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--space-2), 2cqi, var(--space-4));
+}
+
+.featured-card__title {
   @include trim-to-cap;
   @include type-statement;
-  // The statement size (--text-statement), measured against the colour block
-  // instead of the viewport: the same at full width, smaller when promos
-  // narrow the block.
-  font-size: clamp(var(--text-2xl), 3.3cqi, var(--text-5xl));
   font-family: var(--font-body);
-  max-width: 22ch;
+  // The statement treatment, sized to the card rather than the viewport.
+  font-size: clamp(var(--text-lg), 4.4cqi, var(--text-4xl));
   text-wrap: balance;
+  overflow-wrap: anywhere; // one long brand word must not widen the panel
 }
 
-.featured-section__body {
-  font-size: var(--text-sm);
+.featured-card__copy {
+  font-size: clamp(var(--text-sm), 2cqi, var(--text-base));
   line-height: var(--leading-relaxed);
   max-width: 42ch;
   text-wrap: pretty;
+  opacity: 0.85;
+}
 
-  @include respond-to('lg') {
-    font-size: var(--text-base);
+.featured-card__link {
+  color: inherit;
+  text-decoration: none;
+
+  // The panel's text colour, not the global link hover (_reset.scss).
+  &:hover {
+    color: inherit;
+  }
+
+  // Stretched over the whole card: one tab stop, one accessible name.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-raised);
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    &::after {
+      outline: 2px solid currentColor;
+      outline-offset: -2px;
+    }
   }
 }
 
-// ─── Image ─────────────────────────────────────────────────────────────────────
+.featured-card__cta {
+  @include type-label;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
 
-.featured-section__media {
-  margin: 0;
+.featured-card__arrow {
+  display: flex;
+  flex-shrink: 0;
+  transition: transform var(--transition-base);
 
-  // Stretched to the row, so when the text runs taller than the image (a
-  // narrow block, between promos) the image grows with it, not a gap below.
-  @include respond-to('lg') {
-    align-self: stretch;
+  [dir='rtl'] & {
+    scale: -1 1;
   }
 }
 
-// Landscape at every size, and at least that tall on desktop, where it sets
-// the section's height unless the text is taller.
-.featured-section__img {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: var(--featured-ratio, 3 / 2);
-  object-fit: cover;
+.featured-card--link:hover .featured-card__arrow {
+  transform: translateX(var(--space-1));
+}
 
-  @include respond-to('lg') {
-    height: 100%;
-  }
+[dir='rtl'] .featured-card--link:hover .featured-card__arrow {
+  transform: translateX(calc(var(--space-1) * -1));
 }
