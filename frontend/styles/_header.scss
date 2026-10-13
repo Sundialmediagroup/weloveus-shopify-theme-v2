@@ -323,38 +323,120 @@
   line-height: 1;
 }
 
-// ─── Cart confirmation panel ───────────────────────────────────────────────────
+// ─── Add confirmation toast ─────────────────────────────────────────────────────
 
-.site-header__cart-panel {
+// toast.js. A pill under the header actions, lined up with the page's end
+// edge. Quiet on purpose: small type, no backdrop, gone in a few seconds.
+.site-toast {
   position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  z-index: var(--z-dropdown);
-  background-color: color-mix(in srgb, var(--color-bg-header) 90%, transparent);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  inset-block-start: calc(100% + var(--space-2));
+  inset-inline-end: max(
+    var(--site-frame) + var(--page-gutter),
+    (100% - var(--page-width)) / 2 + var(--page-gutter)
+  );
+  z-index: var(--z-toast);
   display: flex;
-  justify-content: center;
   align-items: center;
-  max-height: 0;
-  overflow: hidden;
-  pointer-events: none;
-  transition: max-height 0.18s var(--ease-out);
+  gap: var(--space-2);
+  max-inline-size: calc(100% - 2 * (var(--site-frame) + var(--page-gutter)));
+  padding-block: var(--space-2);
+  padding-inline: var(--space-4) var(--space-2);
+  border-radius: var(--radius-full);
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--text-sm);
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(calc(var(--space-2) * -1));
+  transition:
+    opacity var(--transition-base),
+    transform var(--transition-base),
+    visibility 0s linear var(--duration-base);
+
+  &.is-open {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity var(--transition-base),
+      transform var(--transition-base);
+  }
 
   @include respond-below('lg') {
     transition: none; // instant on phones, like the menu and search
-  }
-  // padding: var(--space-6);
 
-  .site-header--cart-open & {
-    max-height: 64px;
-    pointer-events: auto;
+    &.is-open {
+      transition: none;
+    }
   }
 }
 
-.site-header__cart-panel-text {
-  @include type-label;
+.site-toast__icon {
+  display: none;
+  flex: none;
+
+  .site-toast[data-kind='cart'] &--cart,
+  .site-toast[data-kind='wishlist'] &--wishlist {
+    display: flex;
+  }
+
+  // The wishlist heart filled, as on the button that saved it.
+  &--wishlist {
+    color: var(--color-secondary);
+
+    .icon--heart {
+      fill: currentColor;
+    }
+  }
+}
+
+.site-toast__text {
+  @include truncate;
+  min-width: 0;
+}
+
+.site-toast[data-kind='error'] .site-toast__text {
+  color: var(--color-error);
+}
+
+.site-toast__link {
+  flex: none;
+  color: inherit;
+  font-weight: var(--weight-medium);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.site-toast__close {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-full);
+  color: var(--color-fg-muted);
+  transition: background-color var(--transition-fast);
+
+  &:hover {
+    background-color: var(--color-bg-raised);
+  }
+
+  .icon {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+// A count that just went up pops once. Reduced motion zeroes the duration.
+.site-header__cart-count.is-bumped,
+.site-header__wishlist-count.is-bumped {
+  animation: header-badge-bump var(--duration-slower) var(--ease-out);
+}
+
+@keyframes header-badge-bump {
+  40% { transform: scale(1.35); }
 }
 
 // ─── Mega menus ────────────────────────────────────────────────────────────────

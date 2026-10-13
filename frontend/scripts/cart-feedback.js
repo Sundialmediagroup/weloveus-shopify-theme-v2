@@ -1,27 +1,13 @@
-// Shared post-add-to-cart feedback: the header confirmation panel and the
-// cart count badge. Imported by both add-to-cart.js (card stickers) and
+import { showToast, bump } from './toast.js';
+
+// Shared post-add-to-cart feedback: the confirmation toast and the cart
+// count badge. Imported by both add-to-cart.js (card stickers) and
 // product.js (PDP form) so the two paths behave identically.
 
-let closeTimer;
-
+// The confirmation itself is the shared toast (toast.js); the header badge
+// pops once the new count is in.
 export function showCartPanel() {
-  const header = document.querySelector('.site-header');
-  const panel  = document.getElementById('site-cart-panel');
-  if (!header || !panel) return;
-
-  header.classList.add('site-header--cart-open');
-  panel.setAttribute('aria-hidden', 'false');
-
-  clearTimeout(closeTimer);
-  closeTimer = setTimeout(closeCartPanel, 3000);
-}
-
-export function closeCartPanel() {
-  const header = document.querySelector('.site-header');
-  const panel  = document.getElementById('site-cart-panel');
-
-  header?.classList.remove('site-header--cart-open');
-  panel?.setAttribute('aria-hidden', 'true');
+  showToast('cart');
 }
 
 export async function refreshCartCount() {
@@ -39,8 +25,12 @@ export async function refreshCartCount() {
 
   if (badge) {
     // The cart page can empty the cart without a reload.
-    if (cart.item_count === 0) badge.remove();
-    else badge.textContent = cart.item_count;
+    if (cart.item_count === 0) {
+      badge.remove();
+    } else if (badge.textContent.trim() !== String(cart.item_count)) {
+      badge.textContent = cart.item_count;
+      bump(badge);
+    }
     return;
   }
 
@@ -53,13 +43,6 @@ export async function refreshCartCount() {
     span.setAttribute('aria-hidden', 'true');
     span.textContent = cart.item_count;
     cartLink.appendChild(span);
+    bump(span);
   }
 }
-
-// Close the panel on any click outside the header
-document.addEventListener('click', e => {
-  const header = document.querySelector('.site-header');
-  if (header?.classList.contains('site-header--cart-open') && !header.contains(e.target)) {
-    closeCartPanel();
-  }
-});

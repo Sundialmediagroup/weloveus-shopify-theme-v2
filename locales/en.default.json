@@ -12,6 +12,12 @@
       "menu_close": "Close menu",
       "search_close": "Close search"
     },
+    "toast": {
+      "cart_added": "Added to your cart",
+      "view_cart": "View cart",
+      "view_wishlist": "View wishlist",
+      "close": "Dismiss"
+    },
     "search": {
       "label": "Search",
       "placeholder": "Search products and brands",

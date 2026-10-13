@@ -341,9 +341,30 @@
 
   <p class="visually-hidden" role="status" data-predictive-status></p>
 
-  <div class="site-header__cart-panel" id="site-cart-panel" aria-hidden="true" aria-live="polite">
-    <p class="site-header__cart-panel-text">Added to cart!</p>
+  {%- comment -%}
+    Confirmation after an add to cart or a wishlist save: a pill under the
+    header actions, filled and shown by toast.js. Not itself a live region
+    (it's hidden until used); the status line after it is what's announced.
+  {%- endcomment -%}
+  <div
+    class="site-toast"
+    data-toast
+    data-text-cart="{{ 'general.toast.cart_added' | t | escape }}"
+    data-text-wishlist="{{ 'wishlist.added' | t | escape }}"
+    data-link-cart="{{ 'general.toast.view_cart' | t | escape }}"
+    data-link-wishlist="{{ 'general.toast.view_wishlist' | t | escape }}"
+    data-cart-url="{{ routes.cart_url }}"
+    data-wishlist-url="{{ pages.wishlist.url | default: '/pages/wishlist' }}"
+  >
+    <span class="site-toast__icon site-toast__icon--cart" aria-hidden="true">{%- render 'icon', name: 'bag' -%}</span>
+    <span class="site-toast__icon site-toast__icon--wishlist" aria-hidden="true">{%- render 'icon', name: 'heart' -%}</span>
+    <p class="site-toast__text" data-toast-text></p>
+    <a class="site-toast__link" href="{{ routes.cart_url }}" data-toast-link></a>
+    <button class="site-toast__close" type="button" data-toast-close aria-label="{{ 'general.toast.close' | t | escape }}">
+      {%- render 'icon', name: 'close' -%}
+    </button>
   </div>
+  <p class="visually-hidden" role="status" data-toast-status></p>
 
   {%- comment -%}
     One container for every mega menu: the triggers swap which pane shows, and

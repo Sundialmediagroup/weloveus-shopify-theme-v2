@@ -12,6 +12,7 @@
 
 import { openAccountModal } from './account-modal.js';
 import { track, itemFrom, listOf, markFeature } from './analytics.js';
+import { showToast, bump } from './toast.js';
 
 const configEl = document.getElementById('wishlist-config');
 const config = configEl ? JSON.parse(configEl.textContent) : null;
@@ -59,10 +60,13 @@ function setPending(id, pending) {
   togglesFor(id).forEach(el => el.classList.toggle('is-pending', pending));
 }
 
+// The header badge pops when its number goes up (toast.js).
 function paintCount() {
   document.querySelectorAll('[data-wishlist-count]').forEach(el => {
+    const previous = Number(el.textContent) || 0;
     el.textContent = saved.size;
     el.hidden = saved.size === 0;
+    if (saved.size > previous) bump(el);
   });
 }
 
@@ -116,11 +120,14 @@ async function setSaved(id, shouldSave) {
     saved = await request(shouldSave ? 'add' : 'remove', id);
     session(s => s.setItem(SYNC_KEY, JSON.stringify([...saved])));
     trackSave(id, shouldSave);
-    announce(saved.has(id) ? config.textAdded : config.textRemoved);
+    // A save gets the visible toast, which announces itself; an unsave is
+    // plain from the heart emptying, so it's only announced.
+    if (saved.has(id)) showToast('wishlist');
+    else announce(config.textRemoved);
   } catch (err) {
     console.error(err);
     saved = previous;
-    announce(config.textError);
+    showToast('error', { text: config.textError });
   } finally {
     inFlight.delete(id);
     setPending(id, false);

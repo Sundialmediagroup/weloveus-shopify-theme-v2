@@ -8,7 +8,7 @@
 // - Closing it keeps it away for 30 days; signing up keeps it away for good.
 //   Any customer form that signs up (footer, homepage) counts, as does arriving
 //   from one of our emails (`utm_medium=email`).
-// - It waits while Essie, the menu drawer, the search overlay, the cart panel
+// - It waits while Essie, the menu drawer, the search overlay, the add toast
 //   or another dialog is open, and for a while after an add to cart.
 //
 // The section leaves it out for signed-in customers and on the cart, account
@@ -57,7 +57,7 @@ function somethingElseOpen() {
     root.classList.contains('is-scroll-locked') || // menu drawer, search overlay
     root.classList.contains('is-essie-open') ||
     document.querySelector('[data-essie][data-open]') ||
-    document.querySelector('.site-header--cart-open') ||
+    document.querySelector('[data-toast].is-open') ||
     document.querySelector('dialog[open]')
   );
 }
