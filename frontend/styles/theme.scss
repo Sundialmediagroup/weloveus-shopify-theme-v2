@@ -47,6 +47,7 @@
 @use 'wishlist-button';
 @use 'wishlist-carousel';
 @use 'essie-chat';
+@use 'email-signup';
 
 // Last, so a holdout outranks the feature's own display rules.
 @use 'experiments';

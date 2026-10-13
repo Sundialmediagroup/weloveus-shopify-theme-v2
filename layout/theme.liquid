@@ -89,6 +89,8 @@
 
     {%- render 'account-modal' -%}
 
+    {% section 'email-signup-overlay' %}
+
     {%- if shop.customer_accounts_enabled -%}
       {%- comment -%}
         Read by wishlist.js. `ids` seeds its in-memory state so every heart on

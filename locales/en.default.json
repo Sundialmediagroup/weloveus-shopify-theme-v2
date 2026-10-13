@@ -177,6 +177,13 @@
       "other": "{{ count }} items"
     }
   },
+  "email_signup": {
+    "email_label": "Email address",
+    "button": "Sign up",
+    "close": "Close",
+    "error_email": "Enter a valid email address.",
+    "error": "Something went wrong. Please try again."
+  },
   "account": {
     "title": "Sign in",
     "title_personalized": "Hi, {{ first_name }}",

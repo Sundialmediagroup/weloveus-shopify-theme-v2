@@ -522,6 +522,15 @@ function signInButton() {
   return link;
 }
 
+// Essie saved to or removed from the wishlist: hand the whole saved list to
+// wishlist.js so every heart on the page repaints. Live replies only —
+// restoring the transcript must not replay an old list over a newer one.
+function syncWishlist(data) {
+  const ids = data?.type === 'action_result' && data.status === 'success' ? data.wishlist?.product_ids : null;
+  if (!Array.isArray(ids)) return;
+  document.dispatchEvent(new CustomEvent('wishlist:changed', { detail: { ids } }));
+}
+
 // What a reply produced, for analytics. Live replies only — restoring the
 // transcript doesn't call this.
 function trackResult(data) {
@@ -760,6 +769,7 @@ function initEssie() {
               const widget = toolResult(part.data);
               if (widget) place(part, widget);
               trackResult(part.data);
+              syncWishlist(part.data);
             }
             // More may follow; `done` or the end of the stream clears this.
             if (part.type === 'text' || part.type === 'tool_result') showThinking();

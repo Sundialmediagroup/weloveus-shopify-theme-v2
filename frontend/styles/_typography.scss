@@ -159,6 +159,18 @@ small {
   }
 }
 
+// Rich text at the secondary size, for an intro or note beside a form (the
+// signup overlay). Here for the same reason as .rte--lg.
+.rte--sm {
+  font-size: var(--text-sm);
+
+  p,
+  li {
+    font-size: inherit;
+    line-height: var(--leading-relaxed);
+  }
+}
+
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
 .visually-hidden {

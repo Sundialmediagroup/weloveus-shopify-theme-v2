@@ -1,0 +1,185 @@
+{%- comment -%}
+  Email signup overlay. Rendered once by layout/theme.liquid, so it has one set
+  of settings for the whole site, edited from any page in the theme editor.
+
+  Signups go through Shopify's customer form with the `newsletter` tag, which
+  saves them as customers who've agreed to marketing. The form posts and the
+  page reloads; when it comes back with a result (thanks, or an error), the
+  overlay opens straight away to show it.
+
+  When it appears, and who never sees it, is email-signup-overlay.js. It's left
+  out here for signed-in customers and on the cart, account and password pages.
+  The theme editor opens it while the section is selected, so the text and
+  image can be edited in place.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+
+  assign show = s.enabled
+  if customer or template.name == 'cart' or template.name == 'password' or template.directory == 'customers'
+    assign show = false
+  endif
+  if request.design_mode
+    assign show = true
+  endif
+
+  assign button_label = s.button_label
+  if button_label == blank
+    assign button_label = 'email_signup.button' | t
+  endif
+-%}
+
+{%- if show -%}
+  <dialog
+    class="email-signup{% if s.image != blank %} email-signup--image{% endif %}"
+    id="email-signup-overlay"
+    aria-labelledby="email-signup-overlay-title"
+    data-email-signup
+    {% if request.design_mode %}data-design-mode{% endif %}
+  >
+    {%- if s.image != blank -%}
+      <div class="email-signup__media">
+        {{- s.image | image_url: width: 900 | image_tag:
+          class: 'email-signup__image',
+          alt: '',
+          loading: 'lazy',
+          sizes: '(min-width: 768px) 22rem, 0px',
+          widths: '450, 700, 900'
+        -}}
+      </div>
+    {%- endif -%}
+
+    <div class="email-signup__body">
+      <button
+        class="email-signup__close"
+        type="button"
+        data-email-signup-close
+        aria-label="{{ 'email_signup.close' | t | escape }}"
+      >
+        {%- render 'icon', name: 'close' -%}
+      </button>
+
+      {%- form 'customer', id: 'email-signup-overlay-form', class: 'email-signup__form' -%}
+        {%- if form.posted_successfully? -%}
+          <div class="email-signup__text" data-email-signup-result="success">
+            <h2 class="email-signup__title" id="email-signup-overlay-title">{{ s.success_heading | escape }}</h2>
+            {%- if s.success_text != blank -%}
+              <div class="email-signup__copy rte rte--sm">{{ s.success_text }}</div>
+            {%- endif -%}
+          </div>
+        {%- else -%}
+          <div class="email-signup__text"{% if form.errors %} data-email-signup-result="error"{% endif %}>
+            <h2 class="email-signup__title" id="email-signup-overlay-title">{{ s.heading | escape }}</h2>
+            {%- if s.text != blank -%}
+              <div class="email-signup__copy rte rte--sm">{{ s.text }}</div>
+            {%- endif -%}
+          </div>
+
+          <input type="hidden" name="contact[tags]" value="newsletter,signup-overlay">
+
+          <div class="email-signup__field">
+            <label class="visually-hidden" for="email-signup-overlay-email">{{ 'email_signup.email_label' | t }}</label>
+            <input
+              class="input email-signup__input"
+              id="email-signup-overlay-email"
+              type="email"
+              name="contact[email]"
+              value="{{ form.email }}"
+              placeholder="{{ 'email_signup.email_label' | t | escape }}"
+              autocomplete="email"
+              autocapitalize="off"
+              spellcheck="false"
+              required
+              {% if form.errors %}aria-invalid="true" aria-describedby="email-signup-overlay-error"{% endif %}
+            >
+            <button class="btn btn--primary email-signup__submit" type="submit">{{ button_label | escape }}</button>
+
+            {%- if form.errors -%}
+              <p class="email-signup__error" id="email-signup-overlay-error" role="alert">
+                {%- if form.errors contains 'email' -%}
+                  {{- 'email_signup.error_email' | t -}}
+                {%- else -%}
+                  {{- 'email_signup.error' | t -}}
+                {%- endif -%}
+              </p>
+            {%- endif -%}
+
+            {%- if s.small_print != blank -%}
+              <p class="email-signup__small-print">{{ s.small_print }}</p>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      {%- endform -%}
+    </div>
+  </dialog>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Email signup overlay",
+  "class": "section-type--email-signup-overlay",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enabled",
+      "label": "Show the overlay",
+      "default": false
+    },
+    {
+      "type": "paragraph",
+      "content": "Shown once to new visitors, from their second page or after 30 seconds halfway down a page. Never to signed-in customers or on the cart and account pages."
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image",
+      "info": "Optional. Beside the text on larger screens; left out on phones."
+    },
+    {
+      "type": "header",
+      "content": "Signup"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Be the first to know"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>New arrivals, edits from our team and early access to offers, straight to your inbox.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button text",
+      "info": "Leave blank for “Sign up”."
+    },
+    {
+      "type": "inline_richtext",
+      "id": "small_print",
+      "label": "Small print",
+      "default": "You can unsubscribe at any time."
+    },
+    {
+      "type": "header",
+      "content": "After signing up"
+    },
+    {
+      "type": "text",
+      "id": "success_heading",
+      "label": "Heading",
+      "default": "You're on the list"
+    },
+    {
+      "type": "richtext",
+      "id": "success_text",
+      "label": "Text",
+      "default": "<p>Thanks for signing up. Look out for our next email.</p>"
+    }
+  ]
+}
+{% endschema %}

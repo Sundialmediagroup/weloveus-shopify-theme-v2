@@ -10,7 +10,7 @@
   overflow-y: auto;
   padding: 0;
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-overlay);
   background-color: var(--color-bg);
   color: var(--color-fg);
   box-shadow: var(--shadow-xl);
@@ -38,7 +38,7 @@
 
 .account-modal__intro,
 .account-modal__email {
-  margin-top: var(--space-2);
+  margin-top: var(--space-3);
   font-size: var(--text-sm);
   color: var(--color-fg-muted);
   overflow-wrap: anywhere;

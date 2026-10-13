@@ -25,7 +25,7 @@
         "promo_CmaFxR": {
           "type": "promo",
           "settings": {
-            "collection": "breannas-picks-copy",
+            "collection": "recently-added",
             "title": "",
             "url": "",
             "cta": "",
@@ -156,10 +156,37 @@
     "featured-section": {
       "type": "featured-section",
       "blocks": {
-        "card-1": { "type": "card", "settings": {} },
-        "card-2": { "type": "card", "settings": {} }
+        "card-1": {
+          "type": "card",
+          "settings": {
+            "collection": "coffee-day",
+            "product": "",
+            "title": "",
+            "text": "",
+            "url": "",
+            "cta": "",
+            "background_color": "#8b2a2a",
+            "text_color": "#ffffff"
+          }
+        },
+        "card-2": {
+          "type": "card",
+          "settings": {
+            "collection": "back-to-school-kids",
+            "product": "",
+            "title": "",
+            "text": "",
+            "url": "",
+            "cta": "",
+            "background_color": "#8b2a2a",
+            "text_color": "#ffffff"
+          }
+        }
       },
-      "block_order": ["card-1", "card-2"],
+      "block_order": [
+        "card-1",
+        "card-2"
+      ],
       "settings": {}
     },
     "product-carousel-5": {
@@ -203,15 +230,6 @@
         "cards_mobile": 1
       }
     },
-    "featured-section-2": {
-      "type": "featured-section",
-      "blocks": {
-        "card-1": { "type": "card", "settings": {} },
-        "card-2": { "type": "card", "settings": {} }
-      },
-      "block_order": ["card-1", "card-2"],
-      "settings": {}
-    },
     "recent-stories": {
       "type": "recent-stories",
       "settings": {
@@ -243,7 +261,6 @@
     "wishlist_carousel_DULAet",
     "product-grid",
     "product-carousel-3",
-    "featured-section-2",
     "recent-stories",
     "product-carousel-4"
   ]

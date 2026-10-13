@@ -176,6 +176,19 @@ if (config) {
     activate(toggle);
   }, true);
 
+  // Essie changed the wishlist from chat (essie-chat.js): her list is the
+  // truth, as the proxy's is after a tap. Products she removed leave any
+  // wishlist list on the page; ones she added show there on the next load.
+  document.addEventListener('wishlist:changed', e => {
+    if (!Array.isArray(e.detail?.ids)) return;
+    const previous = saved;
+    saved = new Set(e.detail.ids.map(String));
+    session(s => s.setItem(SYNC_KEY, JSON.stringify([...saved])));
+    paintAll();
+    paintCount();
+    previous.forEach(id => pruneLists(id));
+  });
+
   // Back/forward cache restores the page as it was, which may predate a
   // change made on the page the shopper is coming back from.
   window.addEventListener('pageshow', e => {

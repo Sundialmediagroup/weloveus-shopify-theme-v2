@@ -1,0 +1,161 @@
+@use 'abstracts/mixins' as *;
+
+// Email signup overlay — sections/email-signup-overlay.liquid.
+// A native <dialog>, styled like the account modal. A bottom sheet on phones;
+// from `md`, centred, with the image (when there is one) beside the text.
+
+.email-signup {
+  // The reset's `* { margin: 0 }` removes the UA `margin: auto` that centres a
+  // modal <dialog>; on phones it sits on the bottom edge instead.
+  margin: auto auto 0;
+  width: 100%;
+  max-width: 100%;
+  max-height: calc(100dvh - var(--space-8));
+  overflow-y: auto;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-overlay) var(--radius-overlay) 0 0;
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  box-shadow: var(--shadow-xl);
+
+  &::backdrop {
+    background-color: var(--color-scrim);
+  }
+
+  &[open] {
+    animation: email-signup-rise var(--duration-slow) var(--ease-out);
+  }
+
+  @include respond-to('md') {
+    margin: auto;
+    width: min(100% - var(--space-8), 30rem);
+    border-radius: var(--radius-overlay);
+
+    &[open] {
+      animation-name: email-signup-fade;
+    }
+  }
+}
+
+.email-signup--image {
+  @include respond-to('md') {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: min(100% - var(--space-8), 52rem);
+    overflow: hidden;
+  }
+}
+
+@keyframes email-signup-rise {
+  from { transform: translateY(100%); }
+}
+
+@keyframes email-signup-fade {
+  from { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .email-signup[open] {
+    animation: none;
+  }
+}
+
+// Phones get the text only: an image would push the form below the fold.
+.email-signup__media {
+  display: none;
+
+  @include respond-to('md') {
+    display: block;
+    position: relative;
+    background-color: var(--color-bg-subtle);
+  }
+}
+
+.email-signup__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.email-signup__body {
+  position: relative;
+  // The account modal's padding, plus room for the iPhone home bar.
+  padding: var(--space-8) var(--space-6) max(var(--space-6), env(safe-area-inset-bottom));
+}
+
+.email-signup__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.email-signup__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-inline-end: var(--space-10); // clear of the close button
+}
+
+// Title and copy as the account modal's (_account-modal.scss).
+.email-signup__title {
+  font-size: var(--text-2xl);
+  letter-spacing: var(--tracking-tight);
+  text-wrap: balance;
+}
+
+.email-signup__copy {
+  font-size: var(--text-sm);
+  color: var(--color-fg-muted);
+  text-wrap: pretty;
+}
+
+.email-signup__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.email-signup__submit {
+  width: 100%;
+}
+
+.email-signup__error {
+  font-size: var(--text-sm);
+  color: var(--color-error);
+}
+
+.email-signup__error,
+.email-signup__small-print {
+  margin-top: 0; // the field's gap spaces them, not the global `p + p`
+}
+
+.email-signup__small-print {
+  font-size: var(--text-xs);
+  color: var(--color-fg-muted);
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+  }
+}
+
+.email-signup__close {
+  position: absolute;
+  inset-block-start: var(--space-4);
+  inset-inline-end: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-10);
+  height: var(--space-10);
+  border-radius: var(--radius-full);
+  color: var(--color-fg);
+  transition: background-color var(--transition-fast);
+
+  &:hover {
+    background-color: var(--color-bg-raised);
+  }
+}
