@@ -111,3 +111,11 @@
   font-size: var(--text-sm);
   color: var(--color-fg-muted);
 }
+
+// Some variants reduced, not the one priced above: a quiet line, in the plum
+// of the product page's saving badge.
+.product-card__sale-note {
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-secondary);
+}

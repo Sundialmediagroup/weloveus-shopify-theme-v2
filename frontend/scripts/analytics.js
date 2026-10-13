@@ -96,6 +96,7 @@ export function itemFrom(el, extra = {}) {
     item_brand: d.itemBrand || undefined,
     item_category: d.itemCategory || undefined,
     price: d.itemPrice ? Number(d.itemPrice) : undefined,
+    on_sale: d.itemOnSale, // 'all' | 'some', an item-scoped custom dimension
     ...extra,
   }
   return Object.fromEntries(Object.entries(item).filter(([, v]) => v !== undefined && v !== ''))

@@ -34,6 +34,69 @@
 
   assign card_image = product.featured_image
   assign image_alt = card_image.alt | default: product.title | escape
+
+  # Sales. `product.price` and `compare_at_price` are both the lowest across the
+  # variants, so a sale on any but the cheapest wouldn't show. The variants are
+  # only looped when a compare-at price beats the lowest price, which no
+  # variant can be on sale without. Sold-out variants don't count.
+  # sale_state: '' (none), 'all' (every available variant) or 'some'.
+  assign sale_state = ''
+  if product.compare_at_price_max > product.price_min
+    assign available_count = 0
+    assign sale_count = 0
+    assign lowest_price = nil
+    # Option values as `~<position>:<value>~`, as on the product page.
+    assign sale_values = ''
+    assign full_values = ''
+    for v in product.variants
+      unless v.available
+        continue
+      endunless
+      assign available_count = available_count | plus: 1
+      if available_count == 1
+        assign lowest_price = v.price
+      elsif v.price < lowest_price
+        assign lowest_price = v.price
+      endif
+      if v.compare_at_price > v.price
+        assign sale_count = sale_count | plus: 1
+        if sale_count == 1
+          assign sale_variant = v
+        elsif v.price < sale_variant.price
+          assign sale_variant = v
+        endif
+        for opt in v.options
+          assign sale_values = sale_values | append: '~' | append: forloop.index | append: ':' | append: opt | append: '~'
+        endfor
+      else
+        for opt in v.options
+          assign full_values = full_values | append: '~' | append: forloop.index | append: ':' | append: opt | append: '~'
+        endfor
+      endif
+    endfor
+
+    if sale_count > 0
+      if sale_count == available_count
+        assign sale_state = 'all'
+      else
+        assign sale_state = 'some'
+      endif
+    endif
+  endif
+
+  # The lowest price. `product.price` counts sold-out variants too, so where the
+  # variants were looped anyway, the lowest one in stock instead; with every
+  # variant on sale, the cheapest sale variant's.
+  if sale_state == 'all'
+    assign card_price = sale_variant.price | money
+  elsif lowest_price != nil
+    assign card_price = lowest_price | money
+  else
+    assign card_price = product.price | money
+  endif
+  if product.price_varies
+    assign card_price = 'products.product.price_from' | t: price: card_price
+  endif
 -%}
 
 <a
@@ -42,7 +105,7 @@
   aria-label="{{ product.title | escape }}"
   data-item
   data-card="product-card"
-  {% render 'item-data', product: product %}
+  {% render 'item-data', product: product, on_sale: sale_state %}
 >
 
   <div class="product-card__media" style="--card-ratio: {{ image_ratio }};">
@@ -87,16 +150,21 @@
     {%- endif -%}
     <h3 class="product-card__title">{{ product.title }}</h3>
     <div class="product-card__price">
-      {%- if product.compare_at_price > product.price -%}
-        <span class="product-card__price-sale">{{ product.price | money }}</span>
-        <s class="product-card__price-compare">{{ product.compare_at_price | money }}</s>
+      {%- if sale_state == 'all' -%}
+        <span class="product-card__price-sale">{{ card_price }}</span>
+        <s class="product-card__price-compare">{{ sale_variant.compare_at_price | money }}</s>
       {%- else -%}
-        <span class="product-card__price-regular">{{ product.price | money }}</span>
+        <span class="product-card__price-regular">{{ card_price }}</span>
       {%- endif -%}
       {%- if show_sold_out and product.available == false -%}
         <span class="product-card__sold-out">{{ 'products.product.sold_out' | t }}</span>
       {%- endif -%}
     </div>
+    {%- if sale_state == 'some' -%}
+      <p class="product-card__sale-note">
+        {%- render 'sale-note', product: product, sale_values: sale_values, full_values: full_values -%}
+      </p>
+    {%- endif -%}
   </div>
 
 </a>

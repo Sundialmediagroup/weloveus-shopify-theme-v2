@@ -142,6 +142,10 @@ class ProductPage extends HTMLElement {
       saving.hidden = !onSale;
     }
 
+    // "Sale in 2 colours" — only while the chosen variant isn't one of them.
+    const saleNote = this.querySelector('[data-pdp-sale-note]');
+    if (saleNote) saleNote.hidden = onSale;
+
     const stock = this.querySelector('[data-pdp-stock]');
     if (stock) {
       stock.textContent = variant?.stock_note ?? '';

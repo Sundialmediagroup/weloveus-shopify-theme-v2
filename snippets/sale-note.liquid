@@ -1,0 +1,53 @@
+{%- comment -%}
+  Words a sale on only some of a product's variants, for the product card and
+  the product page. Plain text, no markup.
+
+  Worded around the colour or size the sale is on ("Sale in 2 colours") when
+  that option alone decides it: none of its reduced values are also sold at
+  full price. Otherwise, "Sale on some options".
+
+  Accepts:
+  - product:     {Object} Shopify product object (required)
+  - sale_values: {String} Option values of the available reduced variants, as
+                          `~<position>:<value>~` (required)
+  - full_values: {String} The same for the available full-price variants
+                          (required)
+{%- endcomment -%}
+
+{%- liquid
+  assign sale_note = 'products.product.sale_some' | t
+
+  for option in product.options_with_values
+    assign option_name = option.name | downcase
+    assign sale_key = ''
+    case option_name
+      when 'colour', 'color'
+        assign sale_key = 'products.product.sale_in_colours'
+      when 'size'
+        assign sale_key = 'products.product.sale_in_sizes'
+    endcase
+    if sale_key == ''
+      continue
+    endif
+
+    assign option_sale_count = 0
+    assign option_decides = true
+    for value in option.values
+      assign value_key = '~' | append: option.position | append: ':' | append: value | append: '~'
+      if sale_values contains value_key
+        assign option_sale_count = option_sale_count | plus: 1
+        if full_values contains value_key
+          assign option_decides = false
+          break
+        endif
+      endif
+    endfor
+
+    if option_decides
+      assign sale_note = sale_key | t: count: option_sale_count
+      break
+    endif
+  endfor
+
+  echo sale_note
+-%}

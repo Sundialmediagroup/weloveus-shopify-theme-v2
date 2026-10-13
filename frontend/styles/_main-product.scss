@@ -309,6 +309,12 @@
   color: var(--color-secondary-fg);
 }
 
+// "Sale in 2 colours": in the plum of the saving badge it stands in for.
+.pdp__sale-note {
+  font-size: var(--text-sm);
+  color: var(--color-secondary);
+}
+
 .pdp__tax-note {
   font-size: var(--text-xs);
   color: var(--color-fg-muted);

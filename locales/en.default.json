@@ -100,6 +100,17 @@
       "type": "Type",
       "sku": "SKU",
       "saving": "Save {{ percent }}%",
+      "price_from": "From {{ price }}",
+      "sale_some": "Sale on some options",
+      "sale_in_colours": {
+        "one": "Sale in {{ count }} colour",
+        "other": "Sale in {{ count }} colours"
+      },
+      "sale_in_sizes": {
+        "one": "Sale in {{ count }} size",
+        "other": "Sale in {{ count }} sizes"
+      },
+      "option_on_sale": "{{ value }} – sale",
       "tax_note": "Taxes and shipping calculated at checkout",
       "stock_low": {
         "one": "Only {{ count }} left",

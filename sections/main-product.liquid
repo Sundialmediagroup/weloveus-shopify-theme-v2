@@ -30,15 +30,40 @@
 
   # One pass over the variants collects the values that can actually be bought,
   # as `~<position>:<value>~`. Cheaper than re-scanning every variant once per
-  # value, and the delimiters stop `S` matching inside `XS`.
+  # value, and the delimiters stop `S` matching inside `XS`. The same pass
+  # splits them into reduced and full price, for a sale on only some variants.
   assign in_stock_values = ''
+  assign sale_values = ''
+  assign full_values = ''
+  assign available_count = 0
+  assign sale_count = 0
   for v in product.variants
     if v.available
+      assign available_count = available_count | plus: 1
+      if v.compare_at_price > v.price
+        assign sale_count = sale_count | plus: 1
+      endif
       for opt in v.options
-        assign in_stock_values = in_stock_values | append: '~' | append: forloop.index | append: ':' | append: opt | append: '~'
+        assign value_key = '~' | append: forloop.index | append: ':' | append: opt | append: '~'
+        assign in_stock_values = in_stock_values | append: value_key
+        if v.compare_at_price > v.price
+          assign sale_values = sale_values | append: value_key
+        else
+          assign full_values = full_values | append: value_key
+        endif
       endfor
     endif
   endfor
+
+  # As on the product card: 'all' or 'some' of the available variants reduced.
+  assign sale_state = ''
+  if sale_count > 0
+    if sale_count == available_count
+      assign sale_state = 'all'
+    else
+      assign sale_state = 'some'
+    endif
+  endif
 
   # Brands are modelled as collections in this theme, so prefer the curated
   # collection over Shopify's unstyled legacy vendor listing.
@@ -126,7 +151,7 @@
 <product-page
   class="pdp"
   data-product-url="{{ product.url }}"
-  {% render 'item-data', product: product %}
+  {% render 'item-data', product: product, on_sale: sale_state %}
   data-text-add="{{ 'products.product.add_to_cart' | t }}"
   data-text-adding="{{ 'products.product.adding' | t }}"
   data-text-added="{{ 'products.product.added' | t }}"
@@ -254,6 +279,16 @@
             </span>
           </div>
 
+          {%- comment -%}
+            With only some variants reduced, says which, while the one chosen
+            isn't one of them. product.js hides it for a reduced variant.
+          {%- endcomment -%}
+          {%- if sale_state == 'some' -%}
+            <p class="pdp__sale-note" data-pdp-sale-note {% if on_sale %}hidden{% endif %}>
+              {%- render 'sale-note', product: product, sale_values: sale_values, full_values: full_values -%}
+            </p>
+          {%- endif -%}
+
           <p class="pdp__tax-note">
             {%- if section.settings.shipping_note != blank -%}
               {{ section.settings.shipping_note }}
@@ -301,10 +336,30 @@
                         {%- endcomment -%}
                         {%- assign in_stock_key = '~' | append: option.position | append: ':' | append: value | append: '~' -%}
                         {%- if in_stock_values contains in_stock_key -%}
+                          {%- comment -%}
+                            A sale on only some variants marks the values that are
+                            reduced in every variant that has them, so a mark always
+                            means a lower price. Text in the label, since <option>
+                            can't be styled.
+                          {%- endcomment -%}
+                          {%- liquid
+                            assign value_on_sale = false
+                            if sale_state == 'some' and sale_values contains in_stock_key
+                              unless full_values contains in_stock_key
+                                assign value_on_sale = true
+                              endunless
+                            endif
+                          -%}
                           <option
                             value="{{ value | escape }}"
                             {% if option.selected_value == value %}selected{% endif %}
-                          >{{ value }}</option>
+                          >
+                            {%- if value_on_sale -%}
+                              {{- 'products.product.option_on_sale' | t: value: value -}}
+                            {%- else -%}
+                              {{- value -}}
+                            {%- endif -%}
+                          </option>
                         {%- endif -%}
                       {%- endfor -%}
                     </select>

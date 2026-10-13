@@ -13,6 +13,9 @@
   - product: {Object} Shopify product object (required)
   - variant: {Object} Variant to describe. Default: the selected or first
                       available one, which is what a card shows and quick-adds.
+  - on_sale: {String} 'all' or 'some' when every or only some of the available
+                      variants are reduced (worked out by the caller, which
+                      already has it). Sent as the item's `on_sale`.
 {%- endcomment -%}
 
 {%- liquid
@@ -25,3 +28,6 @@ data-item-brand="{{ product.vendor | escape }}"
 data-item-category="{{ product.type | escape }}"
 data-item-price="{{ item_price }}"
 data-product-id="{{ product.id }}"
+{%- if on_sale != blank %}
+data-item-on-sale="{{ on_sale }}"
+{%- endif %}
