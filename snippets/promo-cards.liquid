@@ -3,7 +3,8 @@
   title at the top, CTA at the bottom (snippets/feature-card.liquid). Used by
   the text banner and the featured section; each places and sizes the list.
 
-  Block settings: product, collection, image, title, url, cta, background_color.
+  Block settings: product, collection, sort, image, title, url, cta,
+  background_color.
 
   Accepts:
   - blocks: {Array}  The section's promo blocks.
@@ -30,6 +31,7 @@
       {%- render 'feature-card',
         featured_product: block_product,
         collection: block_collection,
+        sort: block.settings.sort,
         image: block.settings.image,
         title: block_title,
         url: block.settings.url,

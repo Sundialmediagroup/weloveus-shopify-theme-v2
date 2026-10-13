@@ -15,7 +15,8 @@
         "promo_fYnqjb": {
           "type": "promo",
           "settings": {
-            "collection": "akilis-picks-copy-1",
+            "product": "",
+            "collection": "weloveus-beauty-staples",
             "title": "",
             "url": "",
             "cta": "",
@@ -25,6 +26,7 @@
         "promo_CmaFxR": {
           "type": "promo",
           "settings": {
+            "product": "",
             "collection": "recently-added",
             "title": "",
             "url": "",
@@ -71,7 +73,7 @@
         "feature_bYqUfF": {
           "type": "feature",
           "settings": {
-            "collection": "de-lor-cakery",
+            "collection": "the-alloy-studio",
             "image": "shopify://shop_images/3783593E-10A4-4DF2-A6FB-34B7B97CF65A.jpg",
             "title": "",
             "url": "",
@@ -113,6 +115,16 @@
         "cards_mobile": "1"
       }
     },
+    "product-carousel-2": {
+      "type": "product-carousel",
+      "settings": {
+        "heading": "Giftsets & Bundles",
+        "collection": "gift-sets-bundles",
+        "products_to_show": 12,
+        "cards_desktop": 5,
+        "cards_mobile": 1
+      }
+    },
     "product-carousel": {
       "type": "product-carousel",
       "settings": {
@@ -143,23 +155,13 @@
         "text_color": "#ffffff"
       }
     },
-    "product-carousel-2": {
-      "type": "product-carousel",
-      "settings": {
-        "heading": "Giftsets & Bundles",
-        "collection": "gift-sets-bundles",
-        "products_to_show": 12,
-        "cards_desktop": 5,
-        "cards_mobile": 1
-      }
-    },
     "featured-section": {
       "type": "featured-section",
       "blocks": {
         "card-1": {
           "type": "card",
           "settings": {
-            "collection": "coffee-day",
+            "collection": "haircare",
             "product": "",
             "title": "",
             "text": "",
@@ -172,7 +174,7 @@
         "card-2": {
           "type": "card",
           "settings": {
-            "collection": "back-to-school-kids",
+            "collection": "bags",
             "product": "",
             "title": "",
             "text": "",
@@ -252,10 +254,10 @@
   "order": [
     "text_banner_3VYwnE",
     "feature_carousel_dwX8We",
-    "product-carousel",
-    "word_map_JM8c34",
-    "video-section",
     "product-carousel-2",
+    "word_map_JM8c34",
+    "product-carousel",
+    "video-section",
     "featured-section",
     "product-carousel-5",
     "wishlist_carousel_DULAet",

@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "current": {
     "color_background": "#ffffff",
@@ -5,6 +14,42 @@
     "color_accent": "#0a0a0a",
     "font_heading": "assistant_n4",
     "font_body": "assistant_n4",
-    "page_width": 1440
+    "page_width": 1440,
+    "sections": {
+      "header": {
+        "type": "header",
+        "settings": {
+          "menu": "main-menu",
+          "brands_trigger": "Brands",
+          "categories_trigger": "Categories"
+        }
+      },
+      "footer": {
+        "type": "footer",
+        "settings": {
+          "menu": "footer"
+        }
+      },
+      "email-signup-overlay": {
+        "type": "email-signup-overlay",
+        "settings": {
+          "enabled": false,
+          "heading": "Be the first to know",
+          "text": "<p>New arrivals, edits from our team and early access to offers, straight to your inbox.</p>",
+          "button_label": "",
+          "small_print": "You can unsubscribe at any time.",
+          "success_heading": "Thanks for signing up!",
+          "success_text": "<p>If you’re a new subscriber, check your inbox for your welcome email.</p>"
+        }
+      }
+    },
+    "content_for_index": [],
+    "blocks": {
+      "13768625480086291342": {
+        "type": "shopify://apps/forms/blocks/forms/8744a304-fcb1-4347-b211-bb6b4759a76a",
+        "disabled": false,
+        "settings": {}
+      }
+    }
   }
 }

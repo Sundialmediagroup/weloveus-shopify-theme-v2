@@ -124,6 +124,20 @@
           "info": "Optional. Fills the image, link and title from the collection — anything set below overrides it. Used when there's no product, or it's sold out."
         },
         {
+          "type": "select",
+          "id": "sort",
+          "label": "Collection sort",
+          "info": "How the collection opens when the promo is clicked. Not used with a product or a link set below.",
+          "default": "default",
+          "options": [
+            { "value": "default", "label": "Store default" },
+            { "value": "best-selling", "label": "Trending" },
+            { "value": "created-descending", "label": "Latest arrivals" },
+            { "value": "price-ascending", "label": "Price: Low to high" },
+            { "value": "price-descending", "label": "Price: High to low" }
+          ]
+        },
+        {
           "type": "image_picker",
           "id": "image",
           "label": "Image"

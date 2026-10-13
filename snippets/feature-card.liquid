@@ -18,6 +18,8 @@
                 below, and wins over `collection`. Not named `product`, which
                 a product page already defines.
   - collection: {Object}  Shopify collection. Optional; fills the blanks below.
+  - sort:       {String}  Optional. The `sort_by` the collection link opens with,
+                or 'default' / blank for the store's default sort.
   - image:      {Object}  Shopify image. Placeholder when blank.
   - title:      {String}  Required unless `collection` or `featured_product`
                 is given.
@@ -51,9 +53,13 @@
   elsif card_collection != blank
     # Same default sort the header's brand links carry: main-collection
     # redirects a collection URL without `sort_by`, costing a second render.
-    assign default_sort = settings.collection_default_sort | default: 'best-selling'
+    # A promo can pick its own instead.
+    assign card_sort = settings.collection_default_sort | default: 'best-selling'
+    if sort != blank and sort != 'default'
+      assign card_sort = sort
+    endif
     if url == blank
-      assign card_url = card_collection.url | append: '?sort_by=' | append: default_sort
+      assign card_url = card_collection.url | append: '?sort_by=' | append: card_sort
     endif
     # featured_image falls back to the first product's image, so a brand
     # with no collection image still gets a picture.
