@@ -159,18 +159,99 @@
 }
 
 .essie__monogram {
+  // The swirl's colours: white into the old blush and the brand cream. Solid
+  // and unbroken all the way round, back to its first colour at the end, so
+  // the turning ring keeps one weight; anything see-through lets the black
+  // behind it thin that part out, and the spin looks off-centre.
+  --essie-swirl: conic-gradient(
+    from 0deg,
+    var(--color-neutral-0),
+    #F4CFDC 120deg,
+    var(--color-brand-cream) 240deg,
+    var(--color-neutral-0)
+  );
+
+  position: relative;
   display: grid;
   flex-shrink: 0;
   place-items: center;
   width: var(--essie-tile);
   height: var(--essie-tile);
   border-radius: var(--radius-full);
-  background-color: #F4CFDC; // soft blush behind the Essie mark
-  color: var(--color-neutral-950);
+  background-color: var(--color-neutral-950);
+  color: var(--essie-fg);
+  transition: box-shadow var(--transition-slow);
 
-  svg {
-    width: auto;
-    height: 1.125rem;
+  .icon {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  // Two rings, cut out of a full disc by the mask: ::before the quiet resting
+  // outline, ::after the swirl that fades in and turns on hover.
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1.5px; // the ring's thickness
+    border-radius: inherit;
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+    pointer-events: none;
+  }
+
+  &::before {
+    background-color: var(--essie-line);
+  }
+
+  &::after {
+    background: var(--essie-swirl);
+    opacity: 0;
+    transition: opacity var(--transition-slow);
+    animation: essie-swirl 3.2s linear infinite paused;
+  }
+
+  .icon__star-small {
+    transform-origin: 18.5px 5.5px;
+    transition: transform var(--transition-slow);
+  }
+}
+
+// Hovering anywhere on the closed bar (the pill covers it) or the open
+// composer. Hover-capable pointers only, so a tap never leaves it spinning.
+@media (hover: hover) {
+  .essie__bar:hover .essie__monogram {
+    box-shadow: 0 0 var(--space-4) rgb(244 207 220 / 0.35); // a soft blush glow
+
+    &::after {
+      opacity: 1;
+      animation-play-state: running;
+    }
+
+    .icon__star-small {
+      transform: scale(1.25) rotate(45deg);
+    }
+  }
+}
+
+@keyframes essie-swirl {
+  to { transform: rotate(1turn); }
+}
+
+// No turning: the swirl shows as a still highlight on the ring instead.
+@media (prefers-reduced-motion: reduce) {
+  .essie__monogram::after {
+    animation: none;
+  }
+
+  .essie__bar:hover .essie__monogram .icon__star-small {
+    transform: none;
   }
 }
 
