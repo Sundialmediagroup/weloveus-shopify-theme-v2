@@ -1,0 +1,22 @@
+{
+  "sections": {
+    "main": {
+      "type": "email-signup",
+      "settings": {
+        "main_heading": true,
+        "heading": "Get 10% off your first order",
+        "text": "<p>Sign up for our emails for new arrivals, edits from our team and early access to offers, and get 10% off your first order.</p>",
+        "button_label": "",
+        "small_print": "By signing up you agree to receive marketing emails. You can unsubscribe at any time.",
+        "success_heading": "You're on the list",
+        "success_text": "<p>Thanks for signing up. Here's 10% off your first order.</p>",
+        "discount_code": "",
+        "shop_url": "",
+        "source_tag": "signup-page"
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

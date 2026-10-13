@@ -199,7 +199,14 @@
     "button": "Sign up",
     "close": "Close",
     "error_email": "Enter a valid email address.",
-    "error": "Something went wrong. Please try again."
+    "error": "Something went wrong. Please try again.",
+    "already_subscribed_heading": "You're already on the list",
+    "already_subscribed": "You already get our emails, so you'll hear about new arrivals and offers first.",
+    "code_label": "Your discount code",
+    "code_copy": "Copy code",
+    "code_copied": "Copied",
+    "code_shop": "Start shopping",
+    "code_applied": "The code is added at checkout when you shop from here."
   },
   "account": {
     "title": "Sign in",

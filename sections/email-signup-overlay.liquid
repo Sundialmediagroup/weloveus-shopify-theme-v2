@@ -8,7 +8,8 @@
   overlay opens straight away to show it.
 
   When it appears, and who never sees it, is email-signup-overlay.js. It's left
-  out here for signed-in customers and on the cart, account and password pages.
+  out here for signed-in customers, on the cart, account and password pages,
+  and on the newsletter page (page.newsletter), which is a signup already.
   The theme editor opens it while the section is selected, so the text and
   image can be edited in place.
 {%- endcomment -%}
@@ -17,7 +18,7 @@
   assign s = section.settings
 
   assign show = s.enabled
-  if customer or template.name == 'cart' or template.name == 'password' or template.directory == 'customers'
+  if customer or template.name == 'cart' or template.name == 'password' or template.directory == 'customers' or template.suffix == 'newsletter'
     assign show = false
   endif
   if request.design_mode

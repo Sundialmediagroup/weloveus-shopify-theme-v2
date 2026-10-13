@@ -1,0 +1,240 @@
+{%- comment -%}
+  Email signup, as a section in the page: the newsletter page
+  (templates/page.newsletter.json) and anywhere else it's added.
+
+  Signups go through Shopify's customer form, tagged `newsletter` plus the
+  section's source tag, which saves them as customers who've agreed to
+  marketing, as the overlay does (email-signup-overlay.liquid). The form posts
+  and the page reloads with the result: thanks, or an error.
+
+  With a discount code set, the thanks shows it, with a copy button and a
+  button that applies it at checkout (Shopify's /discount/<code> link). The
+  code itself is made in Shopify admin → Discounts; the theme only shows it.
+
+  A signed-in customer who already gets marketing emails is told so, in place
+  of the form.
+
+  Analytics and the copy button are email-signup.js.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign form_id = 'email-signup-' | append: section.id
+  assign heading_tag = 'h2'
+  if s.main_heading
+    assign heading_tag = 'h1'
+  endif
+
+  assign button_label = s.button_label
+  if button_label == blank
+    assign button_label = 'email_signup.button' | t
+  endif
+
+  assign source_tag = s.source_tag | default: 'signup-section' | handleize
+
+  assign already_subscribed = false
+  if customer and customer.accepts_marketing
+    assign already_subscribed = true
+  endif
+  if request.design_mode
+    assign already_subscribed = false
+  endif
+
+  assign shop_url = s.shop_url | default: routes.all_products_collection_url
+  assign image_alt = s.image.alt | default: ''
+-%}
+
+<div
+  class="email-signup-section{% if s.image != blank %} email-signup-section--image{% endif %}"
+  data-email-signup-section
+  data-email-signup-method="{{ source_tag | remove: 'signup-' }}"
+>
+  {%- if s.image != blank -%}
+    <div class="email-signup-section__media">
+      {{- s.image | image_url: width: 1600 | image_tag:
+        class: 'email-signup-section__image',
+        alt: image_alt,
+        loading: 'eager',
+        sizes: '(min-width: 768px) 50vw, 100vw',
+        widths: '600, 900, 1200, 1600'
+      -}}
+    </div>
+  {%- endif -%}
+
+  <div class="email-signup-section__body">
+    {%- if already_subscribed -%}
+      <div class="email-signup-section__text" data-email-signup-result="subscribed">
+        <{{ heading_tag }} class="email-signup-section__title">{{ 'email_signup.already_subscribed_heading' | t }}</{{ heading_tag }}>
+        <p class="email-signup-section__copy">{{ 'email_signup.already_subscribed' | t }}</p>
+      </div>
+    {%- else -%}
+      {%- form 'customer', id: form_id, class: 'email-signup-section__form' -%}
+        {%- if form.posted_successfully? -%}
+          <div class="email-signup-section__text" data-email-signup-result="success" role="status">
+            <{{ heading_tag }} class="email-signup-section__title">{{ s.success_heading | escape }}</{{ heading_tag }}>
+            {%- if s.success_text != blank -%}
+              <div class="email-signup-section__copy rte">{{ s.success_text }}</div>
+            {%- endif -%}
+          </div>
+
+          {%- if s.discount_code != blank -%}
+            {%- assign code = s.discount_code | strip -%}
+            <div class="email-signup-section__code">
+              <p class="email-signup-section__code-label" id="{{ form_id }}-code-label">{{ 'email_signup.code_label' | t }}</p>
+              <div class="email-signup-section__code-row">
+                <span class="email-signup-section__code-value" aria-labelledby="{{ form_id }}-code-label" data-email-signup-code>{{ code | escape }}</span>
+                <button
+                  class="btn btn--secondary btn--sm"
+                  type="button"
+                  data-email-signup-copy
+                  data-text-copied="{{ 'email_signup.code_copied' | t | escape }}"
+                >
+                  {{- 'email_signup.code_copy' | t -}}
+                </button>
+              </div>
+              <a class="btn btn--primary email-signup-section__submit" href="/discount/{{ code | url_encode }}?redirect={{ shop_url | url_encode }}">
+                {{- 'email_signup.code_shop' | t -}}
+              </a>
+              <p class="email-signup-section__small-print">{{ 'email_signup.code_applied' | t }}</p>
+            </div>
+          {%- endif -%}
+        {%- else -%}
+          <div class="email-signup-section__text"{% if form.errors %} data-email-signup-result="error"{% endif %}>
+            <{{ heading_tag }} class="email-signup-section__title">{{ s.heading | escape }}</{{ heading_tag }}>
+            {%- if s.text != blank -%}
+              <div class="email-signup-section__copy rte">{{ s.text }}</div>
+            {%- endif -%}
+          </div>
+
+          <input type="hidden" name="contact[tags]" value="newsletter,{{ source_tag }}">
+
+          <div class="email-signup-section__field">
+            <label class="visually-hidden" for="{{ form_id }}-email">{{ 'email_signup.email_label' | t }}</label>
+            <input
+              class="input email-signup-section__input"
+              id="{{ form_id }}-email"
+              type="email"
+              name="contact[email]"
+              value="{{ form.email }}"
+              placeholder="{{ 'email_signup.email_label' | t | escape }}"
+              autocomplete="email"
+              autocapitalize="off"
+              spellcheck="false"
+              required
+              {% if form.errors %}aria-invalid="true" aria-describedby="{{ form_id }}-error"{% endif %}
+            >
+            <button class="btn btn--primary email-signup-section__submit" type="submit">{{ button_label | escape }}</button>
+          </div>
+
+          {%- if form.errors -%}
+            <p class="email-signup-section__error" id="{{ form_id }}-error" role="alert">
+              {%- if form.errors contains 'email' -%}
+                {{- 'email_signup.error_email' | t -}}
+              {%- else -%}
+                {{- 'email_signup.error' | t -}}
+              {%- endif -%}
+            </p>
+          {%- endif -%}
+
+          {%- if s.small_print != blank -%}
+            <p class="email-signup-section__small-print">{{ s.small_print }}</p>
+          {%- endif -%}
+        {%- endif -%}
+      {%- endform -%}
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Email signup",
+  "class": "section-type--email-signup",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image",
+      "info": "Optional. Beside the text from tablet up, above it on phones."
+    },
+    {
+      "type": "checkbox",
+      "id": "main_heading",
+      "label": "Heading is the page title",
+      "info": "On for a page that's only this signup, like the newsletter page.",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Signup"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Get 10% off your first order"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Sign up for our emails for new arrivals, edits from our team and early access to offers, and get 10% off your first order.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button text",
+      "info": "Leave blank for “Sign up”."
+    },
+    {
+      "type": "inline_richtext",
+      "id": "small_print",
+      "label": "Small print",
+      "default": "By signing up you agree to receive marketing emails. You can unsubscribe at any time."
+    },
+    {
+      "type": "header",
+      "content": "After signing up"
+    },
+    {
+      "type": "text",
+      "id": "success_heading",
+      "label": "Heading",
+      "default": "You're on the list"
+    },
+    {
+      "type": "richtext",
+      "id": "success_text",
+      "label": "Text",
+      "default": "<p>Thanks for signing up. Here's 10% off your first order.</p>"
+    },
+    {
+      "type": "text",
+      "id": "discount_code",
+      "label": "Discount code",
+      "info": "Shown after signing up, with a button that applies it. Create the code in Shopify admin → Discounts first (e.g. 10% off, one use per customer). Leave blank for no code."
+    },
+    {
+      "type": "url",
+      "id": "shop_url",
+      "label": "Shop button link",
+      "info": "Where the discount button takes them. Default: all products."
+    },
+    {
+      "type": "header",
+      "content": "Tracking"
+    },
+    {
+      "type": "text",
+      "id": "source_tag",
+      "label": "Source tag",
+      "default": "signup-section",
+      "info": "Added to the customer's tags beside \"newsletter\", to tell signups from here apart from the overlay's (signup-overlay)."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Email signup"
+    }
+  ]
+}
+{% endschema %}
