@@ -6,6 +6,15 @@
 
 {%- liquid
   assign source = collections[section.settings.collection]
+
+  # Heading defaults to the chosen collection's title; a typed one overrides
+  # it. Not "All products" when the fallback below kicks in, though: that
+  # isn't what the merchant picked.
+  assign heading = section.settings.heading
+  if heading == blank and source != blank and source.products_count > 0
+    assign heading = source.title | escape
+  endif
+
   if source == blank or source.products_count == 0
     assign source = collections.all
   endif
@@ -16,7 +25,7 @@
 
 {%- render 'product-carousel',
   products: source.products,
-  heading: section.settings.heading,
+  heading: heading,
   heading_id: heading_id,
   list_id: 'product_carousel',
   limit: section.settings.products_to_show,
@@ -33,7 +42,8 @@
     {
       "type": "text",
       "id": "heading",
-      "label": "Heading"
+      "label": "Heading",
+      "info": "Leave blank to use the collection title."
     },
     {
       "type": "collection",
