@@ -112,10 +112,16 @@
       "name": "Promo",
       "settings": [
         {
+          "type": "product",
+          "id": "product",
+          "label": "Product",
+          "info": "Optional. Fills the image, link and title from the product, and wins over the collection. Anything set below overrides it."
+        },
+        {
           "type": "collection",
           "id": "collection",
           "label": "Collection",
-          "info": "Optional. Fills the image, link and title from the collection — anything set below overrides it."
+          "info": "Optional. Fills the image, link and title from the collection — anything set below overrides it. Used when there's no product, or it's sold out."
         },
         {
           "type": "image_picker",
@@ -126,7 +132,7 @@
           "type": "text",
           "id": "title",
           "label": "Title override",
-          "info": "Leave blank to use the collection name."
+          "info": "Leave blank to use the product or collection name."
         },
         {
           "type": "url",

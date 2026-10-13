@@ -5,13 +5,22 @@
   The whole card is the link when `url` is set; the title's link is stretched
   over the card (::after) so there is one tab stop and one accessible name.
 
-  With a `collection` (a brand), anything left blank is filled from it: the
-  image (collection image, or its first product's), the link and the title.
+  With a `collection` (a brand) or a `featured_product`, anything left blank
+  is filled from it: the image (the product's, or the collection image or its
+  first product's), the link and the title. A product wins over a collection;
+  one that's sold out or deleted is skipped, so the card falls back to the
+  collection or to what's set by hand.
+
+  The link carries the product and collection it shows, for section_click.
 
   Accepts:
+  - featured_product: {Object} Shopify product. Optional; fills the blanks
+                below, and wins over `collection`. Not named `product`, which
+                a product page already defines.
   - collection: {Object}  Shopify collection. Optional; fills the blanks below.
   - image:      {Object}  Shopify image. Placeholder when blank.
-  - title:      {String}  Required unless `collection` is given.
+  - title:      {String}  Required unless `collection` or `featured_product`
+                is given.
   - url:        {String}  Optional. Makes the card a link.
   - background: {String}  Colour for the text panel. Default: --color-bg-feature.
   - cta:        {String}  Optional. The promo layout (text-banner): no panel
@@ -25,18 +34,32 @@
   assign card_title = title
   assign card_url = url
 
-  if collection != blank
+  assign card_product = nil
+  assign card_collection = nil
+  if featured_product != blank and featured_product.available
+    assign card_product = featured_product
+  elsif collection != blank
+    assign card_collection = collection
+  endif
+
+  if card_product != blank
+    if url == blank
+      assign card_url = card_product.url
+    endif
+    assign card_image = image | default: card_product.featured_image
+    assign card_title = title | default: card_product.title
+  elsif card_collection != blank
     # Same default sort the header's brand links carry: main-collection
     # redirects a collection URL without `sort_by`, costing a second render.
     assign default_sort = settings.collection_default_sort | default: 'best-selling'
     if url == blank
-      assign card_url = collection.url | append: '?sort_by=' | append: default_sort
+      assign card_url = card_collection.url | append: '?sort_by=' | append: default_sort
     endif
     # featured_image falls back to the first product's image, so a brand
     # with no collection image still gets a picture.
-    assign card_image = image | default: collection.featured_image
+    assign card_image = image | default: card_collection.featured_image
 
-    assign card_title = title | default: collection.title
+    assign card_title = title | default: card_collection.title
   endif
 
   assign card_lazy = lazy | default: true
@@ -71,7 +94,13 @@
       <div class="feature-card__text">
         <h3 class="feature-card__title">
           {%- if card_url != blank -%}
-            <a class="feature-card__link" href="{{ card_url }}" data-card="feature-card">{{ card_title | escape }}</a>
+            <a
+              class="feature-card__link"
+              href="{{ card_url }}"
+              data-card="feature-card"
+              {% if card_product != blank %}data-card-product="{{ card_product.handle }}"{% endif %}
+              {% if card_collection != blank %}data-card-collection="{{ card_collection.handle }}"{% endif %}
+            >{{ card_title | escape }}</a>
           {%- else -%}
             {{- card_title | escape -}}
           {%- endif -%}

@@ -24,7 +24,10 @@
 //   [data-track-content="<type>"][data-track-content-id]  select_content on
 //                                                 click; inside a [data-feature],
 //                                                 also marks that feature used
-//   [data-card="<type>"]                          a card, for section_click
+//   [data-card="<type>"]                          a card, for section_click;
+//                                                 [data-card-product] and
+//                                                 [data-card-collection] (handles)
+//                                                 say what it features
 //   "class": "section-type--<file>" in a section's schema  its section_type
 //
 // Debug: localStorage.setItem('wlu.debug', '1') logs every event.
@@ -261,6 +264,8 @@ document.addEventListener('click', e => {
       element_type: 'card',
       card_type: card.dataset.card,
       card_index: [...section.querySelectorAll('[data-card]')].indexOf(card) + 1,
+      ...(card.dataset.cardProduct && { card_product: card.dataset.cardProduct }),
+      ...(card.dataset.cardCollection && { card_collection: card.dataset.cardCollection }),
     })
   } else {
     track('section_click', {

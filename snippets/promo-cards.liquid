@@ -3,7 +3,7 @@
   title at the top, CTA at the bottom (snippets/feature-card.liquid). Used by
   the text banner and the featured section; each places and sizes the list.
 
-  Block settings: collection, image, title, url, cta, background_color.
+  Block settings: product, collection, image, title, url, cta, background_color.
 
   Accepts:
   - blocks: {Array}  The section's promo blocks.
@@ -13,11 +13,12 @@
 <div class="promo-cards {{ class }}">
   {%- for block in blocks -%}
     {%- liquid
+      assign block_product = block.settings.product
       assign block_collection = collections[block.settings.collection]
       assign block_title = block.settings.title
-      # A new block has no collection or title yet and would render nothing to
+      # A new block has no product, collection or title yet and would render nothing to
       # click in the editor; there, it gets a placeholder.
-      if request.design_mode and block_title == blank and block_collection == blank
+      if request.design_mode and block_title == blank and block_collection == blank and block_product == blank
         assign block_title = 'sections.feature_card.placeholder_title' | t
       endif
       assign block_cta = block.settings.cta
@@ -27,6 +28,7 @@
     -%}
     <div class="promo-cards__item" {{ block.shopify_attributes }}>
       {%- render 'feature-card',
+        featured_product: block_product,
         collection: block_collection,
         image: block.settings.image,
         title: block_title,

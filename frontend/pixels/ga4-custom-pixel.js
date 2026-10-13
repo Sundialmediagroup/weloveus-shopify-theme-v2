@@ -38,6 +38,10 @@ const THEME_EVENTS = new Set([
   'essie_error',
   'essie_new_chat',
   'essie_sign_in',
+  'email_signup_view',
+  'email_signup_submit',
+  'email_signup',
+  'email_signup_close',
 ])
 
 const script = document.createElement('script')
