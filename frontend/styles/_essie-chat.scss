@@ -103,15 +103,38 @@
     outline-color: var(--essie-fg);
   }
 
-  // Full width in both states, so there's no widen step to wait for.
+  // Full width in both states, so there's no widen step to wait for. Open,
+  // the chat fills the visible area — above the keyboard when it's up
+  // (--essie-viewport and --essie-keyboard, set by essie-chat.js) — with a
+  // smaller gap round it then, to leave the messages what room there is.
   @include respond-below('sm') {
     &,
     &[data-open] {
+      --essie-gap: var(--space-6);
       --essie-width: calc(100vw - var(--space-6)); // 12px each side
-      --essie-height: calc(100dvh - var(--space-12) - var(--essie-bar));
+      --essie-height: calc(var(--essie-viewport, 100dvh) - var(--essie-gap) * 2 - var(--essie-bar));
       --essie-widen: 0s;
     }
+
+    &[data-keyboard] {
+      --essie-gap: var(--space-2);
+    }
+
+    &[data-open] {
+      inset-block-end: calc(var(--essie-gap) + var(--essie-keyboard, 0px));
+    }
+
+    // Following the keyboard: no easing, or the box trails behind it.
+    &.is-fitting,
+    &.is-fitting .essie__panel {
+      transition: none;
+    }
   }
+}
+
+// The page behind an open chat on phones stays put (essie-chat.js).
+.is-essie-open {
+  overflow: hidden;
 }
 
 // ─── Search bar ────────────────────────────────────────────────────────────────

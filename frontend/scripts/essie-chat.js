@@ -921,6 +921,7 @@ function initEssie() {
     if (!rendered) renderAll();
     rendered = true;
     visitorToken().catch(() => { /* retried when the first message is sent */ });
+    fitViewport();
     input.focus({ preventScroll: true });
   }
 
@@ -929,8 +930,52 @@ function initEssie() {
     pill.setAttribute('aria-expanded', 'false');
     // Typing is only possible while open; the pill takes clicks and focus.
     form.inert = true;
+    fitViewport();
     pill.focus({ preventScroll: true });
   }
+
+  // Phones: the open chat fills the screen, but `dvh` ignores the on-screen
+  // keyboard — iOS Safari and Android Chrome both lay it over the page — so
+  // the message box would end up underneath. While open, the visual viewport
+  // (what's left visible above the keyboard) sets the chat's height and how
+  // far up it sits, and the page behind is held still. Resizes snap rather
+  // than animate, so the box keeps pace with the keyboard, and a shopper
+  // reading the latest message stays on it.
+  const phone = window.matchMedia('(max-width: 639px)');
+  const viewport = window.visualViewport;
+  let fitTimer;
+
+  function fitViewport() {
+    const fit = isOpen() && phone.matches;
+    document.documentElement.classList.toggle('is-essie-open', fit);
+    if (!fit || !viewport) {
+      root.style.removeProperty('--essie-viewport');
+      root.style.removeProperty('--essie-keyboard');
+      root.removeAttribute('data-keyboard');
+      return;
+    }
+    // Whatever lies between the visible area and the layout viewport's bottom
+    // edge is keyboard. iOS also pans the visual viewport, hence offsetTop.
+    const keyboard = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
+    root.style.setProperty('--essie-viewport', `${viewport.height}px`);
+    root.style.setProperty('--essie-keyboard', `${keyboard}px`);
+    // Browser toolbars coming and going shift it by less than this.
+    root.toggleAttribute('data-keyboard', keyboard > 120);
+  }
+
+  function onViewportChange() {
+    if (!isOpen() || !phone.matches) return;
+    const atEnd = list.scrollHeight - list.scrollTop - list.clientHeight < 80;
+    root.classList.add('is-fitting');
+    fitViewport();
+    if (atEnd) list.scrollTop = list.scrollHeight;
+    clearTimeout(fitTimer);
+    fitTimer = setTimeout(() => root.classList.remove('is-fitting'), 150);
+  }
+
+  viewport?.addEventListener('resize', onViewportChange);
+  viewport?.addEventListener('scroll', onViewportChange);
+  phone.addEventListener('change', fitViewport);
 
   pill.addEventListener('click', () => open());
   root.querySelector('[data-essie-close]').addEventListener('click', close);
