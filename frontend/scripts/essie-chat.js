@@ -973,6 +973,33 @@ function initEssie() {
     fitTimer = setTimeout(() => root.classList.remove('is-fitting'), 150);
   }
 
+  // iOS scrolls the page under a fixed layer whatever its overflow says, and
+  // with the keyboard up it lets the whole view be dragged. So while the chat
+  // is open on a phone, the only touch-scrolling allowed is the message list —
+  // and only when there's enough in it to scroll; otherwise the drag would
+  // pass straight through to the page. Sideways swipes on the product card
+  // row are left to scroll it.
+  let touchX = 0;
+  let touchY = 0;
+  document.addEventListener('touchstart', e => {
+    touchX = e.touches[0].clientX;
+    touchY = e.touches[0].clientY;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', e => {
+    if (!isOpen() || !phone.matches || e.touches.length > 1) return;
+    const dx = e.touches[0].clientX - touchX;
+    const dy = e.touches[0].clientY - touchY;
+    if (e.target.closest?.('.essie__cards') && Math.abs(dx) > Math.abs(dy)) return;
+    if (e.target.closest?.('[data-essie-messages]') === list) {
+      const atTop = list.scrollTop <= 0;
+      const atEnd = list.scrollTop + list.clientHeight >= list.scrollHeight - 1;
+      // Dragging down at the top, or up at the end, would carry on into the page.
+      if (!(dy > 0 && atTop) && !(dy < 0 && atEnd)) return;
+    }
+    if (e.cancelable) e.preventDefault();
+  }, { passive: false });
+
   viewport?.addEventListener('resize', onViewportChange);
   viewport?.addEventListener('scroll', onViewportChange);
   phone.addEventListener('change', fitViewport);
@@ -991,7 +1018,15 @@ function initEssie() {
     if (busy || !text.trim()) return;
     input.value = '';
     submit(text);
+    // Keep typing: on phones the keyboard would otherwise drop after every
+    // message and come back on the next tap, resizing the chat each time.
+    // Still inside the tap, so iOS keeps the keyboard up.
+    input.focus({ preventScroll: true });
   });
+
+  // Tapping send would take focus off the field and close the keyboard; the
+  // click (and the submit) still happen.
+  send.addEventListener('pointerdown', e => e.preventDefault());
 
   list.addEventListener('click', e => {
     const chip = e.target.closest('[data-essie-reply]');
