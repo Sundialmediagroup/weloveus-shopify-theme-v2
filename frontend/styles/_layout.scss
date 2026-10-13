@@ -15,6 +15,13 @@
   }
 }
 
+// A section with nothing to show this visitor hides its root (the wishlist
+// carousel for a signed-out shopper, say). Its wrapper goes too, or the
+// spacing above would leave a gap where it isn't.
+#main-content .shopify-section:has(> [hidden]:only-child) {
+  display: none;
+}
+
 // Centered page container
 .container {
   @include container;

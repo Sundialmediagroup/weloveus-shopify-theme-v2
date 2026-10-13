@@ -6,6 +6,10 @@
   - lazy:         {Boolean} Lazy-load the image. Default: true
   - show_vendor:  {Boolean} Show vendor name. Default: true
   - image_ratio:  {String}  CSS aspect-ratio value. Default: '1 / 1'
+  - show_sold_out: {Boolean} Say "Sold out" beside the price when nothing is
+                            available. Default: false. For lists the shopper
+                            built themselves (the wishlist), where a sold-out
+                            product still belongs but shouldn't look buyable.
   - sizes:        {String}  `sizes` attribute for the srcset. Default assumes a
                             2 / 3 / 4 column grid. Always pass the real value
                             when the layout differs — a card is never 100vw, and
@@ -88,6 +92,9 @@
         <s class="product-card__price-compare">{{ product.compare_at_price | money }}</s>
       {%- else -%}
         <span class="product-card__price-regular">{{ product.price | money }}</span>
+      {%- endif -%}
+      {%- if show_sold_out and product.available == false -%}
+        <span class="product-card__sold-out">{{ 'products.product.sold_out' | t }}</span>
       {%- endif -%}
     </div>
   </div>

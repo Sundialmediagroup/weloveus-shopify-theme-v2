@@ -1,0 +1,208 @@
+{%- comment -%}
+  The signed-in shopper's saved products as a carousel, so the homepage can
+  pick up where they left off.
+
+  Read from the `custom.wishlist` customer metafield on the server, like the
+  wishlist page (main-wishlist), and laid out by the shared product-carousel
+  snippet so it scrolls and tracks like every other slider. The proxy stores
+  newest first, so the most recently saved product leads.
+
+  Shopify renders pages for a signed-in customer per request, so one
+  shopper's list is never served to another.
+
+  Nobody signed in, or nothing saved: hidden, or a short prompt, per the
+  settings. Unsaving a card removes it here straight away (wishlist.js,
+  [data-wishlist-list]); when the last one goes the same empty rule applies.
+
+  The theme editor has no customer, so there it shows placeholder cards for
+  the section to be placed and styled.
+{%- endcomment -%}
+
+{%- liquid
+  assign heading = section.settings.heading | escape
+  if heading == blank
+    assign heading = 'wishlist.title' | t
+  endif
+  # Built here, not inline: `render` arguments do not evaluate filters.
+  assign heading_id = 'wishlist-carousel-heading-' | append: section.id
+  assign wishlist_url = pages.wishlist.url | default: '/pages/wishlist'
+  assign view_all_label = 'wishlist.view_all' | t
+  assign limit = section.settings.products_to_show
+
+  # routes.account_login_url already carries a query string under new customer
+  # accounts, so the separator cannot be assumed.
+  assign login_url = routes.account_login_url
+  if login_url contains '?'
+    assign login_url = login_url | append: '&return_url='
+  else
+    assign login_url = login_url | append: '?return_url='
+  endif
+  assign login_url = login_url | append: request.path
+
+  assign show_prompt = false
+  if customer
+    if section.settings.empty_behaviour == 'prompt'
+      assign show_prompt = true
+    endif
+  elsif section.settings.logged_out_behaviour == 'prompt'
+    assign show_prompt = true
+  endif
+-%}
+
+{%- capture carousel_items -%}
+  {%- if customer -%}
+    {%- assign shown = 0 -%}
+    {%- for product in customer.metafields.custom.wishlist.value -%}
+      {%- if shown >= limit -%}{%- break -%}{%- endif -%}
+      {%- comment -%} A deleted or unpublished product resolves to nothing. {%- endcomment -%}
+      {%- if product == blank or product.url == blank -%}{%- continue -%}{%- endif -%}
+      {%- assign shown = shown | plus: 1 -%}
+      <div class="product-carousel__item" data-wishlist-item="{{ product.id }}">
+        {%- render 'product-card', product: product, show_sold_out: true -%}
+      </div>
+    {%- endfor -%}
+  {%- elsif request.design_mode -%}
+    {%- for i in (1..limit) -%}
+      {%- assign placeholder = i | modulo: 6 | plus: 1 -%}
+      <div class="product-carousel__item">
+        <div class="product-card" aria-hidden="true">
+          <div class="product-card__media">
+            <div class="product-card__placeholder">
+              {{- 'product-' | append: placeholder | placeholder_svg_tag -}}
+            </div>
+          </div>
+          <div class="product-card__info">
+            <h3 class="product-card__title">{{ 'wishlist.placeholder_title' | t }}</h3>
+          </div>
+        </div>
+      </div>
+    {%- endfor -%}
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- liquid
+  assign has_items = false
+  if carousel_items != blank
+    assign has_items = true
+  endif
+-%}
+
+{%- comment -%}
+  Hidden rather than left out when there's nothing to show, so its section
+  wrapper takes no spacing either (see _layout.scss).
+{%- endcomment -%}
+<div
+  class="wishlist-carousel"
+  data-wishlist-list
+  {% unless has_items or show_prompt %}hidden{% endunless %}
+>
+  {%- if has_items -%}
+    <div data-wishlist-filled>
+      {%- render 'product-carousel',
+        items: carousel_items,
+        heading: heading,
+        heading_id: heading_id,
+        list_id: 'wishlist_carousel',
+        link_url: wishlist_url,
+        link_label: view_all_label,
+        cards_desktop: section.settings.cards_desktop,
+        cards_mobile: section.settings.cards_mobile
+      -%}
+    </div>
+  {%- endif -%}
+
+  {%- if show_prompt -%}
+    {%- comment -%}
+      Signed in, rendered but hidden while there are products, so wishlist.js
+      can reveal it when the last one is unsaved.
+    {%- endcomment -%}
+    <div class="wishlist-carousel__prompt stack" data-wishlist-empty {% if has_items %}hidden{% endif %}>
+      <h2 class="product-carousel__heading">{{ heading }}</h2>
+      {%- if customer -%}
+        <p>{{ 'wishlist.empty' | t }}</p>
+        <a class="btn btn--primary" href="{{ routes.all_products_collection_url }}">{{ 'wishlist.browse' | t }}</a>
+      {%- else -%}
+        <p>{{ 'wishlist.login_prompt' | t }}</p>
+        <a
+          class="btn btn--primary"
+          href="{{ login_url }}"
+          data-account-open
+          aria-haspopup="dialog"
+          aria-controls="account-modal"
+        >{{ 'wishlist.login' | t }}</a>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Wishlist Carousel",
+  "class": "section-type--wishlist-carousel",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Shows the signed-in shopper's saved products. The editor has no shopper, so it shows placeholder cards here."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Leave blank for \"Your wishlist\"."
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 4,
+      "max": 24,
+      "step": 4,
+      "default": 12,
+      "label": "Products to show"
+    },
+    {
+      "type": "range",
+      "id": "cards_desktop",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 4,
+      "label": "Cards in view — desktop"
+    },
+    {
+      "type": "range",
+      "id": "cards_mobile",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2,
+      "label": "Cards in view — mobile"
+    },
+    {
+      "type": "select",
+      "id": "empty_behaviour",
+      "label": "Signed in, nothing saved",
+      "options": [
+        { "value": "hide", "label": "Hide the section" },
+        { "value": "prompt", "label": "Prompt to start saving" }
+      ],
+      "default": "hide"
+    },
+    {
+      "type": "select",
+      "id": "logged_out_behaviour",
+      "label": "Signed out",
+      "options": [
+        { "value": "hide", "label": "Hide the section" },
+        { "value": "prompt", "label": "Prompt to sign in" }
+      ],
+      "default": "hide"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Wishlist Carousel"
+    }
+  ]
+}
+{% endschema %}

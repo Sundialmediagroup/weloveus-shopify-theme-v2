@@ -1,0 +1,13 @@
+// Homepage wishlist carousel — sections/wishlist-carousel.liquid.
+// The carousel itself is _product-carousel.scss; this is only the prompt
+// shown in its place when there's nothing saved or nobody signed in.
+
+.wishlist-carousel__prompt {
+  --stack-gap: var(--space-4);
+
+  align-items: flex-start;
+
+  p {
+    color: var(--color-fg-muted);
+  }
+}

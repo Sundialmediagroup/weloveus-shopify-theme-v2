@@ -106,3 +106,8 @@
   color: var(--color-fg-muted);
   text-decoration: line-through;
 }
+
+.product-card__sold-out {
+  font-size: var(--text-sm);
+  color: var(--color-fg-muted);
+}

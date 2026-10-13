@@ -19,6 +19,8 @@
                             same track, arrows and peek.
     heading        {String} Optional heading above the track.
     heading_id     {String} Required when `heading` is set — labels the region.
+    link_url       {String} Optional "View all" style link beside the arrows.
+    link_label     {String} Its text. Both are needed for the link to show.
     limit          {Number} Max cards. Defaults to every product given.
     cards_desktop  {Number} Cards in view at `lg`. Default 4.
     cards_mobile   {Number} Cards in view below `lg`. Default 2.
@@ -95,6 +97,9 @@
         <h2 class="product-carousel__heading" id="{{ heading_id }}">{{ heading }}</h2>
       {%- endif -%}
       <div class="product-carousel__controls">
+        {%- if link_url != blank and link_label != blank -%}
+          <a class="product-carousel__link" href="{{ link_url }}">{{ link_label }}</a>
+        {%- endif -%}
         <button
           class="product-carousel__btn product-carousel__btn--prev"
           type="button"

@@ -167,6 +167,8 @@
     "login": "Log in",
     "empty": "Nothing saved yet. Tap the heart on any product to keep it here.",
     "browse": "Start browsing",
+    "view_all": "View all",
+    "placeholder_title": "A saved product",
     "count": {
       "one": "{{ count }} item",
       "other": "{{ count }} items"

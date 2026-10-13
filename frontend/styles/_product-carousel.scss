@@ -29,6 +29,7 @@
 
 .product-carousel__controls {
   display: flex;
+  align-items: center;
   gap: var(--space-2);
   margin-left: auto;
 }
@@ -56,6 +57,15 @@
     opacity: 0.25;
     cursor: not-allowed;
   }
+}
+
+.product-carousel__link {
+  margin-inline-end: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-fg);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  white-space: nowrap;
 }
 
 // ─── Track ─────────────────────────────────────────────────────────────────────

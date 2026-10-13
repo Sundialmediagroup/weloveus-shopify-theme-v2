@@ -66,16 +66,27 @@ function paintCount() {
   });
 }
 
-// On the wishlist page an unsaved product has no business staying on screen.
-function pruneWishlistPage(id) {
-  const page = document.querySelector('[data-wishlist-page]');
-  if (!page || saved.has(id)) return;
+// Lists of saved products — the wishlist page and the homepage wishlist
+// carousel ([data-wishlist-list]) — drop a product the moment it is unsaved.
+// When the last one goes, the list's empty prompt shows in place of its
+// products ([data-wishlist-filled]); a list with no prompt hides altogether.
+function pruneLists(id) {
+  if (saved.has(id)) return;
 
-  page.querySelector(`[data-wishlist-item="${id}"]`)?.remove();
+  document.querySelectorAll('[data-wishlist-list]').forEach(list => {
+    list.querySelectorAll(`[data-wishlist-item="${id}"]`).forEach(el => el.remove());
 
-  if (!page.querySelector('[data-wishlist-item]')) {
-    page.querySelector('[data-wishlist-empty]')?.removeAttribute('hidden');
-  }
+    if (list.querySelector('[data-wishlist-item]')) {
+      // Fewer cards may mean nothing left to scroll to.
+      list.querySelector('product-carousel')?.sync?.();
+      return;
+    }
+
+    list.querySelector('[data-wishlist-filled]')?.setAttribute('hidden', '');
+    const empty = list.querySelector('[data-wishlist-empty]');
+    if (empty) empty.removeAttribute('hidden');
+    else list.hidden = true;
+  });
 }
 
 async function request(action, id) {
@@ -115,7 +126,7 @@ async function setSaved(id, shouldSave) {
     setPending(id, false);
     paint(id);
     paintCount();
-    pruneWishlistPage(id);
+    pruneLists(id);
   }
 }
 

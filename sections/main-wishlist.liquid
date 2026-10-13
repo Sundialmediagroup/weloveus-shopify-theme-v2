@@ -42,7 +42,7 @@
   assign login_url = login_url | append: request.path
 -%}
 
-<div class="main-wishlist" data-wishlist-page>
+<div class="main-wishlist" data-wishlist-list>
 
   <header class="collection-header">
     <h1>{{ heading }}</h1>
@@ -75,6 +75,7 @@
       <div
         class="collection-products"
         style="--columns-desktop: {{ columns }};"
+        data-wishlist-filled
         data-item-list="wishlist"
         data-item-list-name="Wishlist"
       >
@@ -86,7 +87,7 @@
             endif
           -%}
           <div class="main-wishlist__item" data-wishlist-item="{{ product.id }}">
-            {%- render 'product-card', product: product, lazy: lazy_card, sizes: card_sizes -%}
+            {%- render 'product-card', product: product, lazy: lazy_card, sizes: card_sizes, show_sold_out: true -%}
           </div>
         {%- endfor -%}
       </div>
