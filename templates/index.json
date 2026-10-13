@@ -173,6 +173,18 @@
         "cards_mobile": 1
       }
     },
+    "wishlist_carousel_DULAet": {
+      "type": "wishlist-carousel",
+      "name": "Wishlist Carousel",
+      "settings": {
+        "heading": "",
+        "products_to_show": 12,
+        "cards_desktop": 4,
+        "cards_mobile": 2,
+        "empty_behaviour": "hide",
+        "logged_out_behaviour": "hide"
+      }
+    },
     "product-grid": {
       "type": "product-grid",
       "settings": {
@@ -205,7 +217,7 @@
     "recent-stories": {
       "type": "recent-stories",
       "settings": {
-        "blog": "news",
+        "blog": "stories",
         "label": "Story",
         "image_ratio": "3 / 4"
       }
@@ -230,6 +242,7 @@
     "product-carousel-2",
     "featured-section",
     "product-carousel-5",
+    "wishlist_carousel_DULAet",
     "product-grid",
     "product-carousel-3",
     "featured-section-2",
