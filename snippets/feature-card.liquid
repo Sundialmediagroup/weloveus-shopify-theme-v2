@@ -54,7 +54,9 @@
     # Same default sort the header's brand links carry: main-collection
     # redirects a collection URL without `sort_by`, costing a second render.
     # A promo can pick its own instead.
-    assign card_sort = settings.collection_default_sort | default: 'best-selling'
+    capture card_sort
+      render 'collection-default-sort', sort_collection: card_collection
+    endcapture
     if sort != blank and sort != 'default'
       assign card_sort = sort
     endif

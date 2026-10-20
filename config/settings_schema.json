@@ -126,6 +126,13 @@
             "label": "A–Z"
           }
         ]
+      },
+      {
+        "type": "collection_list",
+        "id": "collection_own_order",
+        "label": "Collections in their own order",
+        "info": "These open in the order set on the collection in Shopify admin (manual sort), not the default above. For collections whose order is the point, like Trending, which a daily job re-ranks.",
+        "limit": 10
       }
     ]
   },

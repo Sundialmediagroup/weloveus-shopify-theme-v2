@@ -50,8 +50,9 @@
       "chips_label": "Browse categories",
       "sort_label": "Sort by",
       "sort": {
+        "featured": "Featured",
         "latest": "Latest arrivals",
-        "trending": "Trending",
+        "best_selling": "Best sellers",
         "price_low": "Price: Low to high",
         "price_high": "Price: High to low"
       },

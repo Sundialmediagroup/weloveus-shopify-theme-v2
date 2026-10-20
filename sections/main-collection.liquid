@@ -1,12 +1,12 @@
 {%- liquid
   assign default_sort = settings.collection_default_sort | default: 'best-selling'
-  # All products leads with what is new; every other collection keeps the store
+  # All products leads with what is new, a collection kept in its own order
+  # (Trending) opens in that order, and every other collection keeps the store
   # default. The sidebar is handed both so its own "All products" link agrees.
   assign all_sort = settings.collection_all_default_sort | default: 'created-descending'
-  assign page_default_sort = default_sort
-  if collection.handle == 'all'
-    assign page_default_sort = all_sort
-  endif
+  capture page_default_sort
+    render 'collection-default-sort', sort_collection: collection
+  endcapture
 
   # Cards sit in a 2 / 3 / N column grid (see _main-collection.scss). Without a
   # `sizes` hint the browser assumes 100vw and picks the 1000px source for what
@@ -125,7 +125,9 @@
         when 'created-descending'
           assign current_sort_label = 'sections.collection.sort.latest' | t
         when 'best-selling'
-          assign current_sort_label = 'sections.collection.sort.trending' | t
+          assign current_sort_label = 'sections.collection.sort.best_selling' | t
+        when 'manual'
+          assign current_sort_label = 'sections.collection.sort.featured' | t
         when 'price-ascending'
           assign current_sort_label = 'sections.collection.sort.price_low' | t
         when 'price-descending'

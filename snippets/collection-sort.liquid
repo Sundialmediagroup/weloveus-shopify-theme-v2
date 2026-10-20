@@ -5,12 +5,22 @@
   with no JavaScript. The active option is marked `aria-current="true"` (not
   "page": it is the same page, reordered).
 
+  A collection kept in its own order (collection-default-sort) gets that order
+  first, as "Featured", so it can be got back to after re-sorting.
+
   Accepts: nothing.
 {%- endcomment -%}
 
 {%- liquid
   assign current_sort = collection.sort_by | default: collection.default_sort_by
-  assign sort_values = 'created-descending,best-selling,price-ascending,price-descending' | split: ','
+  capture own_sort
+    render 'collection-default-sort', sort_collection: collection
+  endcapture
+  assign sort_values = 'created-descending,best-selling,price-ascending,price-descending'
+  if own_sort == 'manual'
+    assign sort_values = 'manual,' | append: sort_values
+  endif
+  assign sort_values = sort_values | split: ','
 -%}
 
 <nav class="collection-sort" aria-labelledby="collection-sort-heading">
@@ -25,8 +35,10 @@
         case value
           when 'created-descending'
             assign label = 'sections.collection.sort.latest' | t
+          when 'manual'
+            assign label = 'sections.collection.sort.featured' | t
           when 'best-selling'
-            assign label = 'sections.collection.sort.trending' | t
+            assign label = 'sections.collection.sort.best_selling' | t
           when 'price-ascending'
             assign label = 'sections.collection.sort.price_low' | t
           when 'price-descending'

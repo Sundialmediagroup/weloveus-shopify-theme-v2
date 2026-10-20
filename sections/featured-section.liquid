@@ -6,18 +6,14 @@
 
   Each card links to a collection or a product (the product wins when both are
   set). The image, link and title come from that, and anything set on the
-  block overrides it. On a collection link, the URL carries the default sort,
-  as the header's brand links do: main-collection redirects a collection URL
+  block overrides it. On a collection link, the URL carries the collection's
+  sort (collection-default-sort), as the header's brand links do: main-collection redirects a collection URL
   without `sort_by`, which costs a second render.
 
   The theme editor shows a placeholder title and image for a new card, so it
   can be clicked and set up. A card with nothing to show is left out of the
   live site.
 {%- endcomment -%}
-
-{%- liquid
-  assign default_sort = settings.collection_default_sort | default: 'best-selling'
--%}
 
 {%- if section.blocks.size > 0 -%}
   <div class="featured-section">
@@ -40,7 +36,10 @@
           assign card_image = card_image | default: card_collection.featured_image
           assign card_title = card_title | default: card_collection.title
           if card_url == blank
-            assign card_url = card_collection.url | append: '?sort_by=' | append: default_sort
+            capture card_sort
+              render 'collection-default-sort', sort_collection: card_collection
+            endcapture
+            assign card_url = card_collection.url | append: '?sort_by=' | append: card_sort
           endif
         endif
 

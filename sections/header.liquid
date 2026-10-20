@@ -10,9 +10,9 @@
 {%- endcomment -%}
 {%- liquid
   assign default_sort = settings.collection_default_sort | default: 'best-selling'
-  # The nav's All products link carries its own sort for the same reason.
+  # The nav's links, All products and Trending among them, carry their own
+  # sorts for the same reason (sorted-collection-url).
   assign all_sort = settings.collection_all_default_sort | default: 'created-descending'
-  assign all_products_href = routes.all_products_collection_url | append: '?sort_by=' | append: all_sort
 -%}
 
 {%- comment -%}
@@ -199,7 +199,7 @@
           {%- else -%}
             <a
               class="site-header__nav-link"
-              href="{% if link.url == routes.all_products_collection_url %}{{ all_products_href }}{% else %}{{ link.url }}{% endif %}"
+              href="{%- render 'sorted-collection-url', url: link.url, default_sort: default_sort, all_sort: all_sort -%}"
               {% if link.url == request.path %}aria-current="page"{% endif %}
             >
               {{- link.title -}}
@@ -434,7 +434,7 @@
               {%- else -%}
                 <a
                   class="header-drawer__link"
-                  href="{% if link.url == routes.all_products_collection_url %}{{ all_products_href }}{% else %}{{ link.url }}{% endif %}"
+                  href="{%- render 'sorted-collection-url', url: link.url, default_sort: default_sort, all_sort: all_sort -%}"
                   {% if link.url == request.path %}aria-current="page"{% endif %}
                 >
                   {{- link.title -}}

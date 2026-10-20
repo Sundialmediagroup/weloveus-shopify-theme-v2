@@ -1,0 +1,44 @@
+{%- comment -%}
+  Outputs the sort key a collection opens in: the store default, the All
+  products default for /collections/all, or `manual` for a collection listed in
+  "Collections in their own order" (Settings → Collection), whose order is set
+  in Shopify admin — Trending, which a daily job re-ranks, is the reason.
+
+  One place for this, because every collection link carries `sort_by` (see
+  main-collection.liquid) and they all have to agree with the page itself.
+
+  Accepts one of:
+  - sort_collection: {Object} The collection.
+  - sort_url:        {String} A collection URL, for menu links.
+  And optionally:
+  - default_sort:    {String} Overrides the store default.
+  - all_sort:        {String} Overrides the All products default.
+
+  Named `sort_collection` rather than `collection` so the page's own
+  collection, which snippets can see, is never picked up by mistake.
+{%- endcomment -%}
+{%- liquid
+  assign sort = default_sort | default: settings.collection_default_sort | default: 'best-selling'
+
+  assign is_all = false
+  if sort_collection != blank and sort_collection.handle == 'all'
+    assign is_all = true
+  elsif sort_url != blank and sort_url == routes.all_products_collection_url
+    assign is_all = true
+  endif
+  if is_all
+    assign sort = all_sort | default: settings.collection_all_default_sort | default: sort
+  endif
+
+  for own in settings.collection_own_order
+    if sort_collection != blank and own.id == sort_collection.id
+      assign sort = 'manual'
+      break
+    elsif sort_url != blank and own.url == sort_url
+      assign sort = 'manual'
+      break
+    endif
+  endfor
+
+  echo sort
+-%}
