@@ -80,6 +80,17 @@
     "article_card": {
       "placeholder_title": "Your story title.",
       "placeholder_excerpt": "The first lines of the post run on from the title here, so the card reads as one short paragraph."
+    },
+    "window_display": {
+      "manifesto_label": "Our manifesto",
+      "manifesto_link": "Our story",
+      "hero_cta": "Shop the edit",
+      "edit_heading": "In this edit",
+      "trending_heading": "Trending now",
+      "view_all": "View all",
+      "essie_label": "Ask Essie",
+      "essie_text": "Not sure where to start? Tell Essie what you’re shopping for.",
+      "essie_prompt_new": "What’s new this week?"
     }
   },
   "onboarding": {

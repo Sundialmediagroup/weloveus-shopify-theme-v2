@@ -1,0 +1,271 @@
+@use 'abstracts/mixins' as *;
+
+// Window display — sections/window-display.liquid.
+// Phones: one column, hero first, then the lead (manifesto and feature card)
+// and the side (Trending and Essie). From `md` the lead's two panels sit side
+// by side. From `lg`, three columns: lead 1 : hero 2 : side 1.
+
+.window-display {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'hero'
+    'lead'
+    'side';
+  gap: var(--space-10) var(--grid-gap);
+
+  @include respond-to('lg') {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
+    grid-template-areas: 'lead hero side';
+    align-items: start;
+  }
+}
+
+.window-display__hero {
+  grid-area: hero;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.window-display__lead {
+  grid-area: lead;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--grid-gap);
+
+  @include respond-to('md') {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @include respond-to('lg') {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.window-display__side {
+  grid-area: side;
+  display: flex;
+  flex-direction: column;
+  gap: var(--grid-gap);
+  min-width: 0;
+}
+
+// Small uppercase line at the top of the dark panels. Cream on the black
+// manifesto; the Essie panel sets it back to its own text colour, as cream on
+// green is too faint at this size.
+.window-display__eyebrow {
+  @include type-label;
+  margin: 0;
+  color: var(--eyebrow-color, var(--color-fg-highlight));
+}
+
+// ─── Hero ──────────────────────────────────────────────────────────────────────
+
+.window-display__hero-media {
+  position: relative;
+  aspect-ratio: 16 / 11;
+  overflow: hidden;
+  background-color: var(--color-bg-subtle);
+}
+
+.window-display__hero-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.window-display__placeholder {
+  fill: var(--color-fg-subtle);
+}
+
+.window-display__hero-link {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-raised);
+}
+
+.window-display__hero-label {
+  position: absolute;
+  inset-block-start: var(--space-4);
+  inset-inline-start: var(--space-4);
+  z-index: var(--z-raised);
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  pointer-events: none; // the picture's link is underneath
+}
+
+// Headline and button on one line when they fit; the button drops below a
+// long headline rather than squeezing it.
+.window-display__hero-text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4) var(--space-8);
+}
+
+.window-display__hero-heading {
+  @include type-statement;
+  flex: 1 1 20rem;
+  margin: 0;
+}
+
+.window-display__hero-cta {
+  flex-shrink: 0;
+}
+
+.window-display__edit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-block-start: var(--space-4);
+  border-block-start: 1px solid var(--color-border);
+}
+
+.window-display__label {
+  @include type-label;
+  margin: 0;
+  color: var(--color-fg-muted);
+}
+
+.window-display__edit-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--grid-gap);
+}
+
+// ─── Manifesto ─────────────────────────────────────────────────────────────────
+
+// The same 4:5 as the feature card beside or below it. A minimum, not a fixed
+// height: longer copy grows the panel instead of spilling out of it.
+.window-display__manifesto {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-6);
+  aspect-ratio: 4 / 5;
+  padding: var(--space-6);
+  background-color: var(--color-bg-inverted);
+  color: var(--color-fg-inverted);
+}
+
+.window-display__manifesto-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+// A step below the h2 scale: the panel is a quarter of the page on desktop.
+.window-display__manifesto-heading {
+  margin: 0;
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+}
+
+.window-display__manifesto-text {
+  margin: 0;
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+}
+
+.window-display__manifesto-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding-block-start: var(--space-4);
+  border-block-start: 1px solid color-mix(in srgb, var(--color-fg-highlight) 40%, transparent);
+}
+
+.window-display__manifesto-footnote {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-fg-highlight);
+}
+
+.window-display__manifesto-link {
+  @include type-label;
+  @include underline-on-hover;
+  color: inherit;
+}
+
+// ─── Trending ──────────────────────────────────────────────────────────────────
+
+.window-display__trending-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-block-end: var(--space-3);
+  border-block-end: 1px solid var(--color-fg);
+}
+
+.window-display__trending-heading {
+  margin: 0;
+  font-size: var(--text-xl);
+}
+
+.window-display__view-all {
+  @include type-label;
+  @include underline-on-hover;
+  color: var(--color-fg);
+  white-space: nowrap;
+}
+
+.window-display__trending-item {
+  padding-block: var(--space-3);
+  border-block-end: 1px solid var(--color-border);
+}
+
+// ─── Ask Essie ─────────────────────────────────────────────────────────────────
+
+.window-display__essie {
+  --eyebrow-color: currentColor;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background-color: var(--color-bg-highlight);
+  color: var(--color-fg-inverted);
+}
+
+.window-display__essie-text {
+  margin: 0;
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+}
+
+.window-display__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.window-display__chip {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--space-10);
+  padding-inline: var(--space-4);
+  border: 1px solid var(--color-fg-highlight);
+  border-radius: var(--radius-full);
+  background-color: transparent;
+  color: inherit;
+  font-size: var(--text-sm);
+  text-align: start;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-base),
+    color var(--transition-base);
+
+  &:hover {
+    background-color: var(--color-fg-highlight);
+    color: var(--color-fg);
+  }
+}

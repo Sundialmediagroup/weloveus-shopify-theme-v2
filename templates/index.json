@@ -9,8 +9,18 @@
  */
 {
   "sections": {
+    "window_display": {
+      "type": "window-display",
+      "settings": {
+        "edit_collection": "recently-added",
+        "feature_collection": "weloveus-beauty-staples",
+        "show_essie": true,
+        "trending_count": 5
+      }
+    },
     "text_banner_3VYwnE": {
       "type": "text-banner",
+      "disabled": true,
       "blocks": {
         "promo_fYnqjb": {
           "type": "promo",
@@ -50,6 +60,7 @@
     },
     "feature_carousel_dwX8We": {
       "type": "feature-carousel",
+      "disabled": true,
       "blocks": {
         "feature_MfBtDC": {
           "type": "feature",
@@ -252,6 +263,7 @@
     }
   },
   "order": [
+    "window_display",
     "text_banner_3VYwnE",
     "feature_carousel_dwX8We",
     "product-carousel-2",

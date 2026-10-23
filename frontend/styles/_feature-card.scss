@@ -107,6 +107,23 @@
   transform: translateX(calc(var(--space-1) * -1));
 }
 
+// ─── Stacked layout (`layout: 'stacked'`) ─────────────────────────────────────
+// The window display: image above the panel, in a 4:5 frame, so the card is
+// as tall as the manifesto beside or above it.
+
+.feature-card--stacked {
+  grid-template-columns: minmax(0, 1fr);
+
+  .feature-card__media {
+    aspect-ratio: 4 / 5;
+    min-block-size: 0;
+  }
+
+  .feature-card__body {
+    min-block-size: 0;
+  }
+}
+
 // ─── Promo layout (`cta`) ──────────────────────────────────────────────────────
 // Text-banner promos: no panel colour, the title level with the top of the
 // image and the CTA level with its bottom.

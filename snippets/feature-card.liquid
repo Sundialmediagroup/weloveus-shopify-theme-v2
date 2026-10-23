@@ -29,6 +29,9 @@
                 colour, the title at the top and this label with the arrow at
                 the bottom, instead of the arrow beside the title.
   - lazy:       {Boolean} Lazy-load the image. Default: true
+  - layout:     {String}  Optional. 'stacked' puts the image above the text
+                panel, in a 4:5 frame (the window display). Default: side by
+                side.
 {%- endcomment -%}
 
 {%- liquid
@@ -70,16 +73,24 @@
     assign card_title = title | default: card_collection.title
   endif
 
-  assign card_lazy = lazy | default: true
+  # allow_false, as in product-card: without it `lazy: false` is ignored.
+  assign card_lazy = lazy | default: true, allow_false: true
   assign loading_attr = 'lazy'
   unless card_lazy
     assign loading_attr = 'eager'
   endunless
+
+  # Stacked, the image is the card's full width: a quarter of the page on
+  # desktop, half or all of it below.
+  assign card_sizes = '(min-width: 990px) 25vw, 45vw'
+  if layout == 'stacked'
+    assign card_sizes = '(min-width: 990px) 25vw, (min-width: 768px) 50vw, 100vw'
+  endif
 -%}
 
 {%- if card_title != blank -%}
   <article
-    class="feature-card{% if card_url != blank %} feature-card--link{% endif %}{% if cta != blank %} feature-card--cta{% endif %}"
+    class="feature-card{% if card_url != blank %} feature-card--link{% endif %}{% if cta != blank %} feature-card--cta{% endif %}{% if layout == 'stacked' %} feature-card--stacked{% endif %}"
     {% if background != blank %}style="--feature-card-bg: {{ background }};"{% endif %}
   >
     <div class="feature-card__media">
@@ -88,7 +99,7 @@
           class: 'feature-card__image',
           alt: card_image.alt | default: card_title,
           loading: loading_attr,
-          sizes: '(min-width: 990px) 25vw, 45vw',
+          sizes: card_sizes,
           widths: '300, 450, 600, 900',
           width: card_image.width,
           height: card_image.height

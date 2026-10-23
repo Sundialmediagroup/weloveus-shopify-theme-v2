@@ -16,6 +16,11 @@
                             100vw is what the browser assumes when `sizes` is
                             missing, so it downloads the 1000px source for a
                             ~380px slot.
+  - layout:       {String}  Optional. 'row' is a compact list row: a small
+                            thumbnail beside the text, with no quick-add or
+                            wishlist heart, which have no room at that size
+                            (the window display's Trending list). Default: the
+                            grid card.
 {%- endcomment -%}
 
 {%- liquid
@@ -100,7 +105,7 @@
 -%}
 
 <a
-  class="product-card"
+  class="product-card{% if layout == 'row' %} product-card--row{% endif %}"
   href="{{ product.url }}"
   aria-label="{{ product.title | escape }}"
   data-item
@@ -115,7 +120,7 @@
       problem, so the card falls through to its link and the PDP handles it.
     {%- endcomment -%}
     {%- assign first_variant = product.first_available_variant -%}
-    {%- if product.has_only_default_variant and first_variant != blank -%}
+    {%- if layout != 'row' and product.has_only_default_variant and first_variant != blank -%}
       <span
         class="product-card__add-sticker"
         data-add-to-cart="{{ first_variant.id }}"
@@ -123,7 +128,9 @@
         aria-label="Add {{ product.title | escape }} to cart"
       >Add to<br>Cart</span>
     {%- endif -%}
-    {%- render 'wishlist-button', product: product, context: 'card' -%}
+    {%- unless layout == 'row' -%}
+      {%- render 'wishlist-button', product: product, context: 'card' -%}
+    {%- endunless -%}
     {%- if card_image != blank -%}
       {{
         card_image
@@ -158,6 +165,9 @@
       {%- endif -%}
       {%- if show_sold_out and product.available == false -%}
         <span class="product-card__sold-out">{{ 'products.product.sold_out' | t }}</span>
+      {%- endif -%}
+      {%- if layout == 'row' -%}
+        <span class="product-card__arrow">{%- render 'icon', name: 'arrow-right' -%}</span>
       {%- endif -%}
     </div>
     {%- if sale_state == 'some' -%}

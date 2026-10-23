@@ -1,3 +1,5 @@
+@use 'abstracts/mixins' as *;
+
 // Product card — matches Figma exactly.
 // Square image, no radius, object-fit cover, vendor + bold uppercase title.
 
@@ -118,4 +120,78 @@
   margin-top: var(--space-1);
   font-size: var(--text-xs);
   color: var(--color-secondary);
+}
+
+// ─── Row layout (`layout: 'row'`) ──────────────────────────────────────────────
+// A compact list row in the promo unit's style (feature-card--cta): picture on
+// the left, no panel, the name level with the top of the picture and the price
+// with an arrow level with its bottom, in the label style of the promo's
+// "Shop now". The window display's Trending list.
+
+.product-card--row {
+  display: grid;
+  grid-template-columns: var(--space-24) minmax(0, 1fr);
+  gap: var(--space-4);
+  color: var(--color-fg);
+
+  .product-card__info {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding-top: 0;
+  }
+
+  .product-card__vendor {
+    @include trim-to-cap;
+    color: var(--color-fg-muted);
+  }
+
+  .product-card__title {
+    font-size: var(--text-base);
+    line-height: var(--leading-snug);
+    overflow-wrap: anywhere;
+    @include line-clamp(2);
+  }
+
+  // The price sits where the promo's CTA does: last, on the picture's bottom
+  // edge. A some-variants sale note goes above it.
+  .product-card__sale-note {
+    order: 1;
+    margin-top: 0;
+  }
+
+  .product-card__price {
+    order: 2;
+    margin-top: auto;
+    text-box: trim-end cap alphabetic;
+  }
+
+  .product-card__price-regular,
+  .product-card__price-sale,
+  .product-card__price-compare {
+    @include type-label;
+  }
+
+  &:hover .product-card__title {
+    text-decoration: underline;
+  }
+
+  &:hover .product-card__arrow {
+    transform: translateX(var(--space-1));
+  }
+}
+
+.product-card__arrow {
+  display: flex;
+  margin-inline-start: auto;
+  transition: transform var(--transition-base);
+
+  [dir='rtl'] & {
+    scale: -1 1;
+  }
+}
+
+[dir='rtl'] .product-card--row:hover .product-card__arrow {
+  transform: translateX(calc(var(--space-1) * -1));
 }

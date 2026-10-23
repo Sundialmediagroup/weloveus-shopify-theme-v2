@@ -819,7 +819,7 @@ function initEssie() {
     }
   }
 
-  // `source`: typed, chip (a suggested reply) or product_prompt.
+  // `source`: typed, chip (a suggested reply), product_prompt or page_prompt.
   function submit(text, source = 'typed') {
     text = text.trim();
     if (!text || busy) return;
@@ -1063,6 +1063,16 @@ function initEssie() {
   });
 
   initPrompts();
+
+  // Prompts placed in the page itself (the homepage window display):
+  // [data-essie-ask="<message>"] opens Essie and asks it. Delegated, so any
+  // section can carry them.
+  document.addEventListener('click', e => {
+    const ask = e.target.closest('[data-essie-ask]');
+    if (!ask) return;
+    open('page_prompt');
+    submit(ask.dataset.essieAsk, 'page_prompt');
+  });
 
   // Back from signing in through the chat: pick up where they were.
   let reopen = false;

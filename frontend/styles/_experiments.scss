@@ -4,7 +4,8 @@
 // before the body paints. Theme settings → Analytics & experiments sets the
 // share of visitors in each. See frontend/scripts/analytics.js.
 
-[data-holdout~='essie'] .essie-dock {
+[data-holdout~='essie'] .essie-dock,
+[data-holdout~='essie'] .window-display__essie {
   display: none;
 }
 
