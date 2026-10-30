@@ -13,3 +13,9 @@ snippets/vite-tag.liquid
 analytics/*
 reports/*
 .env
+
+# Merchant curation — managed in the theme editor, never overwrite from local
+config/settings_data.json
+templates/*.json
+templates/customers/*.json
+sections/*.json

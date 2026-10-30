@@ -11,22 +11,43 @@
   "sections": {
     "window_display": {
       "type": "window-display",
+      "disabled": true,
       "settings": {
+        "manifesto_heading": "Where Community Meets Commerce.",
+        "manifesto_text": "This platform transforms love into economic action by investing in the creators and founders who shape our world.",
+        "manifesto_footnote": "A marketplace of over 125 Black-owned brands, backed by ESSENCE.",
+        "manifesto_url": "",
+        "manifesto_link_label": "",
+        "hero_label": "",
+        "hero_heading": "",
         "edit_collection": "recently-added",
+        "hero_url": "",
+        "hero_cta": "",
+        "feature_product": "",
         "feature_collection": "weloveus-beauty-staples",
+        "feature_sort": "default",
+        "feature_title": "",
+        "feature_url": "",
+        "feature_background": "",
+        "trending_collection": "",
+        "trending_heading": "",
+        "trending_count": 5,
         "show_essie": true,
-        "trending_count": 5
+        "essie_text": "",
+        "essie_prompt_1": "",
+        "essie_prompt_2": "",
+        "essie_prompt_3": ""
       }
     },
     "text_banner_3VYwnE": {
       "type": "text-banner",
-      "disabled": true,
       "blocks": {
         "promo_fYnqjb": {
           "type": "promo",
           "settings": {
             "product": "",
             "collection": "weloveus-beauty-staples",
+            "sort": "default",
             "title": "",
             "url": "",
             "cta": "",
@@ -38,6 +59,7 @@
           "settings": {
             "product": "",
             "collection": "recently-added",
+            "sort": "default",
             "title": "",
             "url": "",
             "cta": "",
@@ -60,7 +82,6 @@
     },
     "feature_carousel_dwX8We": {
       "type": "feature-carousel",
-      "disabled": true,
       "blocks": {
         "feature_MfBtDC": {
           "type": "feature",
@@ -136,6 +157,15 @@
         "cards_mobile": 1
       }
     },
+    "word_map_JM8c34": {
+      "type": "word-map",
+      "name": "Word Map",
+      "settings": {
+        "menu": "category-menu",
+        "heading": "",
+        "show_images": true
+      }
+    },
     "product-carousel": {
       "type": "product-carousel",
       "settings": {
@@ -144,15 +174,6 @@
         "products_to_show": 12,
         "cards_desktop": 4,
         "cards_mobile": 1
-      }
-    },
-    "word_map_JM8c34": {
-      "type": "word-map",
-      "name": "Word Map",
-      "settings": {
-        "menu": "category-menu",
-        "heading": "",
-        "show_images": true
       }
     },
     "video-section": {

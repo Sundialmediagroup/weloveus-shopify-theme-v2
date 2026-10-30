@@ -171,6 +171,13 @@
         "label": "API base URL",
         "info": "/apps/weloveus (Shopify's app proxy). The local preview ignores this and uses http://127.0.0.1:8765.",
         "default": "/apps/weloveus"
+      },
+      {
+        "type": "checkbox",
+        "id": "essie_checkin",
+        "label": "Ask for feedback",
+        "info": "After a chat that showed products without an add to cart, or a few messages in, Essie asks up to three quick questions. Each shopper is asked at most once every 30 days.",
+        "default": false
       }
     ]
   },

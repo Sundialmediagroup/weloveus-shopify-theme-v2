@@ -38,6 +38,8 @@ const THEME_EVENTS = new Set([
   'essie_error',
   'essie_new_chat',
   'essie_sign_in',
+  'essie_checkin_shown',
+  'essie_feedback',
   'email_signup_view',
   'email_signup_submit',
   'email_signup',

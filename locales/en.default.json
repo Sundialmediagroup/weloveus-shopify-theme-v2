@@ -259,7 +259,26 @@
     "prompt_similar": "Other products like this",
     "prompt_similar_message": "Show me other products like the {{ title }}",
     "prompt_how": "How do I use it?",
-    "prompt_how_message": "How do I use the {{ title }}?"
+    "prompt_how_message": "How do I use the {{ title }}?",
+    "checkin": {
+      "found_it": "Quick one, so I can get better at this: did I find what you were after?",
+      "missing": "Thanks for telling me. What was missing?",
+      "shopping_for": "Last one, I promise. Who are you shopping for today?",
+      "yes": "Yes",
+      "sort_of": "Sort of",
+      "not_really": "Not really",
+      "not_now": "Not now",
+      "price": "The price",
+      "not_right": "Not quite the right thing",
+      "deciding": "Still deciding",
+      "browsing": "Just browsing",
+      "other": "Something else",
+      "for_me": "Me",
+      "gift": "A gift",
+      "looking": "Just looking",
+      "other_prompt": "Tell me in your own words and I’ll pass it on.",
+      "thanks": "Thank you, that really helps."
+    }
   },
   "cart": {
     "title": "Your cart",

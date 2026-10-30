@@ -51,6 +51,34 @@
       "textPreviousChat": {{ 'essie.previous_chat' | t | json }},
       "textSignIn": {{ 'essie.sign_in' | t | json }},
       "textSignedIn": {{ 'essie.signed_in' | t | json }},
+      "pageType": {{ request.page_type | json }},
+      "checkin": {%- if settings.essie_checkin -%}
+        {
+          "questions": {
+            "found_it": {{ 'essie.checkin.found_it' | t | json }},
+            "missing": {{ 'essie.checkin.missing' | t | json }},
+            "shopping_for": {{ 'essie.checkin.shopping_for' | t | json }}
+          },
+          "answers": {
+            "yes": {{ 'essie.checkin.yes' | t | json }},
+            "sort_of": {{ 'essie.checkin.sort_of' | t | json }},
+            "not_really": {{ 'essie.checkin.not_really' | t | json }},
+            "not_now": {{ 'essie.checkin.not_now' | t | json }},
+            "price": {{ 'essie.checkin.price' | t | json }},
+            "not_right": {{ 'essie.checkin.not_right' | t | json }},
+            "deciding": {{ 'essie.checkin.deciding' | t | json }},
+            "browsing": {{ 'essie.checkin.browsing' | t | json }},
+            "other": {{ 'essie.checkin.other' | t | json }},
+            "for_me": {{ 'essie.checkin.for_me' | t | json }},
+            "gift": {{ 'essie.checkin.gift' | t | json }},
+            "looking": {{ 'essie.checkin.looking' | t | json }}
+          },
+          "otherPrompt": {{ 'essie.checkin.other_prompt' | t | json }},
+          "thanks": {{ 'essie.checkin.thanks' | t | json }}
+        }
+      {%- else -%}
+        null
+      {%- endif %},
       "productPrompts": {%- if request.page_type == 'product' and product -%}
         [
           {%- if product.vendor != blank -%}

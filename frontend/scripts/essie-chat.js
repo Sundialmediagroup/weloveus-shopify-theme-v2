@@ -53,12 +53,33 @@ const KEYS = {
   transcript: 'essie.transcript',
   shopper: 'essie.shopper',
   lastActive: 'essie.lastActive',
+  checkinAt: 'essie.checkinAt',
 };
 const MAX_SAVED_MESSAGES = 60;
 const CHAT_IDLE = 30 * 60 * 1000; // 30 minutes, as a GA4 session
 const PROMPTS_DISMISSED = 'essie.promptsDismissed'; // sessionStorage
 const REOPEN = 'essie.reopen'; // sessionStorage: signing in from the chat reloads the page
 const PROMPTS_DELAY = 1500;
+const CHECKIN_DELAY = 20 * 1000; // quiet time after a reply before Essie asks
+const CHECKIN_EVERY = 30 * 24 * 60 * 60 * 1000; // asked at most once in 30 days
+
+// The check-in: each question's answers and what follows them. Keys are what
+// the API stores and GA4 reports; the wording comes from the config.
+// `not_now` ends it; `other` asks the shopper to type the answer.
+const CHECKIN = {
+  found_it: {
+    answers: ['yes', 'sort_of', 'not_really', 'not_now'],
+    next: answer => (answer === 'yes' ? 'shopping_for' : 'missing'),
+  },
+  missing: {
+    answers: ['price', 'not_right', 'deciding', 'browsing', 'other'],
+    next: () => 'shopping_for',
+  },
+  shopping_for: {
+    answers: ['for_me', 'gift', 'looking'],
+    next: () => null,
+  },
+};
 const brandsKey = id => `essie.brands.${id}`;
 
 // ─── Storage ───────────────────────────────────────────────────────────────────
@@ -227,6 +248,29 @@ async function postMessage(text, retried = {}, onShopperChanged = () => {}) {
   }
   if (!res.ok || !res.body) throw new Error(`chat ${res.status}`);
   return res;
+}
+
+// Records one check-in answer. Best effort: a lost answer is not worth an
+// error in the chat. `keepalive` lets it finish if the shopper leaves the page.
+async function postFeedback(feedback) {
+  try {
+    const token = await visitorToken();
+    const body = {
+      ...feedback,
+      page_type: config.pageType || null,
+      conversation_id: load(KEYS.conversation),
+      visitor_token: token,
+    };
+    if (config.customerId) body.customer_id = config.customerId;
+    await fetch(api('/feedback'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Visitor-Token': token },
+      body: JSON.stringify(body),
+      keepalive: true,
+    });
+  } catch (err) {
+    console.warn('[essie] feedback', err);
+  }
 }
 
 // Yields each `data:` frame of an SSE stream as parsed JSON.
@@ -694,6 +738,133 @@ function initEssie() {
     scrollToEnd(true);
   }
 
+  // ─── Check-in ──────────────────────────────────────────────────────────────
+  //
+  // Up to three scripted questions in Essie's voice, asked once the chat goes
+  // quiet: after products were shown and nothing went in the cart
+  // (`products_no_add`), or two messages in (`engaged`). Never mid-reply, and
+  // at most once in CHECKIN_EVERY per browser, whether answered or not.
+  // Answers go to the API (postFeedback) and GA4 (essie_feedback), never to
+  // the model, and aren't saved in the transcript.
+  const checkin = {
+    productsShown: false, // in this conversation, since it last went idle
+    acted: false, // added to cart, checked out or opened a product from Essie
+    timer: 0,
+    pending: null, // a trigger waiting for the panel to open
+    trigger: null, // the trigger of the check-in on screen
+    awaitingComment: null, // the question a typed answer is for
+  };
+
+  const checkinDue = () => {
+    if (!config.checkin) return false;
+    const at = Number(load(KEYS.checkinAt)) || 0;
+    return Date.now() - at > CHECKIN_EVERY;
+  };
+
+  // Turns the shopper has taken since the last "Previous conversation" divider.
+  function turnsSinceDivider() {
+    let turns = 0;
+    for (let i = transcript.length - 1; i >= 0 && transcript[i].role !== 'divider'; i--) {
+      if (transcript[i].role === 'user') turns++;
+    }
+    return turns;
+  }
+
+  function noteResult(data) {
+    if (!data || typeof data !== 'object') return;
+    if (data.type === 'action_result' && data.status === 'success') checkin.acted = true;
+    else if (data.type !== 'quick_replies' && Array.isArray(data.items) && data.items.length) {
+      checkin.productsShown = true;
+    }
+  }
+
+  // After each reply: start the quiet-time clock if a trigger applies.
+  function scheduleCheckin() {
+    clearTimeout(checkin.timer);
+    if (checkin.trigger || !checkinDue()) return;
+    let trigger = null;
+    if (checkin.productsShown && !checkin.acted) trigger = 'products_no_add';
+    else if (turnsSinceDivider() >= 2) trigger = 'engaged';
+    if (!trigger) return;
+    checkin.timer = setTimeout(() => {
+      if (isOpen() && !busy) startCheckin(trigger);
+      else checkin.pending = trigger;
+    }, CHECKIN_DELAY);
+  }
+
+  // The shopper carried on (typed, tapped a suggestion, new chat): whatever
+  // the check-in was doing gives way.
+  function cancelCheckin() {
+    clearTimeout(checkin.timer);
+    checkin.pending = null;
+    checkin.awaitingComment = null;
+    list.querySelectorAll('[data-essie-checkin]').forEach(row => row.remove());
+  }
+
+  function startCheckin(trigger) {
+    if (!checkinDue()) return;
+    checkin.pending = null;
+    checkin.trigger = trigger;
+    store(KEYS.checkinAt, String(Date.now()));
+    track('essie_checkin_shown', { trigger });
+    askCheckin('found_it');
+  }
+
+  function askCheckin(question) {
+    const msg = messageEl('assistant');
+    msg.append(textPart(config.checkin.questions[question]));
+    const row = el('div', 'essie__chips');
+    row.dataset.essieCheckin = '';
+    CHECKIN[question].answers.forEach(answer => {
+      const chip = el('button', 'essie__chip', config.checkin.answers[answer]);
+      chip.type = 'button';
+      chip.dataset.essieCheckinQuestion = question;
+      chip.dataset.essieCheckinAnswer = answer;
+      row.append(chip);
+    });
+    msg.append(row);
+    scrollToEnd(true);
+  }
+
+  function sayCheckin(text) {
+    messageEl('assistant').append(textPart(text));
+    scrollToEnd(true);
+  }
+
+  function nextCheckin(question, answer) {
+    const next = CHECKIN[question].next(answer);
+    setTimeout(() => (next ? askCheckin(next) : sayCheckin(config.checkin.thanks)), 400);
+  }
+
+  function answerCheckin(question, answer) {
+    list.querySelectorAll('[data-essie-checkin]').forEach(row => row.remove());
+    messageEl('user').append(textPart(config.checkin.answers[answer]));
+    scrollToEnd(true);
+
+    if (answer === 'other') {
+      checkin.awaitingComment = question;
+      setTimeout(() => {
+        sayCheckin(config.checkin.otherPrompt);
+        input.focus({ preventScroll: true });
+      }, 400);
+      return;
+    }
+
+    track('essie_feedback', { trigger: checkin.trigger, question, answer });
+    postFeedback({ trigger: checkin.trigger, question, answer });
+    if (answer !== 'not_now') nextCheckin(question, answer);
+  }
+
+  // A typed answer to "Something else". Kept out of GA4: it's free text.
+  function commentCheckin(text) {
+    const question = checkin.awaitingComment;
+    checkin.awaitingComment = null;
+    messageEl('user').append(textPart(text));
+    track('essie_feedback', { trigger: checkin.trigger, question, answer: 'other' });
+    postFeedback({ trigger: checkin.trigger, question, answer: 'other', comment: text.slice(0, 1000) });
+    nextCheckin(question, 'other');
+  }
+
   // Streams one assistant reply into the list, then saves it.
   async function reply(text) {
     setBusy(true);
@@ -769,6 +940,7 @@ function initEssie() {
               const widget = toolResult(part.data);
               if (widget) place(part, widget);
               trackResult(part.data);
+              noteResult(part.data);
               syncWishlist(part.data);
             }
             // More may follow; `done` or the end of the stream clears this.
@@ -807,6 +979,7 @@ function initEssie() {
         if (saved.length) transcript.push({ role: 'assistant', parts: saved });
       });
       save();
+      scheduleCheckin();
     } catch (err) {
       console.warn('[essie]', err);
       track('essie_error', { recoverable: err.recoverable !== false });
@@ -824,6 +997,7 @@ function initEssie() {
     text = text.trim();
     if (!text || busy) return;
 
+    cancelCheckin();
     track('essie_message', {
       source,
       turn: transcript.filter(m => m.role === 'user').length + 1,
@@ -926,13 +1100,24 @@ function initEssie() {
     pill.setAttribute('aria-expanded', 'true');
     form.inert = false;
     // A page left open past the idle limit closes the chat off too.
-    if (!busy && markPreviousConversation()) rendered = false;
+    if (!busy && markPreviousConversation()) {
+      rendered = false;
+      checkin.productsShown = false;
+      checkin.acted = false;
+      checkin.pending = null;
+    }
     // Built once; a reply still streaming while the panel was closed carries on.
     if (!rendered) renderAll();
     rendered = true;
     visitorToken().catch(() => { /* retried when the first message is sent */ });
     fitViewport();
     input.focus({ preventScroll: true });
+    // Went quiet while closed: ask once they're back, after a beat.
+    if (checkin.pending && !busy) {
+      const trigger = checkin.pending;
+      checkin.pending = null;
+      setTimeout(() => isOpen() && !busy && startCheckin(trigger), 800);
+    }
   }
 
   function close() {
@@ -1027,7 +1212,8 @@ function initEssie() {
     const text = input.value;
     if (busy || !text.trim()) return;
     input.value = '';
-    submit(text);
+    if (checkin.awaitingComment) commentCheckin(text.trim());
+    else submit(text);
     // Keep typing: on phones the keyboard would otherwise drop after every
     // message and come back on the next tap, resizing the chat each time.
     // Still inside the tap, so iOS keeps the keyboard up.
@@ -1041,6 +1227,10 @@ function initEssie() {
   list.addEventListener('click', e => {
     const chip = e.target.closest('[data-essie-reply]');
     if (chip) submit(chip.dataset.essieReply, 'chip');
+    const answer = e.target.closest('[data-essie-checkin-answer]');
+    if (answer && !busy) answerCheckin(answer.dataset.essieCheckinQuestion, answer.dataset.essieCheckinAnswer);
+    // Opening a product Essie showed counts as acting on it, as does checkout.
+    if (e.target.closest('.essie__card[href], [data-essie-checkout]')) checkin.acted = true;
     if (e.target.closest('[data-essie-checkout]')) track('essie_checkout');
     if (e.target.closest('[data-essie-sign-in]')) {
       track('essie_sign_in');
@@ -1052,6 +1242,9 @@ function initEssie() {
   newChat.addEventListener('click', () => {
     if (busy) return;
     track('essie_new_chat');
+    cancelCheckin();
+    checkin.productsShown = false;
+    checkin.acted = false;
     const id = load(KEYS.conversation);
     if (id) store(brandsKey(id), null);
     brands = new Map();
