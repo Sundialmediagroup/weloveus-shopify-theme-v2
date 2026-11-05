@@ -2,6 +2,13 @@
 # Build, commit, and push the theme to Shopify and git.
 set -euo pipefail
 
+# Stop if live has code changes that aren't in this repo.
+if ! ./scripts/theme-sync-check.sh; then
+  echo
+  read -r -p "Live differs from local (see above). Push anyway? [y/N] " answer
+  [[ "$answer" =~ ^[Yy]$ ]] || { echo "Aborted."; exit 1; }
+fi
+
 npm run build
 
 git add -A
@@ -18,5 +25,6 @@ else
   git commit -m "$message"
 fi
 
-shopify theme push
+# --nodelete: never remove files on Shopify that are missing locally
+shopify theme push --nodelete
 git push

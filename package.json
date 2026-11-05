@@ -9,6 +9,7 @@
     "start": "concurrently -n vite,shopify -c cyan,magenta \"vite build --watch\" \"shopify theme dev\"",
     "build": "vite build",
     "theme:push": "./scripts/theme-push.sh",
+    "theme:sync-check": "./scripts/theme-sync-check.sh",
     "theme:check": "shopify theme check",
     "report": "node --env-file-if-exists=.env analytics/report.mjs"
   },
