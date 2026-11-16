@@ -1,0 +1,52 @@
+{%- comment -%}
+  Window display: statement. A coloured panel of rich text in the lead
+  column. It adds no type styles of its own: the text looks as it was
+  formatted in the editor, and the panel is as tall as the text.
+
+  Static: placed by sections/window-display.liquid, so it can be edited but
+  not removed or moved.
+{%- endcomment -%}
+{%- liquid
+  assign b = block.settings
+  assign style = ''
+  if b.background_color != blank
+    assign style = style | append: '--statement-bg: ' | append: b.background_color | append: ';'
+  endif
+  if b.text_color != blank
+    assign style = style | append: '--statement-color: ' | append: b.text_color | append: ';'
+  endif
+-%}
+<div
+  class="window-display__statement rte"
+  data-card="statement"
+  {% if style != blank %}style="{{ style }}"{% endif %}
+  {{ block.shopify_attributes }}
+>
+  {{- b.text -}}
+</div>
+
+{% schema %}
+{
+  "name": "Statement",
+  "settings": [
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Where Community Meets Commerce.</p><p>This platform transforms love into economic action by investing in the creators and founders who shape our world.</p><p>A marketplace of over 125 Black-owned brands, backed by ESSENCE.</p>"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background colour",
+      "info": "Leave blank for black."
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text colour",
+      "info": "Leave blank for white."
+    }
+  ]
+}
+{% endschema %}

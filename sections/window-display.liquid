@@ -2,250 +2,40 @@
   Window display — the top of the homepage, laid out like a shop window: the
   most in the least space. Three columns from `lg` (1 : 2 : 1):
 
-  - lead:  the manifesto, which is always there, and one feature card below it
+  - lead:  a statement panel and one feature card below it
   - hero:  this week's edit, an image or video with its headline and button,
            and three of its products underneath
-  - side:  Trending now, a short list, and Ask Essie prompts
+  - side:  a featured collection, as a short list, and Ask Essie prompts
 
-  Below `lg` the hero comes first, then the manifesto and feature card side by
-  side (stacked on phones), then Trending and Essie. The hero is first in the
-  source too, so that is also the reading order and it is the first image to
-  load.
+  Below `lg` the hero comes first, then the statement and feature card side by
+  side (stacked on phones), then the collection and Essie. The hero is first in
+  the source too, so that is also the reading order and it is the first image
+  to load.
 
-  The manifesto is section settings, not a block: it can be reworded but not
-  removed.
+  Each part is a static block (blocks/_window-*.liquid): edited on its own in
+  the theme editor, but fixed in place, so it can't be removed or moved. This
+  file only lays them out.
 
-  Accepts (via section settings): see the schema. Takes no blocks.
+  Analytics (frontend/scripts/analytics.js): `data-feature` sends
+  feature_view when the window is first seen, and any click inside it marks
+  `window_display` on the order's `_features`. Each part is a [data-card]
+  (hero, statement, feature-card, collection-list) so section_click says
+  which one was used; the two product lists are `window_edit` and
+  `window_collection`; the Essie prompts send select_content.
 {%- endcomment -%}
 
-{%- liquid
-  assign s = section.settings
+<div class="window-display" data-feature="window_display">
+  {% content_for 'block', type: '_window-hero', id: 'hero' %}
 
-  # Copy the merchant can override: the translation first, then their text
-  # over it. Not `s.x | default: 'key' | t`, which runs their text through `t`.
-  assign hero_cta = 'sections.window_display.hero_cta' | t
-  assign manifesto_link_label = 'sections.window_display.manifesto_link' | t
-  assign trending_heading = 'sections.window_display.trending_heading' | t
-  assign essie_text = 'sections.window_display.essie_text' | t
-  assign prompt_1 = 'essie.starter_gift' | t
-  assign prompt_2 = 'essie.starter_body_care' | t
-  assign prompt_3 = 'sections.window_display.essie_prompt_new' | t
-  if s.hero_cta != blank
-    assign hero_cta = s.hero_cta | escape
-  endif
-  if s.manifesto_link_label != blank
-    assign manifesto_link_label = s.manifesto_link_label | escape
-  endif
-  if s.trending_heading != blank
-    assign trending_heading = s.trending_heading | escape
-  endif
-  if s.essie_text != blank
-    assign essie_text = s.essie_text | escape
-  endif
-  if s.essie_prompt_1 != blank
-    assign prompt_1 = s.essie_prompt_1 | escape
-  endif
-  if s.essie_prompt_2 != blank
-    assign prompt_2 = s.essie_prompt_2 | escape
-  endif
-  if s.essie_prompt_3 != blank
-    assign prompt_3 = s.essie_prompt_3 | escape
-  endif
-  # `t` output is already escaped, so the prompts go straight into attributes.
-  assign essie_prompts = prompt_1 | append: '~|~' | append: prompt_2 | append: '~|~' | append: prompt_3 | split: '~|~'
-
-  # ─── Hero ───
-  assign hero_heading = s.hero_heading | escape
-  assign hero_url = s.hero_url
-  assign edit_source = s.edit_collection
-  if hero_url == blank and edit_source != blank
-    capture edit_sort
-      render 'collection-default-sort', sort_collection: edit_source
-    endcapture
-    assign hero_url = edit_source.url | append: '?sort_by=' | append: edit_sort
-  endif
-
-  # ─── Feature card ───
-  # With nothing chosen the card would render nothing, leaving the editor no
-  # sign it is there; a placeholder title stands in until one is picked.
-  assign feature_title = s.feature_title
-  if request.design_mode and feature_title == blank and s.feature_collection == blank and s.feature_product == blank
-    assign feature_title = 'sections.feature_card.placeholder_title' | t
-  endif
-
-  # ─── Trending ───
-  # Falls back to All products, like the product carousel, so the list is
-  # never empty. Products come in the collection's own order: pick one kept
-  # in order (Trending, which a daily job re-ranks) or sorted by best selling.
-  assign trending_source = s.trending_collection
-  if trending_source == blank or trending_source.products_count == 0
-    assign trending_source = collections.all
-  endif
-  capture trending_sort
-    render 'collection-default-sort', sort_collection: trending_source
-  endcapture
-  assign trending_url = trending_source.url | append: '?sort_by=' | append: trending_sort
-  assign trending_heading_id = 'WindowTrending-' | append: section.id
-
-  # ─── Essie ───
-  # The same switch as snippets/essie-chat.liquid: the prompts only show where
-  # the chat they open exists.
-  assign essie_switch = shop.metafields.custom.essie_enabled.value
-  assign essie_on = settings.essie_enabled
-  if essie_switch == false or essie_switch == 'false'
-    assign essie_on = false
-  endif
-  if settings.essie_api_base == blank or s.show_essie == false
-    assign essie_on = false
-  endif
-
-  assign manifesto_id = 'WindowManifesto-' | append: section.id
--%}
-
-<div class="window-display">
-
-  {%- comment -%} ─── Hero ─── {%- endcomment -%}
-  <div class="window-display__hero">
-    <div class="window-display__hero-media">
-      {%- if hero_url != blank -%}
-        {%- comment -%}
-          The picture links too, but only the button is a tab stop: one name
-          for one destination.
-        {%- endcomment -%}
-        <a class="window-display__hero-link" href="{{ hero_url }}" tabindex="-1" aria-hidden="true"></a>
-      {%- endif -%}
-      {%- if s.hero_video != blank -%}
-        {{- s.hero_video | video_tag:
-          class: 'window-display__hero-image',
-          image_size: '1600x',
-          autoplay: true,
-          loop: true,
-          muted: true,
-          playsinline: true,
-          controls: false
-        -}}
-      {%- elsif s.hero_image != blank -%}
-        {{- s.hero_image | image_url: width: 2000 | image_tag:
-          class: 'window-display__hero-image',
-          alt: s.hero_image.alt | default: s.hero_heading,
-          loading: 'eager',
-          fetchpriority: 'high',
-          sizes: '(min-width: 990px) 50vw, 100vw',
-          widths: '600, 900, 1200, 1600, 2000',
-          width: s.hero_image.width,
-          height: s.hero_image.height
-        -}}
-      {%- else -%}
-        {{- 'lifestyle-2' | placeholder_svg_tag: 'window-display__hero-image window-display__placeholder' -}}
-      {%- endif -%}
-      {%- if s.hero_label != blank -%}
-        <span class="badge window-display__hero-label">{{ s.hero_label | escape }}</span>
-      {%- endif -%}
-    </div>
-
-    {%- if hero_heading != blank or hero_url != blank -%}
-      <div class="window-display__hero-text">
-        {%- if hero_heading != blank -%}
-          <h2 class="window-display__hero-heading">{{ hero_heading }}</h2>
-        {%- endif -%}
-        {%- if hero_url != blank -%}
-          <a class="btn btn--primary window-display__hero-cta" href="{{ hero_url }}" data-card="hero">{{ hero_cta }}</a>
-        {%- endif -%}
-      </div>
-    {%- endif -%}
-
-    {%- if edit_source != blank and edit_source.products_count > 0 -%}
-      {%- assign edit_heading = 'sections.window_display.edit_heading' | t -%}
-      <div
-        class="window-display__edit"
-        data-item-list="window_edit"
-        data-item-list-name="{{ edit_source.title | escape }}"
-      >
-        <h3 class="window-display__label">{{ edit_heading }}</h3>
-        <ul class="window-display__edit-grid" role="list">
-          {%- for item in edit_source.products limit: 3 -%}
-            <li>
-              {%- render 'product-card',
-                product: item,
-                sizes: '(min-width: 990px) 16vw, 30vw'
-              -%}
-            </li>
-          {%- endfor -%}
-        </ul>
-      </div>
-    {%- endif -%}
-  </div>
-
-  {%- comment -%} ─── Lead: manifesto and feature card ─── {%- endcomment -%}
   <div class="window-display__lead">
-    <div class="window-display__manifesto" role="group" aria-labelledby="{{ manifesto_id }}">
-      <p class="window-display__eyebrow">{{ 'sections.window_display.manifesto_label' | t }}</p>
-      <div class="window-display__manifesto-body">
-        <h2 class="window-display__manifesto-heading" id="{{ manifesto_id }}">{{ s.manifesto_heading | escape }}</h2>
-        {%- if s.manifesto_text != blank -%}
-          <p class="window-display__manifesto-text">{{ s.manifesto_text | escape | newline_to_br }}</p>
-        {%- endif -%}
-      </div>
-      {%- if s.manifesto_footnote != blank or s.manifesto_url != blank -%}
-        <div class="window-display__manifesto-foot">
-          {%- if s.manifesto_footnote != blank -%}
-            <p class="window-display__manifesto-footnote">{{ s.manifesto_footnote | escape }}</p>
-          {%- endif -%}
-          {%- if s.manifesto_url != blank -%}
-            <a class="window-display__manifesto-link" href="{{ s.manifesto_url }}">{{ manifesto_link_label }}</a>
-          {%- endif -%}
-        </div>
-      {%- endif -%}
-    </div>
-
-    {%- render 'feature-card',
-      featured_product: s.feature_product,
-      collection: s.feature_collection,
-      sort: s.feature_sort,
-      image: s.feature_image,
-      title: feature_title,
-      url: s.feature_url,
-      background: s.feature_background,
-      layout: 'stacked',
-      lazy: false
-    -%}
+    {% content_for 'block', type: '_window-statement', id: 'statement' %}
+    {% content_for 'block', type: '_window-feature', id: 'feature' %}
   </div>
 
-  {%- comment -%} ─── Side: Trending and Essie ─── {%- endcomment -%}
   <div class="window-display__side">
-    <div
-      class="window-display__trending"
-      data-item-list="window_trending"
-      data-item-list-name="{{ trending_heading }}"
-      role="group"
-      aria-labelledby="{{ trending_heading_id }}"
-    >
-      <div class="window-display__trending-head">
-        <h2 class="window-display__trending-heading" id="{{ trending_heading_id }}">{{ trending_heading }}</h2>
-        <a class="window-display__view-all" href="{{ trending_url }}">{{ 'sections.window_display.view_all' | t }}</a>
-      </div>
-      <ul class="window-display__trending-list" role="list">
-        {%- for item in trending_source.products limit: s.trending_count -%}
-          <li class="window-display__trending-item">
-            {%- render 'product-card', product: item, layout: 'row', sizes: '96px' -%}
-          </li>
-        {%- endfor -%}
-      </ul>
-    </div>
-
-    {%- if essie_on -%}
-      <div class="window-display__essie">
-        <p class="window-display__eyebrow">{{ 'sections.window_display.essie_label' | t }}</p>
-        <p class="window-display__essie-text">{{ essie_text }}</p>
-        <div class="window-display__chips">
-          {%- for prompt in essie_prompts -%}
-            <button class="window-display__chip" type="button" data-essie-ask="{{ prompt }}">{{ prompt }}</button>
-          {%- endfor -%}
-        </div>
-      </div>
-    {%- endif -%}
+    {% content_for 'block', type: '_window-collection', id: 'collection' %}
+    {% content_for 'block', type: '_window-essie', id: 'essie' %}
   </div>
-
 </div>
 
 {% schema %}
@@ -253,205 +43,7 @@
   "name": "Window Display",
   "class": "section-type--window-display",
   "tag": "section",
-  "settings": [
-    {
-      "type": "header",
-      "content": "Manifesto"
-    },
-    {
-      "type": "paragraph",
-      "content": "Always shown, top left. Reword it here; it can't be removed."
-    },
-    {
-      "type": "text",
-      "id": "manifesto_heading",
-      "label": "Headline",
-      "default": "Where Community Meets Commerce."
-    },
-    {
-      "type": "textarea",
-      "id": "manifesto_text",
-      "label": "Text",
-      "default": "This platform transforms love into economic action by investing in the creators and founders who shape our world."
-    },
-    {
-      "type": "text",
-      "id": "manifesto_footnote",
-      "label": "Footnote",
-      "default": "A marketplace of over 125 Black-owned brands, backed by ESSENCE."
-    },
-    {
-      "type": "url",
-      "id": "manifesto_url",
-      "label": "Link",
-      "info": "Optional. Adds a link under the footnote."
-    },
-    {
-      "type": "text",
-      "id": "manifesto_link_label",
-      "label": "Link text",
-      "info": "Leave blank for “Our story”."
-    },
-    {
-      "type": "header",
-      "content": "Hero"
-    },
-    {
-      "type": "image_picker",
-      "id": "hero_image",
-      "label": "Image",
-      "info": "Cropped to 16:11."
-    },
-    {
-      "type": "video",
-      "id": "hero_video",
-      "label": "Video",
-      "info": "Optional. Plays muted on a loop in place of the image."
-    },
-    {
-      "type": "text",
-      "id": "hero_label",
-      "label": "Label",
-      "info": "A small tag on the image, e.g. “This week’s edit”."
-    },
-    {
-      "type": "text",
-      "id": "hero_heading",
-      "label": "Headline"
-    },
-    {
-      "type": "collection",
-      "id": "edit_collection",
-      "label": "Edit collection",
-      "info": "Its first three products show under the hero, and the button opens it."
-    },
-    {
-      "type": "url",
-      "id": "hero_url",
-      "label": "Link",
-      "info": "Optional. Leave blank to link to the edit collection."
-    },
-    {
-      "type": "text",
-      "id": "hero_cta",
-      "label": "Button text",
-      "info": "Leave blank for “Shop the edit”."
-    },
-    {
-      "type": "header",
-      "content": "Feature card"
-    },
-    {
-      "type": "paragraph",
-      "content": "Under the manifesto. Fills its image, title and link from the product or collection; anything set below overrides it."
-    },
-    {
-      "type": "product",
-      "id": "feature_product",
-      "label": "Product",
-      "info": "Optional. Wins over the collection while it's in stock."
-    },
-    {
-      "type": "collection",
-      "id": "feature_collection",
-      "label": "Collection"
-    },
-    {
-      "type": "select",
-      "id": "feature_sort",
-      "label": "Collection sort",
-      "default": "default",
-      "options": [
-        { "value": "default", "label": "Collection default" },
-        { "value": "best-selling", "label": "Best sellers" },
-        { "value": "created-descending", "label": "Latest arrivals" },
-        { "value": "price-ascending", "label": "Price: Low to high" },
-        { "value": "price-descending", "label": "Price: High to low" }
-      ]
-    },
-    {
-      "type": "image_picker",
-      "id": "feature_image",
-      "label": "Image",
-      "info": "Cropped to 4:5."
-    },
-    {
-      "type": "text",
-      "id": "feature_title",
-      "label": "Title override"
-    },
-    {
-      "type": "url",
-      "id": "feature_url",
-      "label": "Link override"
-    },
-    {
-      "type": "color",
-      "id": "feature_background",
-      "label": "Panel colour",
-      "info": "Leave blank for the standard sand."
-    },
-    {
-      "type": "header",
-      "content": "Trending"
-    },
-    {
-      "type": "collection",
-      "id": "trending_collection",
-      "label": "Collection",
-      "info": "Shown in the collection's own order. Use Trending, or one sorted by best selling. Blank shows All products."
-    },
-    {
-      "type": "text",
-      "id": "trending_heading",
-      "label": "Heading",
-      "info": "Leave blank for “Trending now”."
-    },
-    {
-      "type": "range",
-      "id": "trending_count",
-      "label": "Products to show",
-      "min": 3,
-      "max": 8,
-      "step": 1,
-      "default": 5
-    },
-    {
-      "type": "header",
-      "content": "Ask Essie"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_essie",
-      "label": "Show Essie prompts",
-      "info": "Only shows while Essie chat is switched on.",
-      "default": true
-    },
-    {
-      "type": "text",
-      "id": "essie_text",
-      "label": "Text",
-      "info": "Leave blank for the standard line."
-    },
-    {
-      "type": "text",
-      "id": "essie_prompt_1",
-      "label": "Prompt 1",
-      "info": "Each prompt opens Essie and asks it. Leave blank for “Help me find a gift”."
-    },
-    {
-      "type": "text",
-      "id": "essie_prompt_2",
-      "label": "Prompt 2",
-      "info": "Leave blank for “Show me body care”."
-    },
-    {
-      "type": "text",
-      "id": "essie_prompt_3",
-      "label": "Prompt 3",
-      "info": "Leave blank for “What’s new this week?”."
-    }
-  ],
+  "settings": [],
   "presets": [
     {
       "name": "Window Display"

@@ -78,7 +78,7 @@
 }
 
 .product-card__vendor {
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   font-weight: var(--weight-regular);
   // line-height: var(--leading-snug);
   // text-transform: uppercase;
@@ -123,54 +123,31 @@
 }
 
 // ─── Row layout (`layout: 'row'`) ──────────────────────────────────────────────
-// A compact list row in the promo unit's style (feature-card--cta): picture on
-// the left, no panel, the name level with the top of the picture and the price
-// with an arrow level with its bottom, in the label style of the promo's
-// "Shop now". The window display's Trending list.
+// A compact list row: picture on the left, text beside it. Only the layout
+// differs from the standard card — brand, name and price keep its exact type
+// and spacing, so a product reads the same in a list as in a grid. The
+// window display's featured collection list.
 
 .product-card--row {
   display: grid;
   grid-template-columns: var(--space-24) minmax(0, 1fr);
   gap: var(--space-4);
+  align-items: start;
   color: var(--color-fg);
 
+  // No gap above the text, which starts level with the top of the picture:
+  // whichever line comes first is trimmed to its capitals.
   .product-card__info {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: var(--space-2);
     padding-top: 0;
-  }
 
-  .product-card__vendor {
-    @include trim-to-cap;
-    color: var(--color-fg-muted);
+    > :first-child {
+      @include trim-to-cap;
+    }
   }
 
   .product-card__title {
-    font-size: var(--text-base);
-    line-height: var(--leading-snug);
     overflow-wrap: anywhere;
     @include line-clamp(2);
-  }
-
-  // The price sits where the promo's CTA does: last, on the picture's bottom
-  // edge. A some-variants sale note goes above it.
-  .product-card__sale-note {
-    order: 1;
-    margin-top: 0;
-  }
-
-  .product-card__price {
-    order: 2;
-    margin-top: auto;
-    text-box: trim-end cap alphabetic;
-  }
-
-  .product-card__price-regular,
-  .product-card__price-sale,
-  .product-card__price-compare {
-    @include type-label;
   }
 
   &:hover .product-card__title {

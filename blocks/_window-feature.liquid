@@ -1,0 +1,87 @@
+{%- comment -%}
+  Window display: feature card, under the statement. Fills its image, title
+  and link from the product or collection; its own settings override them.
+
+  Static: placed by sections/window-display.liquid, so it can be edited but
+  not removed or moved.
+{%- endcomment -%}
+{%- liquid
+  assign b = block.settings
+  # With nothing chosen the card would render nothing, leaving the editor no
+  # sign it is there; a placeholder title stands in until one is picked.
+  assign feature_title = b.title
+  if request.design_mode and feature_title == blank and b.collection == blank and b.product == blank
+    assign feature_title = 'sections.feature_card.placeholder_title' | t
+  endif
+-%}
+<div class="window-display__feature" {{ block.shopify_attributes }}>
+  {%- render 'feature-card',
+    featured_product: b.product,
+    collection: b.collection,
+    sort: b.sort,
+    image: b.image,
+    title: feature_title,
+    url: b.url,
+    background: b.background,
+    layout: 'stacked',
+    lazy: false
+  -%}
+</div>
+
+{% schema %}
+{
+  "name": "Feature card",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Fills its image, title and link from the product or collection; anything set below overrides it."
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Product",
+      "info": "Optional. Wins over the collection while it's in stock."
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "select",
+      "id": "sort",
+      "label": "Collection sort",
+      "default": "default",
+      "options": [
+        { "value": "default", "label": "Collection default" },
+        { "value": "best-selling", "label": "Best sellers" },
+        { "value": "created-descending", "label": "Latest arrivals" },
+        { "value": "price-ascending", "label": "Price: Low to high" },
+        { "value": "price-descending", "label": "Price: High to low" }
+      ]
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image",
+      "info": "Cropped to 4:5."
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title override"
+    },
+    {
+      "type": "url",
+      "id": "url",
+      "label": "Link override"
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Panel colour",
+      "info": "Leave blank for the standard sand."
+    }
+  ]
+}
+{% endschema %}

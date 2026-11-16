@@ -1,0 +1,99 @@
+{%- comment -%}
+  Window display: Ask Essie. A line of text and three prompts, each of which
+  opens Essie and asks it.
+
+  The same switch as snippets/essie-chat.liquid: the prompts only show where
+  the chat they open exists.
+
+  Static: placed by sections/window-display.liquid, so it can be edited but
+  not removed or moved.
+{%- endcomment -%}
+{%- liquid
+  assign b = block.settings
+
+  assign essie_switch = shop.metafields.custom.essie_enabled.value
+  assign essie_on = settings.essie_enabled
+  if essie_switch == false or essie_switch == 'false'
+    assign essie_on = false
+  endif
+  if settings.essie_api_base == blank or b.show == false
+    assign essie_on = false
+  endif
+
+  # Copy the merchant can override: the translation first, then their text
+  # over it. Not `b.x | default: 'key' | t`, which runs their text through `t`.
+  assign essie_text = 'sections.window_display.essie_text' | t
+  assign prompt_1 = 'essie.starter_gift' | t
+  assign prompt_2 = 'essie.starter_body_care' | t
+  assign prompt_3 = 'sections.window_display.essie_prompt_new' | t
+  if b.text != blank
+    assign essie_text = b.text | escape
+  endif
+  if b.prompt_1 != blank
+    assign prompt_1 = b.prompt_1 | escape
+  endif
+  if b.prompt_2 != blank
+    assign prompt_2 = b.prompt_2 | escape
+  endif
+  if b.prompt_3 != blank
+    assign prompt_3 = b.prompt_3 | escape
+  endif
+  # `t` output is already escaped, so the prompts go straight into attributes.
+  assign essie_prompts = prompt_1 | append: '~|~' | append: prompt_2 | append: '~|~' | append: prompt_3 | split: '~|~'
+-%}
+{%- if essie_on -%}
+  <div class="window-display__essie" {{ block.shopify_attributes }}>
+    <p class="window-display__eyebrow">{{ 'sections.window_display.essie_label' | t }}</p>
+    <p class="window-display__essie-text">{{ essie_text }}</p>
+    <div class="window-display__chips">
+      {%- for prompt in essie_prompts -%}
+        <button
+          class="window-display__chip"
+          type="button"
+          data-essie-ask="{{ prompt }}"
+          data-track-content="window_essie_prompt"
+          data-track-content-id="{{ forloop.index }}"
+        >{{ prompt }}</button>
+      {%- endfor -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Ask Essie",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show",
+      "label": "Show Essie prompts",
+      "info": "Only shows while Essie chat is switched on.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "label": "Text",
+      "info": "Leave blank for the standard line."
+    },
+    {
+      "type": "text",
+      "id": "prompt_1",
+      "label": "Prompt 1",
+      "info": "Each prompt opens Essie and asks it. Leave blank for “Help me find a gift”."
+    },
+    {
+      "type": "text",
+      "id": "prompt_2",
+      "label": "Prompt 2",
+      "info": "Leave blank for “Show me body care”."
+    },
+    {
+      "type": "text",
+      "id": "prompt_3",
+      "label": "Prompt 3",
+      "info": "Leave blank for “What’s new this week?”."
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,152 @@
+{%- comment -%}
+  Window display: hero. This week's edit: an image or video with its headline
+  and button, and three of its products underneath. First in the source, so it
+  is the first image to load.
+
+  Static: placed by sections/window-display.liquid, so it can be edited but
+  not removed or moved.
+{%- endcomment -%}
+{%- liquid
+  assign b = block.settings
+  assign hero_cta = 'sections.window_display.hero_cta' | t
+  if b.cta != blank
+    assign hero_cta = b.cta | escape
+  endif
+
+  assign hero_heading = b.heading | escape
+  assign hero_url = b.url
+  assign edit_source = b.edit_collection
+  if hero_url == blank and edit_source != blank
+    capture edit_sort
+      render 'collection-default-sort', sort_collection: edit_source
+    endcapture
+    assign hero_url = edit_source.url | append: '?sort_by=' | append: edit_sort
+  endif
+-%}
+{%- comment -%}
+  The whole hero is one card for section_click, so the picture and the button
+  both report as `hero`. Its product cards carry their own.
+{%- endcomment -%}
+<div
+  class="window-display__hero"
+  data-card="hero"
+  {% if edit_source != blank %}data-card-collection="{{ edit_source.handle }}"{% endif %}
+  {{ block.shopify_attributes }}
+>
+  <div class="window-display__hero-media">
+    {%- if hero_url != blank -%}
+      {%- comment -%}
+        The picture links too, but only the button is a tab stop: one name
+        for one destination.
+      {%- endcomment -%}
+      <a class="window-display__hero-link" href="{{ hero_url }}" tabindex="-1" aria-hidden="true"></a>
+    {%- endif -%}
+    {%- if b.video != blank -%}
+      {{- b.video | video_tag:
+        class: 'window-display__hero-image',
+        image_size: '1600x',
+        autoplay: true,
+        loop: true,
+        muted: true,
+        playsinline: true,
+        controls: false
+      -}}
+    {%- elsif b.image != blank -%}
+      {{- b.image | image_url: width: 2000 | image_tag:
+        class: 'window-display__hero-image',
+        alt: b.image.alt | default: b.heading,
+        loading: 'eager',
+        fetchpriority: 'high',
+        sizes: '(min-width: 990px) 50vw, 100vw',
+        widths: '600, 900, 1200, 1600, 2000',
+        width: b.image.width,
+        height: b.image.height
+      -}}
+    {%- else -%}
+      {{- 'lifestyle-2' | placeholder_svg_tag: 'window-display__hero-image window-display__placeholder' -}}
+    {%- endif -%}
+    {%- if b.label != blank -%}
+      <span class="badge window-display__hero-label">{{ b.label | escape }}</span>
+    {%- endif -%}
+  </div>
+
+  {%- if hero_heading != blank or hero_url != blank -%}
+    <div class="window-display__hero-text">
+      {%- if hero_heading != blank -%}
+        <h2 class="window-display__hero-heading">{{ hero_heading }}</h2>
+      {%- endif -%}
+      {%- if hero_url != blank -%}
+        <a class="btn btn--primary window-display__hero-cta" href="{{ hero_url }}">{{ hero_cta }}</a>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  {%- if edit_source != blank and edit_source.products_count > 0 -%}
+    <div
+      class="window-display__edit"
+      data-item-list="window_edit"
+      data-item-list-name="{{ edit_source.title | escape }}"
+    >
+      <h3 class="window-display__label">{{ 'sections.window_display.edit_heading' | t }}</h3>
+      <ul class="window-display__edit-grid" role="list">
+        {%- for item in edit_source.products limit: 3 -%}
+          <li>
+            {%- render 'product-card',
+              product: item,
+              sizes: '(min-width: 990px) 16vw, 30vw'
+            -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Hero",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image",
+      "info": "Cropped to 16:11."
+    },
+    {
+      "type": "video",
+      "id": "video",
+      "label": "Video",
+      "info": "Optional. Plays muted on a loop in place of the image."
+    },
+    {
+      "type": "text",
+      "id": "label",
+      "label": "Label",
+      "info": "A small tag on the image, e.g. “This week’s edit”."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Headline"
+    },
+    {
+      "type": "collection",
+      "id": "edit_collection",
+      "label": "Edit collection",
+      "info": "Its first three products show under the hero, and the button opens it."
+    },
+    {
+      "type": "url",
+      "id": "url",
+      "label": "Link",
+      "info": "Optional. Leave blank to link to the edit collection."
+    },
+    {
+      "type": "text",
+      "id": "cta",
+      "label": "Button text",
+      "info": "Leave blank for “Shop the edit”."
+    }
+  ]
+}
+{% endschema %}

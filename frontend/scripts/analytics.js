@@ -258,6 +258,12 @@ document.addEventListener('click', e => {
     destination_url: link.getAttribute('href'),
   }
 
+  // A link followed inside a feature counts as using it, for the order's
+  // `_features` — the window display's hero, statement and feature card have
+  // no product list to do that for them.
+  const feature = link.closest('[data-feature]')?.dataset.feature
+  if (feature) markFeature(feature)
+
   const card = link.closest('[data-card]')
   if (card) {
     track('section_click', {

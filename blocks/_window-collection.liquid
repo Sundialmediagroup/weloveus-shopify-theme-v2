@@ -1,0 +1,81 @@
+{%- comment -%}
+  Window display: featured collection list. A short list of a collection's
+  products, in the collection's own order, with a link to the rest.
+
+  Falls back to All products, like the product carousel, so the list is never
+  empty. The heading falls back to the collection's title.
+
+  Static: placed by sections/window-display.liquid, so it can be edited but
+  not removed or moved.
+{%- endcomment -%}
+{%- liquid
+  assign b = block.settings
+  assign source = b.collection
+  if source == blank or source.products_count == 0
+    assign source = collections.all
+  endif
+  capture source_sort
+    render 'collection-default-sort', sort_collection: source
+  endcapture
+  assign source_url = source.url | append: '?sort_by=' | append: source_sort
+
+  assign heading = b.heading | escape
+  if heading == blank
+    assign heading = source.title | escape
+  endif
+  assign heading_id = 'WindowCollection-' | append: block.id
+-%}
+<div
+  class="window-display__collection"
+  data-item-list="window_collection"
+  data-item-list-name="{{ heading }}"
+  role="group"
+  aria-labelledby="{{ heading_id }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="window-display__collection-head">
+    <h2 class="window-display__collection-heading" id="{{ heading_id }}">{{ heading }}</h2>
+    <a
+      class="window-display__view-all"
+      href="{{ source_url }}"
+      data-card="collection-list"
+      data-card-collection="{{ source.handle }}"
+    >{{ 'sections.window_display.view_all' | t }}</a>
+  </div>
+  <ul class="window-display__collection-list" role="list">
+    {%- for item in source.products limit: b.count -%}
+      <li class="window-display__collection-item">
+        {%- render 'product-card', product: item, layout: 'row', sizes: '96px' -%}
+      </li>
+    {%- endfor -%}
+  </ul>
+</div>
+
+{% schema %}
+{
+  "name": "Featured collection list",
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection",
+      "info": "Shown in the collection's own order. Blank shows All products."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Leave blank to use the collection's title."
+    },
+    {
+      "type": "range",
+      "id": "count",
+      "label": "Products to show",
+      "min": 3,
+      "max": 8,
+      "step": 1,
+      "default": 5
+    }
+  ]
+}
+{% endschema %}
