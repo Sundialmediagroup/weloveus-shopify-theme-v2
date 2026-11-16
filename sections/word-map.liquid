@@ -19,7 +19,7 @@
 -%}
 
 {%- if menu.links.size > 0 -%}
-  <nav class="word-map" aria-labelledby="{{ heading_id }}">
+  <nav class="word-map" data-feature="word_map" aria-labelledby="{{ heading_id }}">
     <h2 class="visually-hidden" id="{{ heading_id }}">
       {{- section.settings.heading | default: menu.title -}}
     </h2>
