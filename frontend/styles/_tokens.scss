@@ -217,6 +217,10 @@
   --grid-cols:     12;
   --grid-gap:      var(--site-frame); // carousels and card grids — follows the frame
   --measure:      38rem;             // 608px — reading column: ~66 characters of body copy at --text-lg
+  // Editorial grid from `lg`: aside, reading column, balancing column. Pages,
+  // articles, and anything that lines up under them (e.g. a Shopify form).
+  --editorial-cols: minmax(11rem, 1fr) minmax(0, var(--measure)) minmax(0, 1fr);
+  --editorial-gap:  var(--space-10);
   --menu-gap:     var(--space-6);    // between header and footer menu items
   --bar-row:      var(--space-10);   // 40px — row inside the header and footer bars, so they match
   --essie-bar-height: 3.5rem;         // 56px — the Ask Essie bar; the brand directory clears it

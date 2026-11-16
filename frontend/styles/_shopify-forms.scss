@@ -1,0 +1,95 @@
+@use 'abstracts/mixins' as *;
+
+// Shopify Forms — the Forms app's inline and pop-up forms (e.g. the customer
+// feedback survey on pages/customer-feedback-survey).
+//
+// The form renders inside a shadow root, so theme classes can't reach it. It
+// does read its whole look from custom properties declared on its `:host`, and
+// a rule from the page that targets the host element outranks `:host`, so we
+// set those properties here from tokens. That's the app's own theming surface:
+// nothing depends on its generated class names. Values set in the app's form
+// editor (colours, alignment) are overridden; the copy and fields still come
+// from the app.
+
+shopify-forms-embed {
+  // Type
+  --forms-body-font: normal var(--weight-regular) var(--text-base) / var(--leading-normal) var(--font-body);
+  --forms-heading-font: normal var(--weight-regular) var(--text-3xl) / var(--leading-tight) var(--font-heading);
+  --forms-base-font-size: var(--text-base);
+  --forms-heading-font-size: var(--text-3xl);
+  --heading-font-size: var(--text-3xl);
+
+  // Colour
+  --body-text-color: var(--color-fg);
+  --heading-text-color: var(--color-fg);
+  --form-text-color: var(--color-fg);
+  --link-text-color: var(--color-fg);
+  --form-placeholder-color: var(--color-fg-subtle);
+  --form-error-color: var(--color-error);
+  --form-background-color: var(--color-bg);
+  --container-background-color: transparent;
+  --forms-accent-color: var(--color-fg); // checkboxes, radios, links
+  --forms-accent-color-hovered-modifier: var(--color-bg-subtle);
+  --forms-discount-code-color: var(--color-fg);
+  --forms-discount-code-background-color-hover: var(--color-bg-subtle);
+
+  // Fields — the .input primitive: strong hairline, small radius, and on
+  // focus a dark edge with a soft halo. The app draws borders as box-shadows.
+  --form-field-border: 0 0 0 1px var(--color-border-strong);
+  --form-field-border-focused: 0 0 0 1px var(--color-fg), 0 0 0 4px rgb(0 0 0 / 0.08);
+  --form-field-border-radius: var(--radius-sm);
+
+  // Button — .btn--primary: near-black pill
+  --button-background-color: var(--color-accent);
+  --button-text-color: var(--color-accent-fg);
+  --button-border-radius: var(--radius-full);
+  --button-padding: var(--space-4);
+  --button-border: 0;
+
+  // Keyboard focus — the global 2px ring
+  --forms-focus-outline-color: var(--color-fg);
+  --forms-focus-outline-width: 2px;
+  --forms-focus-outline-offset: 2px;
+
+  // Layout — start-aligned like all theme copy, in a reading column, with no
+  // padding of its own (the section supplies spacing).
+  --container-text-alignment: start;
+  --inline-form-alignment: start;
+  // The app insets the form 2px inside a clipping wrapper, so a form as wide
+  // as the wrapper loses its right-hand field borders. Stay a little narrower.
+  --inline-container-max-width: min(var(--measure), calc(100% - var(--space-1)));
+  --forms-padding-top: 0;
+  --forms-padding-right: 0;
+  --forms-padding-bottom: 0;
+  --forms-padding-left: 0;
+  --app-embed-padding-x: 0;
+  --app-embed-padding-y: 0;
+
+  @include respond-to('lg') {
+    --forms-heading-font: normal var(--weight-regular) var(--text-4xl) / var(--leading-tight) var(--font-heading);
+    --forms-heading-font-size: var(--text-4xl);
+    --heading-font-size: var(--text-4xl);
+  }
+}
+
+// ─── On a page ─────────────────────────────────────────────────────────────────
+// A form placed under a page's content (main-page.liquid) takes the page's
+// full width: _shopify-forms-shadow.scss splits it into intro and questions
+// from `lg`. `[data-forms-id]` is the app block's own wrapper around the form.
+
+.shopify-section:has(.editorial) + .shopify-section [data-forms-id] shopify-forms-embed {
+  // Less a hair: the app insets the form 2px, which would push it past the
+  // page's right edge.
+  --inline-container-max-width: calc(100% - var(--space-1));
+}
+
+// When the page has no copy of its own (the survey is all form), its empty
+// body would leave a full section gap above the form. Close it, keeping the
+// header rule's own spacing.
+#main-content .shopify-section:has(.editorial__content:empty) {
+  padding-bottom: 0;
+
+  .editorial__layout {
+    display: none;
+  }
+}

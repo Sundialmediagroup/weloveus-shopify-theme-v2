@@ -11,11 +11,6 @@
 // Everything is start-aligned. Rich-text rules here are scoped to the page so
 // the editorial treatment doesn't leak into other .rte.
 
-.editorial {
-  --editorial-cols: minmax(11rem, 1fr) minmax(0, var(--measure)) minmax(0, 1fr);
-  --editorial-gap: var(--space-10);
-}
-
 // ─── Header ────────────────────────────────────────────────────────────────────
 
 .editorial__header {

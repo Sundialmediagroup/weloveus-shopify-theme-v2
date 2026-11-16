@@ -1,0 +1,149 @@
+@use 'abstracts/mixins' as *;
+
+// Shopify Forms — inside the form's shadow root.
+//
+// Not part of theme.scss: scripts/shopify-forms.js imports this compiled to a
+// string and puts it in each inline form's shadow root, for what the app's
+// custom properties (_shopify-forms.scss) can't reach — question type,
+// spacing, the button's casing and the side-by-side page layout.
+//
+// Tokens work here: custom properties inherit through the shadow boundary.
+//
+// Selectors use the form's HTML — fieldset, legend, label, inputs, the submit
+// button — never the app's generated class names, which change with each of
+// its releases. The app's own rules are single classes, so ours add `[class]`
+// to outrank them without !important.
+
+// ─── Spacing ───────────────────────────────────────────────────────────────────
+
+form[class] {
+  gap: var(--space-4);
+}
+
+// The intro: heading, then its text a step apart. The app centres both with
+// auto margins; theme copy is start-aligned.
+section[class]:has(> h2) {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-inline: 0;
+  margin-block-end: var(--space-10);
+}
+
+h2[class] {
+  margin-inline: 0;
+  text-align: start;
+}
+
+// ─── Questions ─────────────────────────────────────────────────────────────────
+// Each one opens with a hairline rule and a display-size question, so the
+// survey reads as a set of distinct questions rather than one long list.
+
+fieldset[class] {
+  margin-block-start: var(--space-6);
+  padding: 0;
+  border: 0;
+  border-block-start: 1px solid var(--color-border);
+}
+
+// Floated, so it leaves the fieldset's border (where a legend is drawn by
+// default, cutting the rule) and sits under it as an ordinary block.
+legend[class] {
+  @include type-display;
+  float: inline-start;
+  inline-size: 100%;
+  // A step down from the display role's top end, so the questions stay
+  // below the intro heading.
+  font-size: min(var(--text-display), var(--text-2xl));
+  padding: var(--space-6) 0 var(--space-4);
+  color: var(--color-fg);
+}
+
+// Answers: a little more room between them than the app's 10px.
+fieldset[class] > div[class] {
+  clear: both;
+  gap: var(--space-3);
+}
+
+label[class]:has(> input[type='checkbox']),
+label[class]:has(> input[type='radio']) {
+  gap: var(--space-3);
+  align-items: center;
+  cursor: pointer;
+}
+
+input[type='checkbox'][class],
+input[type='radio'][class] {
+  inline-size: var(--space-5);
+  block-size: var(--space-5);
+  margin: 0;
+}
+
+// The open answer ("If you selected Other…") follows the last question.
+fieldset + div[class]:has(textarea) {
+  margin-block-start: var(--space-4);
+}
+
+// ─── Submit ────────────────────────────────────────────────────────────────────
+// The .btn primitive: uppercase, tracked, small type, pill (radius and colours
+// come from the custom properties), sized to its label.
+
+button[type='submit'][class] {
+  align-self: flex-start;
+  inline-size: auto;
+  margin-block-start: var(--space-10);
+  padding: var(--space-4) var(--space-10);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+// The sign-up disclaimer under the button: small print, start-aligned (the
+// app centres it).
+form[class] ~ div[class] {
+  margin: var(--space-4) 0 0;
+  text-align: start;
+  color: var(--color-fg-muted);
+  font-size: var(--text-xs);
+}
+
+// ─── Page layout ───────────────────────────────────────────────────────────────
+// A form under a page's content (scripts/shopify-forms.js sets the attribute)
+// splits from `lg`: the intro on the left, held in view while the questions
+// scroll on the right.
+
+:host([data-theme-layout='page']) {
+  @include respond-to('lg') {
+    // The app clips its containers, which would stop the intro sticking.
+    section[class]:has(form) {
+      overflow: visible;
+    }
+
+    div[class]:has(> form) {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr)); // half and half
+      column-gap: var(--space-16);
+      align-items: start;
+    }
+
+    div[class]:has(> form) > section[class]:has(> h2) {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+      position: sticky;
+      top: calc(var(--header-height) + var(--space-8));
+      max-inline-size: var(--measure);
+      margin-block-end: 0;
+    }
+
+    div[class]:has(> form) > form,
+    div[class]:has(> form) > form ~ * {
+      grid-column: 2;
+    }
+
+    // The first question's rule would sit right under the name and email.
+    form[class] {
+      padding-block-start: var(--space-2);
+    }
+  }
+}
