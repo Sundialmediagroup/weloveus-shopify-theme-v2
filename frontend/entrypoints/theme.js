@@ -18,6 +18,7 @@ import '../scripts/semantic-search.js'
 import '../scripts/essie-chat.js'
 import '../scripts/essie-dock.js'
 import '../scripts/editorial-contents.js'
+import '../scripts/promo-banner.js'
 
 // Expose header height as a CSS custom property for layout calculations
 function setHeaderHeight() {

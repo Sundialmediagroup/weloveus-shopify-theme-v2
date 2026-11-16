@@ -1,21 +1,65 @@
+{%- comment -%}
+  Promo Banner — a thin strip of short messages, one on the left and one on
+  the right. With more than one slide, each rolls up out of the strip as the
+  next rolls in from below, like a slow reel. Each slide has its own colours
+  and an optional link.
+
+  All slides share one grid cell, so the strip is as tall as its tallest
+  slide and never jumps between them. promo-banner.js handles the rotation;
+  without JS only the first slide shows.
+
+  Analytics: feature_view when the banner is reached; view_promotion for each
+  slide the first time it is on screen; select_promotion and section_click
+  (as a `promo_slide` card) when a linked slide is clicked.
+{%- endcomment -%}
+
 {%- liquid
-  assign bg    = section.settings.background_color
-  assign color = section.settings.text_color
-  assign url   = section.settings.url
+  assign slides = section.blocks
+  assign interval = section.settings.interval | times: 1000
 -%}
 
-{%- if url != blank -%}
-  <a class="promo-banner" href="{{ url }}" style="--banner-bg: {{ bg }}; --banner-color: {{ color }};">
-{%- else -%}
-  <div class="promo-banner" style="--banner-bg: {{ bg }}; --banner-color: {{ color }};">
-{%- endif -%}
-
-  <span class="promo-banner__text">{{ section.settings.text }}</span>
-
-{%- if url != blank -%}
-  </a>
-{%- else -%}
-  </div>
+{%- if slides.size > 0 -%}
+  <promo-banner
+    class="promo-banner{% if section.settings.standard_spacing %} promo-banner--spaced{% endif %}"
+    data-interval="{{ interval }}"
+    data-feature="promo_banner"
+    {% if slides.size > 1 %}aria-roledescription="carousel"{% endif %}
+  >
+    {%- for block in slides -%}
+      {%- liquid
+        assign tag = 'div'
+        if block.settings.url != blank
+          assign tag = 'a'
+        endif
+      -%}
+      <{{ tag }}
+        class="promo-banner__slide{% if forloop.first %} is-active{% endif %}"
+        {% if tag == 'a' %}href="{{ block.settings.url }}"{% endif %}
+        style="--slide-bg: {{ block.settings.background_color }}; --slide-color: {{ block.settings.text_color }};"
+        {% unless forloop.first %}aria-hidden="true" inert{% endunless %}
+        data-index="{{ forloop.index0 }}"
+        data-card="promo_slide"
+        data-promotion-id="{{ section.id }}-{{ block.id }}"
+        data-promotion-name="{{ block.settings.text_left | default: block.settings.text_right | escape }}"
+        data-creative-name="{{ block.settings.text_right | escape }}"
+        {{ block.shopify_attributes }}
+      >
+        {%- if block.settings.text_left != blank -%}
+          <span class="promo-banner__text">{{ block.settings.text_left }}</span>
+        {%- endif -%}
+        {%- if block.settings.text_right != blank or tag == 'a' -%}
+          <span class="promo-banner__end">
+            {%- if block.settings.text_right != blank -%}
+              <span class="promo-banner__text">{{ block.settings.text_right }}</span>
+            {%- endif -%}
+            {%- if tag == 'a' -%}
+              <span class="promo-banner__arrow">{%- render 'icon', name: 'arrow-right' -%}</span>
+            {%- endif -%}
+          </span>
+        {%- endif -%}
+      </{{ tag }}>
+    {%- endfor -%}
+  </promo-banner>
 {%- endif -%}
 
 {% schema %}
@@ -23,34 +67,82 @@
   "name": "Promo Banner",
   "class": "section-type--promo-banner",
   "tag": "section",
+  "max_blocks": 10,
   "settings": [
     {
-      "type": "text",
-      "id": "text",
-      "label": "Text",
-      "default": "NEW COLLECTION"
+      "type": "range",
+      "id": "interval",
+      "min": 3,
+      "max": 12,
+      "step": 1,
+      "unit": "s",
+      "default": 5,
+      "label": "Time on each slide",
+      "info": "Only used when there is more than one slide. Rotation pauses while a visitor hovers over the banner."
     },
     {
-      "type": "color",
-      "id": "background_color",
-      "label": "Background colour",
-      "default": "#3a6e28"
-    },
+      "type": "checkbox",
+      "id": "standard_spacing",
+      "label": "Use standard section spacing",
+      "info": "Off: a small gap below the banner, the same as the page margins. On: the full gap other sections use.",
+      "default": false
+    }
+  ],
+  "blocks": [
     {
-      "type": "color",
-      "id": "text_color",
-      "label": "Text colour",
-      "default": "#ffffff"
-    },
-    {
-      "type": "url",
-      "id": "url",
-      "label": "Link"
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text_left",
+          "label": "Left text",
+          "default": "Shop our Black Friday deals"
+        },
+        {
+          "type": "text",
+          "id": "text_right",
+          "label": "Right text",
+          "default": "Use code: BLACKFRIDAY2026"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "Link",
+          "info": "Optional. Makes the whole slide clickable."
+        },
+        {
+          "type": "color",
+          "id": "background_color",
+          "label": "Background colour",
+          "default": "#ffffff"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text colour",
+          "default": "#0a0a0a"
+        }
+      ]
     }
   ],
   "presets": [
     {
-      "name": "Promo Banner"
+      "name": "Promo Banner",
+      "blocks": [
+        {
+          "type": "slide"
+        },
+        {
+          "type": "slide",
+          "settings": {
+            "text_left": "Free shipping on orders over $75",
+            "text_right": "Shop now",
+            "background_color": "#0a0a0a",
+            "text_color": "#ffffff"
+          }
+        }
+      ]
     }
   ]
 }

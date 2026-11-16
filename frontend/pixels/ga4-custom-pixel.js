@@ -29,6 +29,8 @@ const THEME_EVENTS = new Set([
   'search_results',
   'predictive_search',
   'feature_view',
+  'view_promotion',
+  'select_promotion',
   'essie_open',
   'essie_message',
   'essie_products_shown',

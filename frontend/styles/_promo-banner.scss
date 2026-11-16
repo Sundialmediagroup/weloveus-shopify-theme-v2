@@ -1,16 +1,104 @@
+@use 'abstracts/mixins' as *;
+
+// Promo Banner — left and right messages on a thin strip. Slides stack in one
+// grid cell; the active one sits in place, the one leaving rolls up and out,
+// and the rest wait just below, ready to roll in.
+
+// A banner sits close to what follows: the gap below it matches the page
+// margins rather than the full section spacing, unless the merchant turns
+// standard spacing back on.
+#main-content .shopify-section:has(> .promo-banner:not(.promo-banner--spaced)) {
+  padding-bottom: var(--site-frame);
+}
+
 .promo-banner {
-  display: block;
-  background-color: var(--banner-bg, var(--color-fg));
-  color: var(--banner-color, var(--color-bg));
-  padding-block: var(--space-4);
+  display: grid;
+  overflow: hidden;
+}
+
+.promo-banner__slide {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-6);
+  padding-block: var(--space-5);
   padding-inline: var(--site-frame);
+  background-color: var(--slide-bg, var(--color-bg));
+  color: var(--slide-color, var(--color-fg));
+  text-decoration: none;
+  transform: translateY(100%);
+  // Waiting slides move without a transition, so a slide that has just left
+  // through the top drops back below unseen.
+  transition: none;
+
+  &.is-active,
+  &.is-leaving {
+    // A long, soft ease-in-out: the reel gathers speed, then settles.
+    transition: transform 900ms cubic-bezier(0.76, 0, 0.24, 1);
+  }
+
+  &.is-active {
+    transform: translateY(0);
+  }
+
+  &.is-leaving {
+    transform: translateY(-100%);
+  }
+
+  // A linked slide keeps its own text colour on hover (overriding the global
+  // link hover) and signals itself with the standard arrow, nudged instead.
+  &:is(a):hover {
+    color: var(--slide-color, var(--color-fg));
+  }
+
+  &:is(a):hover .promo-banner__arrow {
+    transform: translateX(var(--space-1));
+  }
+
+  [dir='rtl'] &:is(a):hover .promo-banner__arrow {
+    transform: translateX(calc(var(--space-1) * -1));
+  }
+
+  @include respond-to('md') {
+    padding-block: var(--space-6);
+  }
 }
 
 .promo-banner__text {
-  display: block;
-  font-size: clamp(var(--text-4xl), 5vw, var(--text-8xl));
-  font-weight: var(--weight-bold);
+  font-size: var(--text-base);
+  line-height: var(--leading-snug);
   text-transform: uppercase;
-  letter-spacing: var(--tracking-tighter);
-  line-height: var(--leading-none);
+  letter-spacing: var(--tracking-wide);
+
+  @include respond-to('md') {
+    font-size: var(--text-xl);
+  }
+}
+
+// Right text and, on a linked slide, the arrow after it.
+.promo-banner__end {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-inline-start: auto;
+  text-align: end;
+}
+
+.promo-banner__arrow {
+  display: flex;
+  flex-shrink: 0;
+  transition: transform var(--transition-base);
+
+  [dir='rtl'] & {
+    scale: -1 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .promo-banner__slide.is-active,
+  .promo-banner__slide.is-leaving {
+    transition: none;
+  }
 }
