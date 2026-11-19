@@ -19,7 +19,8 @@
 // _shopify-forms-shadow.scss, keyed on the data-survey-* attributes set here.
 //
 // Questions are found by their field names (`custom#…`), which don't change
-// when wording is edited in the Forms app. If Q1 can't be found the script does
+// when wording is edited in the Forms app. A field deleted and re-added comes
+// back with _1 (then _1_1…) on its name; those match too. If Q1 can't be found the script does
 // nothing and the form behaves as the app made it: every question showing,
 // with the app's own required settings. So in the Forms app, only questions
 // that can be hidden need to be optional.
@@ -49,7 +50,7 @@ const QUESTIONS = [
   {
     id: 'q5',
     name: 'what_could_we_improve_about_your_experience',
-    other: 'what_could_we_improve_about_your_experience_other',
+    other: 'what_could_we_improve_about_your_experience_-_other',
     exclusive: /^nothing\b/i,
   },
   {
@@ -108,6 +109,15 @@ const MESSAGES = {
 // The prompt in every "Other" box, in place of the field names the app shows.
 const OTHER_PROMPT = 'Tell us more';
 
+// A question's inputs (or text box) by field name, with or without the _1,
+// _1_1… the app adds to a re-added field. Inputs only: the app gives a
+// question's fieldset the same name.
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const fieldsNamed = (root, base) => {
+  const pattern = new RegExp(`^custom#${escapeRe(base)}(_\\d+)*$`);
+  return [...root.querySelectorAll('input[name], textarea[name]')].filter((el) => pattern.test(el.name));
+};
+
 // Values carry stray spaces and mixed apostrophes from the app.
 const norm = (s) => (s || '').replace(/[‘’]/g, "'").replace(/\s+/g, ' ').trim();
 
@@ -131,7 +141,7 @@ class SurveyBranching {
   index() {
     const form = this.shadowRoot.querySelector('form');
     if (!form) return false;
-    const field = (name) => form.querySelector(`input[name="custom#${name}"], textarea[name="custom#${name}"]`);
+    const field = (name) => fieldsNamed(form, name)[0];
     const questionOf = (node) => {
       while (node && node.parentElement !== form) node = node.parentElement;
       return node;
@@ -147,13 +157,11 @@ class SurveyBranching {
       if (spec.select) el = otherEl?.previousElementSibling || null;
       else el = questionOf(field(spec.name));
       if (!el) return null;
-      // Inputs only: the app gives the question's fieldset the same name.
-      const named = `[name="custom#${spec.name}"]`;
-      const inputs = spec.select ? [] : [...form.querySelectorAll(`input${named}, textarea${named}`)];
+      const inputs = spec.select ? [] : fieldsNamed(form, spec.name);
       return { ...spec, el, otherEl, otherInput: otherEl?.querySelector('textarea, input'), inputs };
     }).filter(Boolean);
     this.byId = Object.fromEntries(this.questions.map((q) => [q.id, q]));
-    this.byName = new Map(this.questions.filter((q) => q.name).map((q) => [`custom#${q.name}`, q]));
+    this.byName = new Map(this.questions.flatMap((q) => q.inputs.map((i) => [i.name, q])));
     // Numbering: CSS counts the visible questions, so it runs 1, 2, 3… for
     // every path through the survey.
     this.questions.forEach((q) => {
@@ -392,7 +400,7 @@ class SurveyBranching {
 // its questions a little after that.
 const root = document.querySelector(`[data-forms-id="forms-root-${FORM_ID}"]`);
 if (root) {
-  const ready = (host) => host.shadowRoot?.querySelector(`input[name="custom#${QUESTIONS[0].name}"]`);
+  const ready = (host) => host.shadowRoot && fieldsNamed(host.shadowRoot, QUESTIONS[0].name).length > 0;
   const watch = (host) => {
     if (host.dataset.surveyBranching) return;
     if (!host.shadowRoot) {
