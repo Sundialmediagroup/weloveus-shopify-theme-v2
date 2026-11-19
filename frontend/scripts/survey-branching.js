@@ -166,6 +166,9 @@ class SurveyBranching {
     // every path through the survey.
     this.questions.forEach((q) => {
       q.el.dataset.surveyQuestion = q.followup ? 'followup' : '';
+      // A free-text question (not a follow-up) is styled like the rest, its
+      // question above the box rather than floating inside it.
+      if (q.open && !q.followup) q.el.dataset.surveyOpen = '';
     });
     this.shuffle();
     return true;

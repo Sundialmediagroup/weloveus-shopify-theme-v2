@@ -65,6 +65,34 @@ div[class]:has(> button[role='combobox']) > p[class] {
   color: var(--color-fg);
 }
 
+// A free-text question (the last, "How can we make…"), marked by
+// scripts/survey-branching.js. The app floats its question inside the box as
+// a label that shrinks as you type; here it sits above the box like every
+// other question. !important where the app moves the label by state.
+div[class][data-survey-open] {
+  flex-direction: column;
+  margin-block-start: var(--space-6);
+  border-block-start: 1px solid var(--color-border);
+}
+
+div[class][data-survey-open] > label[class] {
+  @include type-display;
+  order: -1;
+  position: static !important;
+  transform: none !important;
+  font-size: min(var(--text-display), var(--text-2xl)) !important;
+  line-height: var(--leading-snug) !important;
+  padding: var(--space-6) 0 var(--space-4);
+  color: var(--color-fg) !important;
+  pointer-events: auto;
+  transition: none;
+}
+
+// With the label gone from inside it, the box needs no room at the top.
+div[class][data-survey-open] > textarea[class] {
+  padding-block-start: var(--space-4) !important;
+}
+
 // Only a legend needs the float; the dropdown's question is ordinary flow.
 div[class]:has(> button[role='combobox']) > p[class] {
   float: none;
