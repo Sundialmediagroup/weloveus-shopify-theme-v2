@@ -14,7 +14,8 @@
 //     answered before the form submits
 //
 // Hidden questions are emptied, so a buyer's abandoned non-buyer answers are
-// never sent. Visual rules (hidden, error, order) live in
+// never sent. Text in a hidden box (an Other, Q4a) is set aside and comes back
+// if the box shows again. Visual rules (hidden, error, order) live in
 // _shopify-forms-shadow.scss, keyed on the data-survey-* attributes set here.
 //
 // Questions are found by their field names (`custom#…`), which don't change
@@ -42,6 +43,7 @@ const QUESTIONS = [
     id: 'q4a',
     name: 'what_made_it_difficult_to_find_what_you_were_looking_for',
     open: true,
+    followup: true, // numbered as its parent's "a", e.g. 4a
     when: (a) => !a.q4 || a.q4.some((v) => /^(very|somewhat) difficult/i.test(v)),
   },
   {
@@ -103,6 +105,9 @@ const MESSAGES = {
   summary: 'Please answer the highlighted questions.',
 };
 
+// The prompt in every "Other" box, in place of the field names the app shows.
+const OTHER_PROMPT = 'Tell us more';
+
 // Values carry stray spaces and mixed apostrophes from the app.
 const norm = (s) => (s || '').replace(/[‘’]/g, "'").replace(/\s+/g, ' ').trim();
 
@@ -118,6 +123,7 @@ class SurveyBranching {
     this.shadowRoot = shadowRoot;
     this.busy = false;
     this.frame = 0;
+    this.stash = new Map(); // field name → text set aside from a hidden box
   }
 
   // Finds each question's element (the form's direct child) and inputs.
@@ -148,6 +154,11 @@ class SurveyBranching {
     }).filter(Boolean);
     this.byId = Object.fromEntries(this.questions.map((q) => [q.id, q]));
     this.byName = new Map(this.questions.filter((q) => q.name).map((q) => [`custom#${q.name}`, q]));
+    // Numbering: CSS counts the visible questions, so it runs 1, 2, 3… for
+    // every path through the survey.
+    this.questions.forEach((q) => {
+      q.el.dataset.surveyQuestion = q.followup ? 'followup' : '';
+    });
     this.shuffle();
     return true;
   }
@@ -202,22 +213,39 @@ class SurveyBranching {
     return answers === null || answers.some((v) => OTHER.test(v));
   }
 
-  setHidden(el, hidden, clear) {
+  // `clear` runs as the element hides, `restore` as it shows again.
+  setHidden(el, hidden, clear, restore) {
     const was = el.hasAttribute('data-survey-hidden');
     el.toggleAttribute('data-survey-hidden', hidden);
     if (hidden) {
       el.removeAttribute('data-survey-error');
       if (!was) clear();
+    } else if (was) {
+      restore?.();
     }
   }
 
-  clearChoices(q) {
-    this.uncheck(q.inputs.filter((i) => i.checked && i.type === 'checkbox'));
-    if (q.open && q.inputs[0]?.value) setTextValue(q.inputs[0], '');
+  // Text in a box that hides is set aside rather than sent: the box is
+  // emptied (the app submits whatever its fields hold) and the text goes back
+  // if the box shows again, e.g. someone picks Other, writes, picks something
+  // else, then returns to Other.
+  stashText(input) {
+    if (!input?.value) return;
+    this.stash.set(input.name, input.value);
+    setTextValue(input, '');
   }
 
-  clearOther(q) {
-    if (q.otherInput?.value) setTextValue(q.otherInput, '');
+  restoreText(input) {
+    const text = input && this.stash.get(input.name);
+    if (!text) return;
+    this.stash.delete(input.name);
+    if (!input.value) setTextValue(input, text);
+  }
+
+  // Ticks in a question that hides are cleared; its free text is set aside.
+  clearChoices(q) {
+    this.uncheck(q.inputs.filter((i) => i.checked && i.type === 'checkbox'));
+    if (q.open) this.stashText(q.inputs[0]);
   }
 
   // Clicks go through the app's own handlers, so its state stays in step.
@@ -244,8 +272,26 @@ class SurveyBranching {
     }
     const all = this.allAnswers();
     this.questions.forEach((q) => {
-      this.setHidden(q.el, !this.isVisible(q, all), () => this.clearChoices(q));
-      if (q.otherEl) this.setHidden(q.otherEl, !this.otherVisible(q, all), () => this.clearOther(q));
+      this.setHidden(
+        q.el,
+        !this.isVisible(q, all),
+        () => this.clearChoices(q),
+        () => q.open && this.restoreText(q.inputs[0]),
+      );
+      if (q.otherEl) {
+        this.setHidden(
+          q.otherEl,
+          !this.otherVisible(q, all),
+          () => this.stashText(q.otherInput),
+          () => this.restoreText(q.otherInput),
+        );
+        // Checked each pass, as the app may redraw the label.
+        // Text-only labels, so the box itself is never caught up in it.
+        const label = q.otherEl.querySelector('label');
+        if (label && !label.children.length && label.textContent !== OTHER_PROMPT) {
+          label.textContent = OTHER_PROMPT;
+        }
+      }
       // Errors clear as soon as they're answered.
       if (q.el.dataset.surveyError === MESSAGES.required && this.answers(q)?.length) {
         q.el.removeAttribute('data-survey-error');

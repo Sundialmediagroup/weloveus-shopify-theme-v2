@@ -104,6 +104,27 @@ fieldset + div[class]:has(textarea) {
   font-size: var(--text-sm);
 }
 
+// Question numbers, counting only the questions showing. Hidden ones
+// (display: none) don't count, so each path through the survey runs 1, 2, 3….
+// A follow-up takes its parent's number with an "a" (4a), counting nothing.
+form[class] {
+  counter-reset: survey-question;
+}
+
+[data-survey-question='']:not([data-survey-hidden]) {
+  counter-increment: survey-question;
+}
+
+[data-survey-question=''] > legend::before,
+[data-survey-question=''] > p:first-child::before,
+[data-survey-question=''] > label::before {
+  content: counter(survey-question) '. ';
+}
+
+[data-survey-question='followup'] > label::before {
+  content: counter(survey-question) 'a. ';
+}
+
 // Shuffled answer order; the answers' container is a flex column.
 @for $i from 0 through 39 {
   [data-survey-order='#{$i}'] {
@@ -125,9 +146,11 @@ button[type='submit'][class] {
   text-transform: uppercase;
 }
 
-// The sign-up disclaimer under the button: small print, start-aligned (the
-// app centres it).
+// The sign-up disclaimer under the button: small print, start-aligned. The app
+// sizes it to its text and centres it with auto margins; at full width it
+// lines up with the button.
 form[class] ~ div[class] {
+  inline-size: 100%;
   margin: var(--space-4) 0 0;
   text-align: start;
   color: var(--color-fg-muted);
