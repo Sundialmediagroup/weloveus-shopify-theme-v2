@@ -125,7 +125,7 @@ class SurveyBranching {
   index() {
     const form = this.shadowRoot.querySelector('form');
     if (!form) return false;
-    const field = (name) => form.querySelector(`[name="custom#${name}"]`);
+    const field = (name) => form.querySelector(`input[name="custom#${name}"], textarea[name="custom#${name}"]`);
     const questionOf = (node) => {
       while (node && node.parentElement !== form) node = node.parentElement;
       return node;
@@ -141,7 +141,9 @@ class SurveyBranching {
       if (spec.select) el = otherEl?.previousElementSibling || null;
       else el = questionOf(field(spec.name));
       if (!el) return null;
-      const inputs = spec.select ? [] : [...form.querySelectorAll(`[name="custom#${spec.name}"]`)];
+      // Inputs only: the app gives the question's fieldset the same name.
+      const named = `[name="custom#${spec.name}"]`;
+      const inputs = spec.select ? [] : [...form.querySelectorAll(`input${named}, textarea${named}`)];
       return { ...spec, el, otherEl, otherInput: otherEl?.querySelector('textarea, input'), inputs };
     }).filter(Boolean);
     this.byId = Object.fromEntries(this.questions.map((q) => [q.id, q]));
@@ -344,7 +346,7 @@ class SurveyBranching {
 // its questions a little after that.
 const root = document.querySelector(`[data-forms-id="forms-root-${FORM_ID}"]`);
 if (root) {
-  const ready = (host) => host.shadowRoot?.querySelector(`[name="custom#${QUESTIONS[0].name}"]`);
+  const ready = (host) => host.shadowRoot?.querySelector(`input[name="custom#${QUESTIONS[0].name}"]`);
   const watch = (host) => {
     if (host.dataset.surveyBranching) return;
     if (!host.shadowRoot) {
