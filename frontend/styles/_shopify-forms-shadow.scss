@@ -85,6 +85,32 @@ fieldset + div[class]:has(textarea) {
   margin-block-start: var(--space-4);
 }
 
+// ─── Survey branching ──────────────────────────────────────────────────────────
+// Set by scripts/survey-branching.js on the customer feedback survey.
+
+// A question that doesn't apply to this visitor's earlier answers. !important
+// because the app's rules come after these in the cascade.
+[data-survey-hidden] {
+  display: none !important;
+}
+
+// Still needs an answer, or (on Q12) has too many.
+[data-survey-error]::after {
+  content: attr(data-survey-error);
+  display: block;
+  clear: both;
+  margin-block-start: var(--space-3);
+  color: var(--form-error-color, var(--color-error));
+  font-size: var(--text-sm);
+}
+
+// Shuffled answer order; the answers' container is a flex column.
+@for $i from 0 through 39 {
+  [data-survey-order='#{$i}'] {
+    order: $i;
+  }
+}
+
 // ─── Submit ────────────────────────────────────────────────────────────────────
 // The .btn primitive: uppercase, tracked, small type, pill (radius and colours
 // come from the custom properties), sized to its label.
