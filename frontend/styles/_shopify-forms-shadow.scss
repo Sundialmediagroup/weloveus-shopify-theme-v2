@@ -40,7 +40,11 @@ h2[class] {
 // Each one opens with a hairline rule and a display-size question, so the
 // survey reads as a set of distinct questions rather than one long list.
 
-fieldset[class] {
+// A dropdown question isn't a fieldset — a <div> holding its question as a
+// <p> and the dropdown's button — so it's matched by that button to get the
+// same rule and question type.
+fieldset[class],
+div[class]:has(> button[role='combobox']) {
   margin-block-start: var(--space-6);
   padding: 0;
   border: 0;
@@ -49,7 +53,8 @@ fieldset[class] {
 
 // Floated, so it leaves the fieldset's border (where a legend is drawn by
 // default, cutting the rule) and sits under it as an ordinary block.
-legend[class] {
+legend[class],
+div[class]:has(> button[role='combobox']) > p[class] {
   @include type-display;
   float: inline-start;
   inline-size: 100%;
@@ -58,6 +63,12 @@ legend[class] {
   font-size: min(var(--text-display), var(--text-2xl));
   padding: var(--space-6) 0 var(--space-4);
   color: var(--color-fg);
+}
+
+// Only a legend needs the float; the dropdown's question is ordinary flow.
+div[class]:has(> button[role='combobox']) > p[class] {
+  float: none;
+  margin: 0;
 }
 
 // Answers: a little more room between them than the app's 10px.
